@@ -22,7 +22,7 @@ A Helm chart for Kubernetes
 | keda.apiVersion | string | `"keda.sh/v1alpha1"` |  |
 | keda.behavior | object | `{}` |  |
 | keda.cooldownPeriod | int | `300` |  |
-| keda.enabled | bool | `true` |  |
+| keda.enabled | bool | `false` |  |
 | keda.maxReplicas | int | `5` |  |
 | keda.minReplicas | int | `1` |  |
 | keda.pollingInterval | int | `30` |  |

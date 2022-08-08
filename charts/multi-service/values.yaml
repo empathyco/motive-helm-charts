@@ -194,7 +194,7 @@ autoscaling:
 
 keda:
   apiVersion: "keda.sh/v1alpha1"
-  enabled: true
+  enabled: false
   minReplicas: 1
   maxReplicas: 5
   pollingInterval: 30
