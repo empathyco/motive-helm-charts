@@ -104,14 +104,14 @@ resources:
   # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
   limits:
     # -- CPU limits for the Deployment
-    cpu: 500m
+    cpu: 100m
     # -- Memory limits for the Deployment
-    memory: 256Mi
-  requests:
-    # -- CPU requests for the Deployment
-    cpu: 1000m
-    # -- Memory requests for the Deployment
     memory: 512Mi
+  requests: {}
+    # -- CPU requests for the Deployment
+    # cpu: 500m
+    # -- Memory requests for the Deployment
+    # memory: 256Mi
 
 # -- Configurable nodeSelector so that you can target specific nodes for your deployment
 nodeSelector: {}
@@ -265,9 +265,9 @@ metrics:
         # - record: instance_id:node_cpu:count
         #   expr: count(node_cpu_seconds_total{mode="idle"}) without (cpu,mode)
 
-# -----------
+# --------
 # Storage
-# -----------
+# --------
 
 volumeMounts: []
 
@@ -280,3 +280,10 @@ volumeClaimTemplates:
   # -- volume storage Class
   storageClassName: gp3
   volumeMode: Filesystem
+
+
+# ----------------
+# Init Containers
+# ----------------
+
+initContainers: []
