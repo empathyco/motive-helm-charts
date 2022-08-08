@@ -1,6 +1,6 @@
 # multi-service
 
-![Version: 0.2.3](https://img.shields.io/badge/Version-0.2.3-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.1.1](https://img.shields.io/badge/AppVersion-0.1.1-informational?style=flat-square)
+![Version: 0.2.4](https://img.shields.io/badge/Version-0.2.4-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.1.1](https://img.shields.io/badge/AppVersion-0.1.1-informational?style=flat-square)
 
 A Helm chart for Kubernetes
 
@@ -46,9 +46,9 @@ A Helm chart for Kubernetes
 | podSecurityContext | object | `{}` | Allows you to set the securityContext for the pod |
 | readinessProbe | object | `{}` | Enable readinessProbe |
 | replicaCount | int | `1` |  |
-| resources.limits.cpu | string | `"100m"` | CPU limits for the Deployment |
-| resources.limits.memory | string | `"512Mi"` | Memory limits for the Deployment |
-| resources.requests | object | `{}` |  |
+| resources.limits | object | `{}` |  |
+| resources.requests.cpu | string | `"100m"` | CPU requests for the Deployment |
+| resources.requests.memory | string | `"256Mi"` | Memory requests for the Deployment |
 | revisionHistoryLimit | int | `3` | How many old ReplicaSets to maintain for the Deployment |
 | securityContext | object | `{}` | Allows you to set the securityContext for the container |
 | serviceAccount.annotations | object | `{}` | Annotations to add to the service account |
