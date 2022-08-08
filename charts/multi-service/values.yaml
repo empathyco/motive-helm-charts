@@ -9,6 +9,8 @@ fullnameOverride: ""
 
 # -- Number of replicas
 replicaCount: 1
+# -- kind of deployment (Deployment or StatefulSet)
+kind: Deployment
 # -- How many old ReplicaSets to maintain for the Deployment
 revisionHistoryLimit: 3
 
@@ -262,3 +264,19 @@ metrics:
       rules: []
         # - record: instance_id:node_cpu:count
         #   expr: count(node_cpu_seconds_total{mode="idle"}) without (cpu,mode)
+
+# -----------
+# Storage
+# -----------
+
+volumeMounts: []
+
+volumeClaimTemplates:
+  enabled: false
+  # -- persistent volume access Modes
+  accessModes: ReadWriteOnce
+  # -- persistent volume size
+  storage: 10Gi
+  # -- volume storage Class
+  storageClassName: gp3
+  volumeMode: Filesystem
