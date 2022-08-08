@@ -1,25 +1,22 @@
-{{- if eq .Values.kind "Deployment" }}
+{{- if eq .Values.kind "StatefulSet"  }}
 apiVersion: apps/v1
-kind: Deployment
+kind: StatefulSet
 metadata:
   name: {{ include "multi-service.fullname" . }}
   labels:
     {{- include "multi-service.labels" . | nindent 4 }}
 spec:
+  podManagementPolicy: OrderedReady
   {{- if not .Values.autoscaling.enabled  }}
   {{- if not .Values.keda.enabled }}
   replicas: {{ .Values.replicaCount }}
+  serviceName: {{ include "multi-service.fullname" . }}
   {{- end }}
   {{- end }}
-  minReadySeconds: {{ .Values.minReadySeconds | default 30 }}
   revisionHistoryLimit: {{ .Values.revisionHistoryLimit | default 3 }}
   selector:
     matchLabels:
       {{- include "multi-service.selectorLabels" . | nindent 6 }}
-  {{- with .Values.strategy }}
-  strategy:
-    {{- toYaml . | nindent 4 }}
-  {{- end }}
   template:
     metadata:
       {{- with .Values.podAnnotations }}
@@ -28,8 +25,8 @@ spec:
       {{- end }}
       labels:
         {{- include "multi-service.selectorLabels" . | nindent 8 }}
-        {{- with .Values.podLabels }}
-        {{- toYaml . | nindent 8 }}
+        {{- if .Values.podLabels }}
+        {{- toYaml .Values.podLabels | nindent 8 }}
         {{- end }}
     spec:
       terminationGracePeriodSeconds: {{ .Values.terminationGracePeriodSeconds | default 60 }}
@@ -40,9 +37,9 @@ spec:
       serviceAccountName: {{ include "multi-service.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
-      {{- with .Values.topologySpreadConstraints }}
+      {{- if .Values.topologySpreadConstraints }}
       topologySpreadConstraints:
-        {{- toYaml . | nindent 8 }}
+        {{- toYaml .Values.topologySpreadConstraints | nindent 8 }}
       {{- end }}
       containers:
         - name: {{ .Chart.Name }}
@@ -50,37 +47,23 @@ spec:
             {{- toYaml .Values.securityContext | nindent 12 }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
-          {{- if or .Values.env .Values.extraenv }}
           env:
-            {{- with .Values.env }}
-            {{- toYaml . | nindent 12 }}
+            {{- toYaml .Values.env | nindent 12 }}
+            {{- if .Values.extraenv  }}
+            {{- toYaml .Values.extraenv | nindent 12 }}
             {{- end }}
-            {{- with .Values.extraenv  }}
-            {{- toYaml . | nindent 12 }}
-            {{- end }}
-          {{- end }}
           ports:
             {{- toYaml .Values.ports | nindent 12 }}
-          {{- if .Values.livenessProbe }}
           livenessProbe:
             {{- toYaml .Values.livenessProbe | nindent 12 }}
-          {{- end }}
-          {{- if .Values.readinessProbe }}
           readinessProbe:
             {{- toYaml .Values.readinessProbe | nindent 12 }}
-          {{- end }}
-          {{- if .Values.startupProbe }}
           startupProbe:
             {{- toYaml .Values.startupProbe | nindent 12 }}
-          {{- end }}
-          {{- if .Values.resources }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
-          {{- end }}
-          {{- if .Values.volumeMounts }}
           volumeMounts:
             {{- toYaml .Values.volumeMounts | nindent 12 }}
-          {{- end }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
@@ -93,4 +76,21 @@ spec:
       tolerations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+  {{- if .Values.volumeClaimTemplates.enabled }}
+  volumeClaimTemplates:
+    - apiVersion: v1
+      kind: PersistentVolumeClaim
+      metadata:
+        labels:
+          {{- include "multi-service.labels" . | nindent 10 }}
+        name: {{ include "multi-service.fullname" . }}
+      spec:
+        accessModes:
+          - {{ .Values.volumeClaimTemplates.accessModes }}
+        resources:
+          requests:
+            storage: {{ .Values.volumeClaimTemplates.storage }}
+        storageClassName: {{ .Values.volumeClaimTemplates.storageClassName }}
+        volumeMode: {{ .Values.volumeClaimTemplates.volumeMode }}
+  {{- end }}
 {{- end }}
