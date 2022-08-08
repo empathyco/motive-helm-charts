@@ -1,0 +1,27 @@
+{{- range .Values.services }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "multi-service.fullname" $ }}-{{ .name }}
+  labels:
+    {{- include "multi-service.labels" $ | nindent 4 }}
+    {{- range $key, $value := .labels }}
+    {{ $key }}: {{ $value | quote }}
+    {{- end }}
+  {{- if .annotations }}
+  annotations:
+    {{- range $key, $value := .annotations }}
+    {{ $key }}: {{ $value | quote }}
+    {{- end }}
+  {{- end }}
+spec:
+  type: {{ .type | default "ClusterIP" }}
+  ports:
+    - port: {{ .ports.port }}
+      targetPort: {{ .ports.targetPort }}
+      protocol: {{ .ports.protocol }}
+      name: {{ .ports.name }}
+  selector:
+    {{- include "multi-service.selectorLabels" $ | nindent 4 }}
+{{ end }}

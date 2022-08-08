@@ -1,0 +1,33 @@
+{{- if and .Values.keda.enabled -}}
+# https://keda.sh/docs/
+apiVersion: {{ .Values.keda.apiVersion }}
+kind: ScaledObject
+metadata:
+  name: {{ include "multi-service.fullname" . }}
+  labels:
+    {{- include "multi-service.labels" . | nindent 4 }}
+  {{- with .Values.keda.scaledObject.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  scaleTargetRef:
+    name: {{ include "multi-service.fullname" . }}
+  pollingInterval: {{ .Values.keda.pollingInterval }}
+  cooldownPeriod: {{ .Values.keda.cooldownPeriod }}
+  minReplicaCount: {{ .Values.keda.minReplicas }}
+  maxReplicaCount: {{ .Values.keda.maxReplicas }}
+  {{- with .Values.keda.triggers }}
+  triggers:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  advanced:
+    restoreToOriginalReplicaCount: {{ .Values.keda.restoreToOriginalReplicaCount }}
+{{- if .Values.keda.behavior }}
+    horizontalPodAutoscalerConfig:
+      {{- with .Values.keda.behavior }}
+      behavior:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+{{- end }}
+{{- end }}
