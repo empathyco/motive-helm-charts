@@ -1,6 +1,6 @@
 # multi-service
 
-![Version: 0.2.2](https://img.shields.io/badge/Version-0.2.2-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.1.1](https://img.shields.io/badge/AppVersion-0.1.1-informational?style=flat-square)
+![Version: 0.2.3](https://img.shields.io/badge/Version-0.2.3-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.1.1](https://img.shields.io/badge/AppVersion-0.1.1-informational?style=flat-square)
 
 A Helm chart for Kubernetes
 
@@ -19,6 +19,7 @@ A Helm chart for Kubernetes
 | imagePullSecrets | list | `[]` | Configuration for imagePullSecrets so that you can use a private registry for your image |
 | ingress.enabled | bool | `false` | Enable Kubernetes Ingress to expose pods |
 | ingresses | object | `{}` |  |
+| initContainers | list | `[]` |  |
 | keda.apiVersion | string | `"keda.sh/v1alpha1"` |  |
 | keda.behavior | object | `{}` |  |
 | keda.cooldownPeriod | int | `300` |  |
@@ -45,10 +46,9 @@ A Helm chart for Kubernetes
 | podSecurityContext | object | `{}` | Allows you to set the securityContext for the pod |
 | readinessProbe | object | `{}` | Enable readinessProbe |
 | replicaCount | int | `1` |  |
-| resources.limits.cpu | string | `"500m"` | CPU limits for the Deployment |
-| resources.limits.memory | string | `"256Mi"` | Memory limits for the Deployment |
-| resources.requests.cpu | string | `"1000m"` | CPU requests for the Deployment |
-| resources.requests.memory | string | `"512Mi"` | Memory requests for the Deployment |
+| resources.limits.cpu | string | `"100m"` | CPU limits for the Deployment |
+| resources.limits.memory | string | `"512Mi"` | Memory limits for the Deployment |
+| resources.requests | object | `{}` |  |
 | revisionHistoryLimit | int | `3` | How many old ReplicaSets to maintain for the Deployment |
 | securityContext | object | `{}` | Allows you to set the securityContext for the container |
 | serviceAccount.annotations | object | `{}` | Annotations to add to the service account |
