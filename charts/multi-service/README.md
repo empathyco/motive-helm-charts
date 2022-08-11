@@ -1,6 +1,6 @@
 # multi-service
 
-![Version: 0.2.4](https://img.shields.io/badge/Version-0.2.4-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.1.1](https://img.shields.io/badge/AppVersion-0.1.1-informational?style=flat-square)
+![Version: 0.3.0](https://img.shields.io/badge/Version-0.3.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.1.1](https://img.shields.io/badge/AppVersion-0.1.1-informational?style=flat-square)
 
 A Helm chart for Kubernetes
 
@@ -10,6 +10,22 @@ A Helm chart for Kubernetes
 |-----|------|---------|-------------|
 | affinity | object | `{}` | Settings for affinity |
 | autoscaling.enabled | bool | `false` |  |
+| cronjob.concurrencyPolicy | string | `"Forbid"` | Specifies how to treat concurrent executions of a Job |
+| cronjob.failedJobsHistoryLimit | int | `1` | The number of failed finished jobs to retain |
+| cronjob.job.activeDeadlineSeconds | int | `3600` | Specifies the duration in seconds relative to the startTime that the job may be continuously active before the system tries to terminate it |
+| cronjob.job.args | list | `[]` |  |
+| cronjob.job.backoffLimit | int | `3` | Specifies the number of retries before marking this job failed |
+| cronjob.job.command | list | `[]` | Entrypoint array |
+| cronjob.job.completionMode | string | `"NonIndexed"` | CompletionMode specifies how Pod completions are tracked |
+| cronjob.job.completions | int | `1` | Specifies the desired number of successfully finished pods the job should be run with |
+| cronjob.job.parallelism | int | `1` | Specifies the maximum desired number of pods the job should run at any given time |
+| cronjob.job.restartPolicy | string | `"OnFailure"` | Restart policy for all containers within the pod |
+| cronjob.job.suspend | string | `"false"` | Suspend specifies whether the Job controller should create Pods or not |
+| cronjob.job.ttlSecondsAfterFinished | int | `86400` | ttlSecondsAfterFinished limits the lifetime of a Job that has finished execution (either Complete or Failed) |
+| cronjob.schedule | string | `"0 0 * * *"` | The schedule in cron format |
+| cronjob.startingDeadlineSeconds | string | `nil` | Optional deadline in seconds for starting the job |
+| cronjob.successfulJobsHistoryLimit | int | `3` | The number of successful finished jobs to retain |
+| cronjob.suspend | string | `"false"` | This flag tells the controller to suspend subsequent executions |
 | env | object | `{}` |  |
 | extraenv | object | `{}` |  |
 | fullnameOverride | string | `""` | Overrides the clusterName and nodeGroup when used in the naming of resources. This should only be used when using a single nodeGroup, otherwise you will have name conflicts |
