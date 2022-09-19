@@ -16,11 +16,11 @@ revisionHistoryLimit: 3
 
 image:
   # -- Docker image repository
-  repository: test
+  repository: hello-world
   # -- The Kubernetes imagePullPolicy value
   pullPolicy: IfNotPresent
   # -- Overrides the image tag whose default is the chart appVersion.
-  tag: ""
+  tag: latest
 
 # -- Configuration for imagePullSecrets so that you can use a private registry for your image
 imagePullSecrets: []
