@@ -1,4 +1,4 @@
-name: Helm Release
+name: CI - Helm Release
 
 on:
   workflow_dispatch:
@@ -9,29 +9,33 @@ on:
       - 'charts/**'
       - '!charts/**/README.md'
 
-env:
-  HELM_VERSION: "v3.5.3"
-
 jobs:
   helm-release:
     runs-on: 'ubuntu-latest'
+
+    defaults:
+      run:
+        shell: sh
+
     steps:
       - name: "Checkout main branch"
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
+          persist-credentials: false
           fetch-depth: 0
 
       - name: "Configure Git"
+        shell: sh
         run: |
-          git config user.name "$GITHUB_ACTOR"
-          git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
+          git config --global user.name "$GITHUB_ACTOR"
+          git config --global user.email "$GITHUB_ACTOR@users.noreply.github.com"
 
       - name: "Install Helm"
-        uses: azure/setup-helm@v1
+        uses: azure/setup-helm@v3
         with:
-          version: "${{ env.HELM_VERSION }}"
+          version: v3.7.0
 
-      - name: Add Helm repositories
+      - name: "Add Helm repositories"
         run: |
           # Install yq tool to parse Chart.yaml to identify Helm dependencies repositories
           wget https://github.com/mikefarah/yq/releases/download/v4.21.1/yq_linux_386 -O /usr/bin/yq && chmod +x /usr/bin/yq
@@ -48,7 +52,7 @@ jobs:
           done
 
       - name: "Run chart-releaser"
-        uses: helm/chart-releaser-action@v1.2.0
+        uses: helm/chart-releaser-action@v1.4.0
         with:
           charts_dir: charts
           charts_repo_url: https://empathyco.github.io/motive-helm-charts/

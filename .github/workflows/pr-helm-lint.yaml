@@ -1,4 +1,4 @@
-name: Helm Lint
+name: CI - Helm Lint
 
 on:
   workflow_dispatch:
@@ -9,31 +9,32 @@ on:
       - 'charts/**'
       - '!charts/**/README.md'
 
-env:
-  HELM_VERSION: "v3.5.3"
-  GOMPLATE_VERSION: "v3.9.0"
-
 jobs:
   helm-lint:
     runs-on: 'ubuntu-latest'
+
+    defaults:
+      run:
+        shell: sh
+
     steps:
       - name: "Checkout current PR"
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: "Checkout main branch"
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           ref: main
           path: main
 
       - name: "Install Helm"
-        uses: azure/setup-helm@v1
+        uses: azure/setup-helm@v3
         with:
-          version: "${{ env.HELM_VERSION }}"
+          version: v3.7.0
 
       - name: "Install gomplate binary"
         run: |
-          wget -qO gomplate https://github.com/hairyhenderson/gomplate/releases/download/${{ env.GOMPLATE_VERSION }}/gomplate_linux-amd64-slim
+          wget -qO gomplate https://github.com/hairyhenderson/gomplate/releases/download/v3.9.0/gomplate_linux-amd64-slim
           chmod u+x gomplate
 
       - name: "Get Helm Charts changed"
