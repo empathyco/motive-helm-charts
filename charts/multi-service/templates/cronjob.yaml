@@ -82,6 +82,10 @@ spec:
           tolerations:
             {{- toYaml . | nindent 12 }}
           {{- end }}
+          {{- with .Values.volumes }}
+          volumes:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
       parallelism: {{ .Values.cronjob.job.parallelism }}
       completions: {{ .Values.cronjob.job.completions }}
       completionMode: {{ .Values.cronjob.job.completionMode }}
