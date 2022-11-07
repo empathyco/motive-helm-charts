@@ -46,7 +46,7 @@ spec:
             {{- end }}
             backend:
               service:
-                name: {{ include "multi-service.serviceAccountName" $ }}-{{ $svcName }}
+                name: {{ include "multi-service.fullname" $ }}-{{ $svcName }}
                 port:
                   name: {{ $svcPortName }}
           {{- end }}
