@@ -12,11 +12,15 @@ metadata:
   {{- end }}
 spec:
   scaleTargetRef:
+    kind: Deployment
     name: {{ include "multi-service.fullname" . }}
   pollingInterval: {{ .Values.keda.pollingInterval }}
   cooldownPeriod: {{ .Values.keda.cooldownPeriod }}
   minReplicaCount: {{ .Values.keda.minReplicas }}
   maxReplicaCount: {{ .Values.keda.maxReplicas }}
+  fallback:
+    failureThreshold: {{ .Values.keda.fallback.failureThreshold | default 3 }}
+    replicas: {{ .Values.keda.fallback.replicas | default .Values.keda.maxReplicas }}
   {{- with .Values.keda.triggers }}
   triggers:
     {{- toYaml . | nindent 4 }}
