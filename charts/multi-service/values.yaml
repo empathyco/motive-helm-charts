@@ -197,6 +197,9 @@ keda:
   enabled: false
   minReplicas: 1
   maxReplicas: 5
+  fallback:
+    failureThreshold: 3
+    # replicas: 5
   pollingInterval: 30
   cooldownPeriod: 300
   restoreToOriginalReplicaCount: false
