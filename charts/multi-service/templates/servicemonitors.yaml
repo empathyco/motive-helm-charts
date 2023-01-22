@@ -19,10 +19,12 @@ spec:
       path: {{ .metricsPath | default "/metrics" }}
       scheme: {{ .metricsScheme | default "http"  }}
       {{- with .relabelings }}
-      relabelings: []
+      relabelings:
+        {{- toYaml . | nindent 8 }}
       {{- end }}
       {{- with .metricRelabelings }}
-      metricRelabelings: []
+      metricRelabelings:
+        {{- toYaml . | nindent 8 }}
       {{- end }}
   jobLabel: "{{ $.Release.Name }}"
   selector:
