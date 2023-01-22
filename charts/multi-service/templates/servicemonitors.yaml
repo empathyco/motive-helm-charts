@@ -12,16 +12,22 @@ metadata:
     {{- end }}
 spec:
   endpoints:
-  - interval: {{ .scrapeInterval | default "15s" }}
-    scrapeTimeout: {{ .scrapeTimeout| default "10s"  }}
-    honorLabels: true
-    port: {{ .metricsPortName | default "metrics"  }}
-    path: {{ .metricsPath | default "/metrics" }}
-    scheme: {{ .metricsScheme | default "http"  }}
+    - interval: {{ .scrapeInterval | default "15s" }}
+      scrapeTimeout: {{ .scrapeTimeout| default "10s"  }}
+      honorLabels: true
+      port: {{ .metricsPortName | default "metrics"  }}
+      path: {{ .metricsPath | default "/metrics" }}
+      scheme: {{ .metricsScheme | default "http"  }}
+      {{- with .relabelings }}
+      relabelings: []
+      {{- end }}
+      {{- with .metricRelabelings }}
+      metricRelabelings: []
+      {{- end }}
   jobLabel: "{{ $.Release.Name }}"
   selector:
     matchLabels:
-    {{- include "multi-service.selectorLabels" $ | nindent 6 }}
+      {{- include "multi-service.selectorLabels" $ | nindent 6 }}
   namespaceSelector:
     matchNames:
       - {{ $.Release.Namespace }}
