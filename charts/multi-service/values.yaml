@@ -109,9 +109,9 @@ resources:
     memory: 256Mi
   limits: {}
     # -- CPU limits for the Deployment
-#    cpu: 500m
+    # cpu: 500m
     # -- Memory limits for the Deployment
-#    memory: 512Mi
+    # memory: 512Mi
 
 # -- Configurable nodeSelector so that you can target specific nodes for your deployment
 nodeSelector: {}
@@ -244,6 +244,10 @@ metrics:
     #   metricsPortName: "metrics"
     #   metricsPath: "/metrics"
     #   metricsScheme: "http"
+    # -- Prometheus [RelabelConfigs] to apply to samples before scraping
+    #   relabelings: []
+    # -- Prometheus [MetricRelabelConfigs] to apply to samples before ingestion
+    #   metricRelabelings: []
 
   # -- Enable and configure Prometheus Rules for the chart under this key.
   # @default -- See values.yaml
