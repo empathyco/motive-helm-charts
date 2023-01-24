@@ -340,3 +340,11 @@ cronjob:
     # -- Arguments to the entrypoint
     args: []
       # - date; echo Hello from the Kubernetes cluster
+
+slo: []
+  # - type: latency
+  #   metric: http_request_duration_seconds_bucket{status="200", le="0.25"}
+  #   metricTotal: http_request_duration_seconds_count{status="200"}
+  # - type: ratio
+  #   metric: http_requests{status=~"5.."}
+  #   metricTotal: http_requests
