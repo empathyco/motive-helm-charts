@@ -1,0 +1,31 @@
+{{ $slocounter := 0 | int }}
+{{- range .Values.slo }}
+---
+apiVersion: pyrra.dev/v1alpha1
+kind: ServiceLevelObjective
+metadata:
+  name: {{ include "multi-service.fullname" $ }}-{{ $slocounter }}
+  labels:
+    prometheus: k8s
+    role: alert-rules
+    pyrra.dev/team: {{ .team | default "platform" }}
+spec:
+  target: "{{ .target | default 99 }}"
+  window: "{{ .window | default "4w" }}"
+  description: "{{ .description | default "" }}"
+  indicator:
+{{- if eq .type "ratio" }}
+    ratio:
+      errors:
+        metric: {{ .metric }}
+      total:
+        metric: {{ .metricTotal }}
+{{- else if eq .type "latency" }}
+    latency:
+      success:
+        metric: {{ .metric }}
+      total:
+        metric: {{ .metricTotal }}
+{{ end }}
+{{ $slocounter = add1 $slocounter }}
+{{ end }}

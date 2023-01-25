@@ -1,6 +1,6 @@
 # multi-service
 
-![Version: 0.3.6](https://img.shields.io/badge/Version-0.3.6-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.1.1](https://img.shields.io/badge/AppVersion-0.1.1-informational?style=flat-square)
+![Version: 0.3.7](https://img.shields.io/badge/Version-0.3.7-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.1.1](https://img.shields.io/badge/AppVersion-0.1.1-informational?style=flat-square)
 
 A Helm chart for Kubernetes
 
@@ -9,11 +9,12 @@ A Helm chart for Kubernetes
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
 | affinity | object | `{}` | Settings for affinity |
-| autoscaling.enabled | bool | `false` |  |
+| autoscaling | object | `{"enabled":false}` | ---------- |
+| cronjob | object | `{"concurrencyPolicy":"Forbid","failedJobsHistoryLimit":1,"job":{"activeDeadlineSeconds":3600,"args":[],"backoffLimit":3,"command":[],"completionMode":"NonIndexed","completions":1,"parallelism":1,"restartPolicy":"OnFailure","suspend":"false","ttlSecondsAfterFinished":86400},"schedule":"0 0 * * *","startingDeadlineSeconds":null,"successfulJobsHistoryLimit":3,"suspend":"false"}` | -------------- |
 | cronjob.concurrencyPolicy | string | `"Forbid"` | Specifies how to treat concurrent executions of a Job |
 | cronjob.failedJobsHistoryLimit | int | `1` | The number of failed finished jobs to retain |
 | cronjob.job.activeDeadlineSeconds | int | `3600` | Specifies the duration in seconds relative to the startTime that the job may be continuously active before the system tries to terminate it |
-| cronjob.job.args | list | `[]` |  |
+| cronjob.job.args | list | `[]` | Arguments to the entrypoint |
 | cronjob.job.backoffLimit | int | `3` | Specifies the number of retries before marking this job failed |
 | cronjob.job.command | list | `[]` | Entrypoint array |
 | cronjob.job.completionMode | string | `"NonIndexed"` | CompletionMode specifies how Pod completions are tracked |
@@ -35,26 +36,16 @@ A Helm chart for Kubernetes
 | imagePullSecrets | list | `[]` | Configuration for imagePullSecrets so that you can use a private registry for your image |
 | ingress.enabled | bool | `false` | Enable Kubernetes Ingress to expose pods |
 | ingresses | object | `{}` |  |
-| initContainers | list | `[]` |  |
-| keda.apiVersion | string | `"keda.sh/v1alpha1"` |  |
-| keda.behavior | object | `{}` |  |
-| keda.cooldownPeriod | int | `300` |  |
-| keda.enabled | bool | `false` |  |
-| keda.fallback.failureThreshold | int | `3` |  |
-| keda.maxReplicas | int | `5` |  |
-| keda.minReplicas | int | `1` |  |
-| keda.pollingInterval | int | `30` |  |
-| keda.restoreToOriginalReplicaCount | bool | `false` |  |
-| keda.scaledObject.annotations | object | `{}` |  |
-| keda.triggers | list | `[]` |  |
+| initContainers | list | `[]` | -------------- |
+| keda | object | `{"apiVersion":"keda.sh/v1alpha1","behavior":{},"cooldownPeriod":300,"enabled":false,"fallback":{"failureThreshold":3},"maxReplicas":5,"minReplicas":1,"pollingInterval":30,"restoreToOriginalReplicaCount":false,"scaledObject":{"annotations":{}},"triggers":[]}` | --- |
 | kind | string | `"Deployment"` | kind of deployment (Deployment or StatefulSet) |
 | livenessProbe | object | `{}` | Enable livenessProbe |
-| maxUnavailable | int | `1` |  |
+| maxUnavailable | int | `1` | TBD |
+| metrics | object | `{"enabled":false,"prometheusRule":{"alerting":{"rules":[]},"enabled":false,"labels":{},"recording":{"rules":[]}},"serviceMonitors":{}}` | --------- |
 | metrics.enabled | bool | See values.yaml | Enable and configure a Prometheus serviceMonitor for the chart under this key. |
 | metrics.prometheusRule | object | See values.yaml | Enable and configure Prometheus Rules for the chart under this key. |
 | metrics.prometheusRule.alerting | object | `{"rules":[]}` | Configure additional alerting rules for the chart under this key |
 | metrics.prometheusRule.recording | object | `{"rules":[]}` | Configure additional recording rules for the chart under this key |
-| metrics.serviceMonitors | object | `{}` |  |
 | minReadySeconds | int | `30` | Specifies the minimum number of seconds for which a newly created Pod should be ready without any of its containers crashing, for it to be considered available |
 | nameOverride | string | `""` | Overrides the clusterName when used in the naming of resources |
 | nodeSelector | object | `{}` | Configurable nodeSelector so that you can target specific nodes for your deployment |
@@ -62,7 +53,7 @@ A Helm chart for Kubernetes
 | podLabels | object | `{}` | Configurable labels applied to all pods |
 | podSecurityContext | object | `{}` | Allows you to set the securityContext for the pod |
 | readinessProbe | object | `{}` | Enable readinessProbe |
-| replicaCount | int | `1` |  |
+| replicaCount | int | `1` | Number of replicas |
 | resources.limits | object | `{}` |  |
 | resources.requests.cpu | string | `"100m"` | CPU requests for the Deployment |
 | resources.requests.memory | string | `"256Mi"` | Memory requests for the Deployment |
@@ -71,20 +62,13 @@ A Helm chart for Kubernetes
 | serviceAccount.annotations | object | `{}` | Annotations to add to the service account |
 | serviceAccount.create | bool | `true` | Specifies whether a service account should be created |
 | serviceAccount.name | string | `""` | The name of the service account to use. If not set and create is true, a name is generated using the fullname template |
-| services[0].annotations | object | `{}` |  |
-| services[0].labels | object | `{}` |  |
-| services[0].name | string | `"example1"` |  |
-| services[0].ports.name | string | `"http"` |  |
-| services[0].ports.port | int | `80` |  |
-| services[0].ports.protocol | string | `"TCP"` |  |
-| services[0].ports.targetPort | int | `1000` |  |
-| services[0].type | string | `"ClusterIP"` |  |
-| services[1].name | string | `"example2"` |  |
-| services[1].ports.name | string | `"http"` |  |
-| services[1].ports.port | int | `90` |  |
-| services[1].ports.protocol | string | `"TCP"` |  |
-| services[1].ports.targetPort | int | `9090` |  |
-| services[1].type | string | `"ClusterIP"` |  |
+| services | list | `[{"annotations":{},"labels":{},"name":"example1","ports":{"name":"http","port":80,"protocol":"TCP","targetPort":1000},"type":"ClusterIP"},{"name":"example2","ports":{"name":"http","port":90,"protocol":"TCP","targetPort":9090},"type":"ClusterIP"}]` | ------- |
+| slo[0].metric | string | `"http_request_duration_seconds_bucket{status=\"200\", le=\"0.25\"}"` |  |
+| slo[0].metricTotal | string | `"http_request_duration_seconds_count{status=\"200\"}"` |  |
+| slo[0].type | string | `"latency"` |  |
+| slo[1].metric | string | `"http_requests{status=~\"5..\"}"` |  |
+| slo[1].metricTotal | string | `"http_requests"` |  |
+| slo[1].type | string | `"ratio"` |  |
 | startupProbe | object | `{}` | Enable startupProbe |
 | strategy | object | `{"rollingUpdate":{"maxSurge":"25%","maxUnavailable":"25%"},"type":"RollingUpdate"}` | Specifies the strategy used to replace old Pods by new ones |
 | terminationGracePeriodSeconds | int | `60` | TBD |
@@ -96,7 +80,7 @@ A Helm chart for Kubernetes
 | volumeClaimTemplates.storageClassName | string | `"gp3"` | volume storage Class |
 | volumeClaimTemplates.volumeMode | string | `"Filesystem"` |  |
 | volumeMounts | list | `[]` |  |
-| volumes | list | `[]` |  |
+| volumes | list | `[]` | ------ |
 
 ----------------------------------------------
-Autogenerated from chart metadata using [helm-docs v1.5.0](https://github.com/norwoodj/helm-docs/releases/v1.5.0)
+Autogenerated from chart metadata using [helm-docs v1.7.0](https://github.com/norwoodj/helm-docs/releases/v1.7.0)
