@@ -348,3 +348,99 @@ slo: []
   # - type: ratio
   #   metric: http_requests{status=~"5.."}
   #   metricTotal: http_requests
+
+# ----------------
+# Rollouts
+# ----------------
+
+rollouts:
+  # -- TBD
+  enabled: false
+
+  # -- Minimum number of seconds for which a newly created pod should be ready without any of its container crashing,
+  # for it to be considered available. Defaults to 0 (pod will be considered available as soon as it is ready)
+  minReadySeconds: 30
+
+  # -- The number of old ReplicaSets to retain.
+  revisionHistoryLimit: 3
+
+  # -- The rollback window provides a way to fast track deployments to previously deployed versions.
+  rollbackWindow: 3
+
+  canary:
+    # -- TBD
+    enabled: false
+
+    # -- TBD
+    canaryMetadata:
+      # -- TBD
+      annotations:
+        role: canary
+      # -- TBD
+      labels:
+        role: canary
+
+    # -- TBD
+    stableMetadata:
+      # -- TBD
+      annotations:
+        role: stable
+      # -- TBD
+      labels:
+        role: stable
+
+    # -- TBD
+    maxUnavailable: 1
+
+    # -- TBD
+    maxSurge: "20%"
+
+    # -- TBD
+    scaleDownDelaySeconds: 30
+
+    # -- TBD
+    minPodsPerReplicaSet: 1
+
+    # -- TBD
+    scaleDownDelayRevisionLimit: 1
+
+    # -- TBD
+    analysis: {}
+
+    # -- TBD
+    steps: {}
+
+    # -- TBD
+    antiAffinity: {}
+      # requiredDuringSchedulingIgnoredDuringExecution: {}
+      # preferredDuringSchedulingIgnoredDuringExecution:
+      #   weight: 1 # Between 1 - 100
+
+    # -- TBD
+    trafficRouting:
+      # -- TBD
+      nginx:
+        # -- TBD
+        enabled: true
+        # -- TBD
+        annotationPrefix: null
+        # -- TBD
+        additionalIngressAnnotations: {}
+          # canary-by-header: X-Canary
+          # canary-by-header-value: iwantsit
+
+      # -- TBD
+      smi:
+        # -- TBD
+        enabled: false
+        # -- TBD
+        rootService: ""
+        # -- TBD
+        trafficSplitName: ""
+
+    # -- TBD
+    abortScaleDownDelaySeconds: 30
+
+  blueGreen:
+    # -- TBD
+    enabled: false
