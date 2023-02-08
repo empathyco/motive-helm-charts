@@ -113,13 +113,17 @@ resources:
     # -- Memory limits for the Deployment
     # memory: 512Mi
 
-# -- Configurable nodeSelector so that you can target specific nodes for your deployment
+# -- Labels of the node(s) where the application pods are allowed to be executed in. Empty means 'any available node'
+# https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#nodeselector
 nodeSelector: {}
 
-# -- Settings for affinity
+# -- Similar to the nodeSelector, but slightly different:
+# https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#affinity-and-anti-affinity
 affinity: {}
 
-# -- Configurable tolerations
+# -- If the application needs to run on tainted nodes, the application needs to have the corresponding tolerations, so kubernetes can schedule to the tainted nodes.
+# If the application is required to run on specific nodes that are tainted, configure also nodeSelector.
+# https://kubernetes.io/docs/concepts/scheduling-eviction/taint-and-toleration/
 tolerations: []
   # - effect: NoExecute
   #   key: example/node-type
@@ -334,13 +338,17 @@ cronjob:
     restartPolicy: OnFailure
 
     # -- Entrypoint array
+    # @default -- `[]`
     command: []
       # - /bin/sh
       # - -c
     # -- Arguments to the entrypoint
+    # @default -- `[]`
     args: []
       # - date; echo Hello from the Kubernetes cluster
 
+# -- TBD
+# @default -- `[]`
 slo: []
   # - type: latency
   #   metric: http_request_duration_seconds_bucket{status="200", le="0.25"}
@@ -354,21 +362,29 @@ slo: []
 # ----------------
 
 rollouts:
-  # -- TBD
+  # -- Specify rollout enablement
+  # @default -- false
   enabled: false
+
+  # -- ScaleDown deployment after rollout migration https://argoproj.github.io/argo-rollouts/migrating/#reference-deployment-from-rollout
+  # @default -- false
+  scaleDownDeployment: false
 
   # -- Minimum number of seconds for which a newly created pod should be ready without any of its container crashing,
   # for it to be considered available. Defaults to 0 (pod will be considered available as soon as it is ready)
+  # @default -- 30
   minReadySeconds: 30
 
   # -- The number of old ReplicaSets to retain.
+  # @default -- 3
   revisionHistoryLimit: 3
 
   # -- The rollback window provides a way to fast track deployments to previously deployed versions.
+  # @default -- 3
   rollbackWindow: 3
 
   canary:
-    # -- TBD
+    # -- Specify rollout canary enablement
     enabled: false
 
     # -- TBD
@@ -395,22 +411,28 @@ rollouts:
     # -- TBD
     maxSurge: "20%"
 
-    # -- TBD
+    # -- Enable scaleDownDelaySeconds
+    # @default -- 30
     scaleDownDelaySeconds: 30
 
     # -- TBD
+    # @default -- 1
     minPodsPerReplicaSet: 1
 
     # -- TBD
+    # @default -- 1
     scaleDownDelayRevisionLimit: 1
 
     # -- TBD
+    # @default -- `{}`
     analysis: {}
 
-    # -- TBD
-    steps: {}
+    # -- Specify canary steps
+    # @default -- `[]`
+    steps: []
 
     # -- TBD
+    # @default -- `{}`
     antiAffinity: {}
       # requiredDuringSchedulingIgnoredDuringExecution: {}
       # preferredDuringSchedulingIgnoredDuringExecution:
@@ -421,10 +443,12 @@ rollouts:
       # -- TBD
       nginx:
         # -- TBD
+        # @default -- true
         enabled: true
         # -- TBD
         annotationPrefix: null
-        # -- TBD
+        # -- Specify additional Ingress Annotation for traffic routing
+        # @default -- `{}`
         additionalIngressAnnotations: {}
           # canary-by-header: X-Canary
           # canary-by-header-value: iwantsit
@@ -432,6 +456,7 @@ rollouts:
       # -- TBD
       smi:
         # -- TBD
+        # @default -- false
         enabled: false
         # -- TBD
         rootService: ""
@@ -442,5 +467,6 @@ rollouts:
     abortScaleDownDelaySeconds: 30
 
   blueGreen:
-    # -- TBD
+    # -- Specify rollout blue-green enablement
+    # @default -- false
     enabled: false
