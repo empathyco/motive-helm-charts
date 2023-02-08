@@ -9,10 +9,14 @@ spec:
   podManagementPolicy: OrderedReady
   {{- if not .Values.autoscaling.enabled  }}
   {{- if not .Values.keda.enabled }}
+  {{- if and .Values.rollouts.enabled .Values.rollouts.scaleDownDeployment }}
+  replicas: 0
+  {{- else }}
   replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  {{- end }}
+  {{- end }}
   serviceName: {{ include "multi-service.fullname" . }}
-  {{- end }}
-  {{- end }}
   revisionHistoryLimit: {{ .Values.revisionHistoryLimit | default 3 }}
   selector:
     matchLabels:
