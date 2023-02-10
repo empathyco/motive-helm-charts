@@ -138,7 +138,7 @@ spec:
           rootService: {{ $.Values.rollouts.canary.trafficRouting.smi.rootService }} # optional
           trafficSplitName: {{ $.Values.rollouts.canary.trafficRouting.smi.trafficSplitName }} # optional
         {{- end }}
-{{ $counter = add1 $counter }}
 {{- end }}
+{{ $counter = add1 $counter }}
 {{- end }}
 {{- end }}
