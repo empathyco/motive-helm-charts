@@ -6,7 +6,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Rollout
 metadata:
-  name: {{ template "multi-service.fullname" $ }}
+  name: {{ template "multi-service.fullname" $ }}-{{ $counter }}
   labels:
     {{- include "multi-service.labels" $ | nindent 4 }}
 spec:
