@@ -1,6 +1,6 @@
 # multi-service
 
-![Version: 0.4.1](https://img.shields.io/badge/Version-0.4.1-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.1.1](https://img.shields.io/badge/AppVersion-0.1.1-informational?style=flat-square)
+![Version: 0.4.2](https://img.shields.io/badge/Version-0.4.2-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.1.1](https://img.shields.io/badge/AppVersion-0.1.1-informational?style=flat-square)
 
 A Helm chart for Kubernetes
 
@@ -28,6 +28,7 @@ A Helm chart for Kubernetes
 | cronjob.successfulJobsHistoryLimit | int | `3` | The number of successful finished jobs to retain |
 | cronjob.suspend | string | `"false"` | This flag tells the controller to suspend subsequent executions |
 | env | object | `{}` |  |
+| extraEnv | object | `{}` |  |
 | extraenv | object | `{}` |  |
 | fullnameOverride | string | `""` | Overrides the clusterName and nodeGroup when used in the naming of resources. This should only be used when using a single nodeGroup, otherwise you will have name conflicts |
 | image.pullPolicy | string | `"IfNotPresent"` | The Kubernetes imagePullPolicy value |
@@ -40,7 +41,6 @@ A Helm chart for Kubernetes
 | keda | object | `{"apiVersion":"keda.sh/v1alpha1","behavior":{},"cooldownPeriod":300,"enabled":false,"fallback":{"failureThreshold":3},"maxReplicas":5,"minReplicas":1,"pollingInterval":30,"restoreToOriginalReplicaCount":false,"scaledObject":{"annotations":{}},"triggers":[]}` | --- |
 | kind | string | `"Deployment"` | kind of deployment (Deployment or StatefulSet) |
 | livenessProbe | object | `{}` | Enable livenessProbe |
-| maxUnavailable | int | `1` | TBD |
 | metrics | object | `{"enabled":false,"prometheusRule":{"alerting":{"rules":[]},"enabled":false,"labels":{},"recording":{"rules":[]}},"serviceMonitors":{}}` | --------- |
 | metrics.enabled | bool | See values.yaml | Enable and configure a Prometheus serviceMonitor for the chart under this key. |
 | metrics.prometheusRule | object | See values.yaml | Enable and configure Prometheus Rules for the chart under this key. |
@@ -49,6 +49,11 @@ A Helm chart for Kubernetes
 | minReadySeconds | int | `30` | Specifies the minimum number of seconds for which a newly created Pod should be ready without any of its containers crashing, for it to be considered available |
 | nameOverride | string | `""` | Overrides the clusterName when used in the naming of resources |
 | nodeSelector | object | `{}` | Labels of the node(s) where the application pods are allowed to be executed in. Empty means 'any available node' https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#nodeselector |
+| pdb.annotations | object | `{}` | Annotations to be added to [Pod Disruption Budget] |
+| pdb.enabled | bool | `false` | Configure [Pod Disruption Budget] |
+| pdb.labels | object | `{}` | Labels to be added to [Pod Disruption Budget] |
+| pdb.maxUnavailable | string | `nil` | Maximum number / percentage of pods that may be made unavailable |
+| pdb.minAvailable | string | `nil` | Minimum number / percentage of pods that should remain scheduled |
 | podAnnotations | object | `{}` | Configurable annotations applied to all pods |
 | podLabels | object | `{}` | Configurable labels applied to all pods |
 | podSecurityContext | object | `{}` | Allows you to set the securityContext for the pod |
@@ -58,32 +63,33 @@ A Helm chart for Kubernetes
 | resources.requests.cpu | string | `"100m"` | CPU requests for the Deployment |
 | resources.requests.memory | string | `"256Mi"` | Memory requests for the Deployment |
 | revisionHistoryLimit | int | `3` | How many old ReplicaSets to maintain for the Deployment |
-| rollouts.blueGreen.enabled | bool | false | Specify rollout blue-green enablement |
+| rollouts.blueGreen.enabled | bool | `false` | Specify rollout blue-green enablement |
 | rollouts.canary.abortScaleDownDelaySeconds | int | `30` | TBD |
 | rollouts.canary.analysis | object | `{}` | TBD |
 | rollouts.canary.antiAffinity | object | `{}` | TBD |
 | rollouts.canary.canaryMetadata.annotations | object | `{"role":"canary"}` | TBD |
 | rollouts.canary.canaryMetadata.labels | object | `{"role":"canary"}` | TBD |
+| rollouts.canary.dynamicStableScale | bool | `false` | TBD |
 | rollouts.canary.enabled | bool | `false` | Specify rollout canary enablement |
 | rollouts.canary.maxSurge | string | `"20%"` | TBD |
 | rollouts.canary.maxUnavailable | int | `1` | TBD |
-| rollouts.canary.minPodsPerReplicaSet | int | 1 | TBD |
-| rollouts.canary.scaleDownDelayRevisionLimit | int | 1 | TBD |
-| rollouts.canary.scaleDownDelaySeconds | int | 30 | Enable scaleDownDelaySeconds |
+| rollouts.canary.minPodsPerReplicaSet | int | `1` | TBD |
+| rollouts.canary.scaleDownDelayRevisionLimit | int | `1` | TBD |
+| rollouts.canary.scaleDownDelaySeconds | int | `30` | Enable scaleDownDelaySeconds |
 | rollouts.canary.stableMetadata.annotations | object | `{"role":"stable"}` | TBD |
 | rollouts.canary.stableMetadata.labels | object | `{"role":"stable"}` | TBD |
 | rollouts.canary.steps | list | `[]` | Specify canary steps |
 | rollouts.canary.trafficRouting.nginx.additionalIngressAnnotations | object | `{}` | Specify additional Ingress Annotation for traffic routing |
 | rollouts.canary.trafficRouting.nginx.annotationPrefix | string | `nil` | TBD |
 | rollouts.canary.trafficRouting.nginx.enabled | bool | true | TBD |
-| rollouts.canary.trafficRouting.smi.enabled | bool | false | TBD |
+| rollouts.canary.trafficRouting.smi.enabled | bool | `false` | TBD |
 | rollouts.canary.trafficRouting.smi.rootService | string | `""` | TBD |
 | rollouts.canary.trafficRouting.smi.trafficSplitName | string | `""` | TBD |
 | rollouts.enabled | bool | false | Specify rollout enablement |
-| rollouts.minReadySeconds | int | 30 | Minimum number of seconds for which a newly created pod should be ready without any of its container crashing, for it to be considered available. Defaults to 0 (pod will be considered available as soon as it is ready) |
+| rollouts.minReadySeconds | int | `30` | Minimum number of seconds for which a newly created pod should be ready without any of its container crashing, for it to be considered available. Defaults to 0 (pod will be considered available as soon as it is ready) |
 | rollouts.revisionHistoryLimit | int | 3 | The number of old ReplicaSets to retain. |
-| rollouts.rollbackWindow | int | 3 | The rollback window provides a way to fast track deployments to previously deployed versions. |
-| rollouts.scaleDownDeployment | bool | false | ScaleDown deployment after rollout migration https://argoproj.github.io/argo-rollouts/migrating/#reference-deployment-from-rollout |
+| rollouts.rollbackWindow | int | `3` | The rollback window provides a way to fast track deployments to previously deployed versions. |
+| rollouts.scaleDownDeployment | bool | `false` | ScaleDown deployment after rollout migration https://argoproj.github.io/argo-rollouts/migrating/#reference-deployment-from-rollout |
 | securityContext | object | `{}` | Allows you to set the securityContext for the container |
 | serviceAccount.annotations | object | `{}` | Annotations to add to the service account |
 | serviceAccount.create | bool | `true` | Specifies whether a service account should be created |

@@ -1,4 +1,4 @@
-{{- if .Values.maxUnavailable }}
+{{- if .Values.pdb.enabled }}
 {{- if .Capabilities.APIVersions.Has "policy/v1" -}}
 apiVersion: policy/v1
 {{- else }}
@@ -9,13 +9,22 @@ metadata:
   name: "{{ include "multi-service.serviceAccountName" . }}"
   labels:
     {{- include "multi-service.labels" . | nindent 4 }}
-  {{- with .Values.serviceAccount.annotations }}
+    {{- with .Values.pdb.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  {{- with .Values.pdb.annotations }}
   annotations:
     {{- toYaml . | nindent 4 }}
   {{- end }}
 spec:
-  maxUnavailable: {{ .Values.maxUnavailable }}
+  {{- if .Values.pdb.minAvailable }}
+  minAvailable: {{ .Values.pdb.minAvailable }}
+  {{- else if .Values.pdb.maxUnavailable }}
+  maxUnavailable: {{ .Values.pdb.maxUnavailable }}
+  {{- else }}
+  minAvailable: 0
+  {{- end }}
   selector:
     matchLabels:
-      app.kubernetes.io/name: "{{ include "multi-service.name" . }}"
+      {{- include "multi-service.selectorLabels" . | nindent 6 }}
 {{- end }}

@@ -44,6 +44,8 @@ spec:
       # Reference to a service which the controller will update to select stable pods. Required for traffic routing.
       stableService: {{ include "multi-service.fullname" $ }}-{{ $svcName }}
 
+      dynamicStableScale: {{ $.Values.rollouts.canary.dynamicStableScale }}
+
       # Metadata which will be attached to the canary pods. This metadata will only exist during an update, since there
       # are no canary pods in a fully promoted rollout.
       canaryMetadata:
@@ -90,13 +92,17 @@ spec:
 
       # Background analysis to run during a rollout update.
       # Skipped upon initial deploy of a rollout.
+      {{- if $.Values.rollouts.canary.analysis }}
       analysis:
         {{- toYaml $.Values.rollouts.canary.analysis | nindent 8 }}
+      {{- end }}
 
       # Steps define sequence of steps to take during an update of the canary.
       # Skipped upon initial deploy of a rollout.
+      {{- if $.Values.rollouts.canary.steps }}
       steps:
         {{- toYaml $.Values.rollouts.canary.steps | nindent 8 }}
+      {{- end }}
 
       # Anti-affinity configuration between desired and previous ReplicaSet.
       # Only one must be specified.
