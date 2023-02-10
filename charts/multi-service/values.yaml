@@ -417,10 +417,6 @@ rollouts:
         role: stable
 
     # -- TBD
-    # @default -- `false`
-    dynamicStableScale: false
-
-    # -- TBD
     # @default -- `1`
     maxUnavailable: 1
 
@@ -428,9 +424,16 @@ rollouts:
     # @default -- `"20%"`
     maxSurge: "20%"
 
-    # -- Enable scaleDownDelaySeconds
+    # -- TBD
+    # @default -- `false`
+    dynamicStableScale: false
+
+    # -- Enable scaleDownDelaySeconds. Ignored if dynamicStableScale=true
     # @default -- `30`
     scaleDownDelaySeconds: 30
+
+    # -- TBD
+    abortScaleDownDelaySeconds: 30
 
     # -- TBD
     # @default -- `1`
@@ -479,9 +482,6 @@ rollouts:
         rootService: ""
         # -- TBD
         trafficSplitName: ""
-
-    # -- TBD
-    abortScaleDownDelaySeconds: 30
 
   blueGreen:
     # -- Specify rollout blue-green enablement

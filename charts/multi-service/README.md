@@ -1,6 +1,6 @@
 # multi-service
 
-![Version: 0.4.2](https://img.shields.io/badge/Version-0.4.2-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.1.1](https://img.shields.io/badge/AppVersion-0.1.1-informational?style=flat-square)
+![Version: 0.4.3](https://img.shields.io/badge/Version-0.4.3-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.1.1](https://img.shields.io/badge/AppVersion-0.1.1-informational?style=flat-square)
 
 A Helm chart for Kubernetes
 
@@ -75,7 +75,7 @@ A Helm chart for Kubernetes
 | rollouts.canary.maxUnavailable | int | `1` | TBD |
 | rollouts.canary.minPodsPerReplicaSet | int | `1` | TBD |
 | rollouts.canary.scaleDownDelayRevisionLimit | int | `1` | TBD |
-| rollouts.canary.scaleDownDelaySeconds | int | `30` | Enable scaleDownDelaySeconds |
+| rollouts.canary.scaleDownDelaySeconds | int | `30` | Enable scaleDownDelaySeconds. Ignored if dynamicStableScale=true |
 | rollouts.canary.stableMetadata.annotations | object | `{"role":"stable"}` | TBD |
 | rollouts.canary.stableMetadata.labels | object | `{"role":"stable"}` | TBD |
 | rollouts.canary.steps | list | `[]` | Specify canary steps |
