@@ -44,8 +44,6 @@ spec:
       # Reference to a service which the controller will update to select stable pods. Required for traffic routing.
       stableService: {{ include "multi-service.fullname" $ }}-{{ $svcName }}
 
-      dynamicStableScale: {{ $.Values.rollouts.canary.dynamicStableScale }}
-
       # Metadata which will be attached to the canary pods. This metadata will only exist during an update, since there
       # are no canary pods in a fully promoted rollout.
       canaryMetadata:
@@ -77,11 +75,19 @@ spec:
       # total number of pods running at any time during the update is at most 130% of original pods.
       maxSurge: {{ $.Values.rollouts.canary.maxSurge }}
 
+      dynamicStableScale: {{ $.Values.rollouts.canary.dynamicStableScale }}
+
       # Adds a delay before scaling down the previous ReplicaSet when the canary strategy is used with traffic
       # routing (default 30 seconds). A delay in scaling down the previous ReplicaSet is needed after switching
       # the stable service selector to point to the new ReplicaSet, in order to give time for traffic providers
       # to re-target the new pods. This value is ignored with basic, replica-weighted canary without traffic routing.
+      {{- if not $.Values.rollouts.canary.dynamicStableScale }}
       scaleDownDelaySeconds: {{ $.Values.rollouts.canary.scaleDownDelaySeconds }}
+      {{- end }}
+
+      # Add a delay in second before scaling down the canary pods when update is aborted for canary strategy with
+      # traffic routing (not applicable for basic canary). 0 means canary pods are not scaled down.
+      abortScaleDownDelaySeconds: {{ $.Values.rollouts.canary.abortScaleDownDelaySeconds }}
 
       # The minimum number of pods that will be requested for each ReplicaSet when using traffic routed canary.
       # This is to ensure high availability of each ReplicaSet.
@@ -131,10 +137,6 @@ spec:
           rootService: {{ $.Values.rollouts.canary.trafficRouting.smi.rootService }} # optional
           trafficSplitName: {{ $.Values.rollouts.canary.trafficRouting.smi.trafficSplitName }} # optional
         {{- end }}
-
-      # Add a delay in second before scaling down the canary pods when update is aborted for canary strategy with
-      # traffic routing (not applicable for basic canary). 0 means canary pods are not scaled down.
-      abortScaleDownDelaySeconds: {{ $.Values.rollouts.canary.abortScaleDownDelaySeconds }}
 {{ $counter = add1 $counter }}
 {{- end }}
 {{- end }}
