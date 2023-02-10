@@ -1,6 +1,7 @@
 {{- if and .Values.rollouts.enabled .Values.rollouts.canary.enabled (has .Values.kind (list "Deployment" "StatefulSet")) .Values.ingress.enabled }}
 {{ $counter := 0 | int }}
 {{- range .Values.ingresses }}
+{{- if .rolloutEnabled }}
 {{- $svcName := .backend.service.name -}}
 ---
 apiVersion: argoproj.io/v1alpha1
@@ -138,5 +139,6 @@ spec:
           trafficSplitName: {{ $.Values.rollouts.canary.trafficRouting.smi.trafficSplitName }} # optional
         {{- end }}
 {{ $counter = add1 $counter }}
+{{- end }}
 {{- end }}
 {{- end }}
