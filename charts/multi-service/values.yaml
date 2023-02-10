@@ -141,6 +141,7 @@ env: {}
   #       key: SECRET_KEY
 
 extraenv: {}
+extraEnv: {}
   # - name: NAME
   #   valueFrom:
   #     secretKeyRef:
@@ -176,8 +177,17 @@ services:
 # Pod Disruption Budget
 # ----------------------
 
-# -- TBD
-maxUnavailable: 1
+pdb:
+  # -- Configure [Pod Disruption Budget]
+  enabled: false
+  # -- Minimum number / percentage of pods that should remain scheduled
+  minAvailable: # 1
+  # -- Maximum number / percentage of pods that may be made unavailable
+  maxUnavailable: # 1
+  # -- Labels to be added to [Pod Disruption Budget]
+  labels: {}
+  # -- Annotations to be added to [Pod Disruption Budget]
+  annotations: {}
 
 
 # ------------
@@ -367,12 +377,12 @@ rollouts:
   enabled: false
 
   # -- ScaleDown deployment after rollout migration https://argoproj.github.io/argo-rollouts/migrating/#reference-deployment-from-rollout
-  # @default -- false
+  # @default -- `false`
   scaleDownDeployment: false
 
   # -- Minimum number of seconds for which a newly created pod should be ready without any of its container crashing,
   # for it to be considered available. Defaults to 0 (pod will be considered available as soon as it is ready)
-  # @default -- 30
+  # @default -- `30`
   minReadySeconds: 30
 
   # -- The number of old ReplicaSets to retain.
@@ -380,11 +390,12 @@ rollouts:
   revisionHistoryLimit: 3
 
   # -- The rollback window provides a way to fast track deployments to previously deployed versions.
-  # @default -- 3
+  # @default -- `3`
   rollbackWindow: 3
 
   canary:
     # -- Specify rollout canary enablement
+    # @default -- `false`
     enabled: false
 
     # -- TBD
@@ -406,21 +417,27 @@ rollouts:
         role: stable
 
     # -- TBD
+    # @default -- `false`
+    dynamicStableScale: false
+
+    # -- TBD
+    # @default -- `1`
     maxUnavailable: 1
 
     # -- TBD
+    # @default -- `"20%"`
     maxSurge: "20%"
 
     # -- Enable scaleDownDelaySeconds
-    # @default -- 30
+    # @default -- `30`
     scaleDownDelaySeconds: 30
 
     # -- TBD
-    # @default -- 1
+    # @default -- `1`
     minPodsPerReplicaSet: 1
 
     # -- TBD
-    # @default -- 1
+    # @default -- `1`
     scaleDownDelayRevisionLimit: 1
 
     # -- TBD
@@ -456,7 +473,7 @@ rollouts:
       # -- TBD
       smi:
         # -- TBD
-        # @default -- false
+        # @default -- `false`
         enabled: false
         # -- TBD
         rootService: ""
@@ -468,5 +485,5 @@ rollouts:
 
   blueGreen:
     # -- Specify rollout blue-green enablement
-    # @default -- false
+    # @default -- `false`
     enabled: false

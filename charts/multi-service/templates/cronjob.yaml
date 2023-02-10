@@ -43,12 +43,15 @@ spec:
                 {{- toYaml .Values.securityContext | nindent 16 }}
               image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
               imagePullPolicy: {{ .Values.image.pullPolicy }}
-              {{- if or .Values.env .Values.extraenv }}
+              {{- if or .Values.env .Values.extraenv  .Values.extraEnv }}
               env:
                 {{- with .Values.env }}
                 {{- toYaml . | nindent 16 }}
                 {{- end }}
                 {{- with .Values.extraenv  }}
+                {{- toYaml . | nindent 16 }}
+                {{- end }}
+                {{- with .Values.extraEnv  }}
                 {{- toYaml . | nindent 16 }}
                 {{- end }}
               {{- end }}
