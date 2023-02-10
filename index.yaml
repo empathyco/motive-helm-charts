@@ -3,6 +3,16 @@ entries:
   multi-service:
   - apiVersion: v2
     appVersion: 0.1.1
+    created: "2023-02-10T08:51:40.054892942Z"
+    description: A Helm chart for Kubernetes
+    digest: 793b482951c0615e8f532961ab04a5265be3fafe133e5960bccfd3e4dafc0ae8
+    name: multi-service
+    type: application
+    urls:
+    - https://github.com/empathyco/motive-helm-charts/releases/download/multi-service-0.4.6/multi-service-0.4.6.tgz
+    version: 0.4.6
+  - apiVersion: v2
+    appVersion: 0.1.1
     created: "2023-02-10T08:46:22.560781136Z"
     description: A Helm chart for Kubernetes
     digest: 2f12d120cfbc367b6b5e287a3384fc15a9baf93768bde727c65fa2694d15ee3f
@@ -131,4 +141,4 @@ entries:
     urls:
     - https://github.com/empathyco/motive-helm-charts/releases/download/multi-service-0.3.1/multi-service-0.3.1.tgz
     version: 0.3.1
-generated: "2023-02-10T08:46:22.56089574Z"
+generated: "2023-02-10T08:51:40.055082145Z"
