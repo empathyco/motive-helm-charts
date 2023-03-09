@@ -487,3 +487,28 @@ rollouts:
     # -- Specify rollout blue-green enablement
     # @default -- `false`
     enabled: false
+
+# -----------------
+# External Secrets
+# -----------------
+
+externalSecrets:
+  # -- Specify external secrets enablement
+  # @default -- false
+  enabled: false
+
+  # -- TBD
+  refreshInterval: 1h
+
+  secretStore:
+    # -- TBD
+    create: false
+    # -- TBD
+    name: ""
+    # -- TBD
+    kind: ""
+    # -- TBD
+    provider: {}
+
+  # -- TBD
+  data: []

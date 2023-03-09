@@ -1,6 +1,6 @@
 # multi-service
 
-![Version: 0.4.6](https://img.shields.io/badge/Version-0.4.6-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.1.1](https://img.shields.io/badge/AppVersion-0.1.1-informational?style=flat-square)
+![Version: 0.5.0](https://img.shields.io/badge/Version-0.5.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.1.1](https://img.shields.io/badge/AppVersion-0.1.1-informational?style=flat-square)
 
 A Helm chart for Kubernetes
 
@@ -28,6 +28,13 @@ A Helm chart for Kubernetes
 | cronjob.successfulJobsHistoryLimit | int | `3` | The number of successful finished jobs to retain |
 | cronjob.suspend | string | `"false"` | This flag tells the controller to suspend subsequent executions |
 | env | object | `{}` |  |
+| externalSecrets.data | list | `[]` | TBD |
+| externalSecrets.enabled | bool | false | Specify external secrets enablement |
+| externalSecrets.refreshInterval | string | `"1h"` | TBD |
+| externalSecrets.secretStore.create | bool | `false` | TBD |
+| externalSecrets.secretStore.kind | string | `""` | TBD |
+| externalSecrets.secretStore.name | string | `""` | TBD |
+| externalSecrets.secretStore.provider | object | `{}` | TBD |
 | extraEnv | object | `{}` |  |
 | extraenv | object | `{}` |  |
 | fullnameOverride | string | `""` | Overrides the clusterName and nodeGroup when used in the naming of resources. This should only be used when using a single nodeGroup, otherwise you will have name conflicts |
