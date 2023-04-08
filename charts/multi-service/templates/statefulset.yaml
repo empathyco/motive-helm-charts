@@ -7,13 +7,11 @@ metadata:
     {{- include "multi-service.labels" . | nindent 4 }}
 spec:
   podManagementPolicy: OrderedReady
-  {{- if not .Values.autoscaling.enabled  }}
-  {{- if not .Values.keda.enabled }}
   {{- if and .Values.rollouts.enabled .Values.rollouts.scaleDownDeployment }}
   replicas: 0
   {{- else }}
+  {{- if and (not .Values.autoscaling.enabled) (not .Values.keda.enabled) }}
   replicas: {{ .Values.replicaCount }}
-  {{- end }}
   {{- end }}
   {{- end }}
   serviceName: {{ include "multi-service.fullname" . }}
