@@ -6,13 +6,11 @@ metadata:
   labels:
     {{- include "multi-service.labels" . | nindent 4 }}
 spec:
-  {{- if not .Values.autoscaling.enabled  }}
-  {{- if not .Values.keda.enabled }}
   {{- if and .Values.rollouts.enabled .Values.rollouts.scaleDownDeployment }}
   replicas: 0
   {{- else }}
+  {{- if and (not .Values.autoscaling.enabled) (not .Values.keda.enabled) }}
   replicas: {{ .Values.replicaCount }}
-  {{- end }}
   {{- end }}
   {{- end }}
   minReadySeconds: {{ .Values.minReadySeconds | default 30 }}
