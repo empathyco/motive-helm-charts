@@ -1,4 +1,4 @@
-{{- if and .Values.keda.enabled -}}
+{{- if and .Values.keda.enabled (has .Values.kind (list "Deployment" "StatefulSet")) -}}
 # https://keda.sh/docs/
 apiVersion: {{ .Values.keda.apiVersion }}
 kind: ScaledObject
@@ -12,8 +12,21 @@ metadata:
   {{- end }}
 spec:
   scaleTargetRef:
-    kind: Deployment
+    {{- if and .Values.rollouts.enabled .Values.rollouts.canary.enabled .Values.ingress.enabled }}
+    apiVersion: argoproj.io/v1alpha1
+    kind: Rollout
+    {{- $counter := 0 | int }}
+    {{- range .Values.ingresses }}
+    {{- if .rolloutEnabled }}
+    name: {{ template "multi-service.fullname" $ }}-{{ $counter }}
+    {{- end }}
+    {{- $counter = add1 $counter }}
+    {{- end }}
+    {{- else }}
+    apiVersion: apps/v1
+    kind: {{ .Values.kind }}
     name: {{ include "multi-service.fullname" . }}
+    {{- end }}
   pollingInterval: {{ .Values.keda.pollingInterval }}
   cooldownPeriod: {{ .Values.keda.cooldownPeriod }}
   minReplicaCount: {{ .Values.keda.minReplicas }}
