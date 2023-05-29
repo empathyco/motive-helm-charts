@@ -10,7 +10,7 @@ fullnameOverride: ""
 # -- Number of replicas
 replicaCount: 1
 # -- kind of deployment (Deployment or StatefulSet)
-kind: Deployment
+kind: CronJob
 # -- How many old ReplicaSets to maintain for the Deployment
 revisionHistoryLimit: 3
 
@@ -133,21 +133,21 @@ tolerations: []
 # -- Instruct the kube-scheduler how to place each incoming Pod in relation to the existing Pods across your cluster
 topologySpreadConstraints: []
 
-env: {}
-  # - name: NAME
-  #   valueFrom:
-  #     secretKeyRef:
-  #       name: KEY_NAME
-  #       key: SECRET_KEY
+env: []
+  # FOO: BAR
+  # BAR: FOO
 
-extraenv: {}
-extraEnv: {}
-  # - name: NAME
-  #   valueFrom:
-  #     secretKeyRef:
-  #       name: KEY_NAME
-  #       key: SECRET_KEY
-
+envFrom: []
+  # FOOBAR:
+  #   - valueFrom:
+  #       secretKeyRef:
+  #         name: FOOBAR
+  #         key: FOOBAR
+  # TEST:
+  #   - valueFrom:
+  #       secretKeyRef:
+  #         name: KEY_NAME_TEST
+  #         key: SECRET_KEY_TEST
 
 # ---------
 # Services
