@@ -9,8 +9,8 @@ fullnameOverride: ""
 
 # -- Number of replicas
 replicaCount: 1
-# -- kind of deployment (Deployment or StatefulSet)
-kind: CronJob
+# -- kind of deployment (Deployment, Cronjob or StatefulSet)
+kind: Deployment
 # -- How many old ReplicaSets to maintain for the Deployment
 revisionHistoryLimit: 3
 

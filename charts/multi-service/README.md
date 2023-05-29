@@ -1,6 +1,6 @@
 # multi-service
 
-![Version: 0.5.2](https://img.shields.io/badge/Version-0.5.2-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.1.1](https://img.shields.io/badge/AppVersion-0.1.1-informational?style=flat-square)
+![Version: 1.0.0](https://img.shields.io/badge/Version-1.0.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 1.0.0](https://img.shields.io/badge/AppVersion-1.0.0-informational?style=flat-square)
 
 A Helm chart for Kubernetes
 
@@ -27,7 +27,9 @@ A Helm chart for Kubernetes
 | cronjob.startingDeadlineSeconds | string | `nil` | Optional deadline in seconds for starting the job |
 | cronjob.successfulJobsHistoryLimit | int | `3` | The number of successful finished jobs to retain |
 | cronjob.suspend | string | `"false"` | This flag tells the controller to suspend subsequent executions |
-| env | object | `{}` |  |
+| env | list | `[]` |  |
+| envFrom | list | `[]` |  |
+| externalSecrets | object | `{"data":[],"enabled":false,"refreshInterval":"1h","secretStore":{"create":false,"kind":"","name":"","provider":{}}}` | --------------- |
 | externalSecrets.data | list | `[]` | TBD |
 | externalSecrets.enabled | bool | false | Specify external secrets enablement |
 | externalSecrets.refreshInterval | string | `"1h"` | TBD |
@@ -35,8 +37,6 @@ A Helm chart for Kubernetes
 | externalSecrets.secretStore.kind | string | `""` | TBD |
 | externalSecrets.secretStore.name | string | `""` | TBD |
 | externalSecrets.secretStore.provider | object | `{}` | TBD |
-| extraEnv | object | `{}` |  |
-| extraenv | object | `{}` |  |
 | fullnameOverride | string | `""` | Overrides the clusterName and nodeGroup when used in the naming of resources. This should only be used when using a single nodeGroup, otherwise you will have name conflicts |
 | image.pullPolicy | string | `"IfNotPresent"` | The Kubernetes imagePullPolicy value |
 | image.repository | string | `"hello-world"` | Docker image repository |
@@ -46,7 +46,7 @@ A Helm chart for Kubernetes
 | ingresses | object | `{}` |  |
 | initContainers | list | `[]` | -------------- |
 | keda | object | `{"apiVersion":"keda.sh/v1alpha1","behavior":{},"cooldownPeriod":300,"enabled":false,"fallback":{"failureThreshold":3},"maxReplicas":5,"minReplicas":1,"pollingInterval":30,"restoreToOriginalReplicaCount":false,"scaledObject":{"annotations":{}},"triggers":[]}` | --- |
-| kind | string | `"Deployment"` | kind of deployment (Deployment or StatefulSet) |
+| kind | string | `"Deployment"` | kind of deployment (Deployment, Cronjob or StatefulSet) |
 | livenessProbe | object | `{}` | Enable livenessProbe |
 | metrics | object | `{"enabled":false,"prometheusRule":{"alerting":{"rules":[]},"enabled":false,"labels":{},"recording":{"rules":[]}},"serviceMonitors":{}}` | --------- |
 | metrics.enabled | bool | See values.yaml | Enable and configure a Prometheus serviceMonitor for the chart under this key. |
@@ -56,6 +56,7 @@ A Helm chart for Kubernetes
 | minReadySeconds | int | `30` | Specifies the minimum number of seconds for which a newly created Pod should be ready without any of its containers crashing, for it to be considered available |
 | nameOverride | string | `""` | Overrides the clusterName when used in the naming of resources |
 | nodeSelector | object | `{}` | Labels of the node(s) where the application pods are allowed to be executed in. Empty means 'any available node' https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#nodeselector |
+| pdb | object | `{"annotations":{},"enabled":false,"labels":{},"maxUnavailable":null,"minAvailable":null}` | -------------------- |
 | pdb.annotations | object | `{}` | Annotations to be added to [Pod Disruption Budget] |
 | pdb.enabled | bool | `false` | Configure [Pod Disruption Budget] |
 | pdb.labels | object | `{}` | Labels to be added to [Pod Disruption Budget] |
@@ -70,10 +71,12 @@ A Helm chart for Kubernetes
 | resources.requests.cpu | string | `"100m"` | CPU requests for the Deployment |
 | resources.requests.memory | string | `"256Mi"` | Memory requests for the Deployment |
 | revisionHistoryLimit | int | `3` | How many old ReplicaSets to maintain for the Deployment |
+| rollouts | object | `{"blueGreen":{"enabled":false},"canary":{"abortScaleDownDelaySeconds":30,"analysis":{},"antiAffinity":{},"canaryMetadata":{"annotations":{"role":"canary"},"labels":{"role":"canary"}},"dynamicStableScale":false,"enabled":false,"maxSurge":"20%","maxUnavailable":1,"minPodsPerReplicaSet":1,"scaleDownDelayRevisionLimit":1,"scaleDownDelaySeconds":30,"stableMetadata":{"annotations":{"role":"stable"},"labels":{"role":"stable"}},"steps":[],"trafficRouting":{"nginx":{"additionalIngressAnnotations":{},"annotationPrefix":null,"enabled":true},"smi":{"enabled":false,"rootService":"","trafficSplitName":""}}},"enabled":false,"minReadySeconds":30,"revisionHistoryLimit":3,"rollbackWindow":3,"scaleDownDeployment":false}` | -------------- |
 | rollouts.blueGreen.enabled | bool | `false` | Specify rollout blue-green enablement |
 | rollouts.canary.abortScaleDownDelaySeconds | int | `30` | TBD |
 | rollouts.canary.analysis | object | `{}` | TBD |
 | rollouts.canary.antiAffinity | object | `{}` | TBD |
+| rollouts.canary.canaryMetadata | object | `{"annotations":{"role":"canary"},"labels":{"role":"canary"}}` | TBD |
 | rollouts.canary.canaryMetadata.annotations | object | `{"role":"canary"}` | TBD |
 | rollouts.canary.canaryMetadata.labels | object | `{"role":"canary"}` | TBD |
 | rollouts.canary.dynamicStableScale | bool | `false` | TBD |
@@ -83,12 +86,16 @@ A Helm chart for Kubernetes
 | rollouts.canary.minPodsPerReplicaSet | int | `1` | TBD |
 | rollouts.canary.scaleDownDelayRevisionLimit | int | `1` | TBD |
 | rollouts.canary.scaleDownDelaySeconds | int | `30` | Enable scaleDownDelaySeconds. Ignored if dynamicStableScale=true |
+| rollouts.canary.stableMetadata | object | `{"annotations":{"role":"stable"},"labels":{"role":"stable"}}` | TBD |
 | rollouts.canary.stableMetadata.annotations | object | `{"role":"stable"}` | TBD |
 | rollouts.canary.stableMetadata.labels | object | `{"role":"stable"}` | TBD |
 | rollouts.canary.steps | list | `[]` | Specify canary steps |
+| rollouts.canary.trafficRouting | object | `{"nginx":{"additionalIngressAnnotations":{},"annotationPrefix":null,"enabled":true},"smi":{"enabled":false,"rootService":"","trafficSplitName":""}}` | TBD |
+| rollouts.canary.trafficRouting.nginx | object | `{"additionalIngressAnnotations":{},"annotationPrefix":null,"enabled":true}` | TBD |
 | rollouts.canary.trafficRouting.nginx.additionalIngressAnnotations | object | `{}` | Specify additional Ingress Annotation for traffic routing |
 | rollouts.canary.trafficRouting.nginx.annotationPrefix | string | `nil` | TBD |
 | rollouts.canary.trafficRouting.nginx.enabled | bool | true | TBD |
+| rollouts.canary.trafficRouting.smi | object | `{"enabled":false,"rootService":"","trafficSplitName":""}` | TBD |
 | rollouts.canary.trafficRouting.smi.enabled | bool | `false` | TBD |
 | rollouts.canary.trafficRouting.smi.rootService | string | `""` | TBD |
 | rollouts.canary.trafficRouting.smi.trafficSplitName | string | `""` | TBD |
@@ -102,12 +109,7 @@ A Helm chart for Kubernetes
 | serviceAccount.create | bool | `true` | Specifies whether a service account should be created |
 | serviceAccount.name | string | `""` | The name of the service account to use. If not set and create is true, a name is generated using the fullname template |
 | services | list | `[{"annotations":{},"labels":{},"name":"example1","ports":{"name":"http","port":80,"protocol":"TCP","targetPort":1000},"type":"ClusterIP"},{"name":"example2","ports":{"name":"http","port":90,"protocol":"TCP","targetPort":9090},"type":"ClusterIP"}]` | ------- |
-| slo[0].metric | string | `"http_request_duration_seconds_bucket{status=\"200\", le=\"0.25\"}"` |  |
-| slo[0].metricTotal | string | `"http_request_duration_seconds_count{status=\"200\"}"` |  |
-| slo[0].type | string | `"latency"` |  |
-| slo[1].metric | string | `"http_requests{status=~\"5..\"}"` |  |
-| slo[1].metricTotal | string | `"http_requests"` |  |
-| slo[1].type | string | `"ratio"` |  |
+| slo | list | `[]` | TBD |
 | startupProbe | object | `{}` | Enable startupProbe |
 | strategy | object | `{"rollingUpdate":{"maxSurge":"25%","maxUnavailable":"25%"},"type":"RollingUpdate"}` | Specifies the strategy used to replace old Pods by new ones |
 | terminationGracePeriodSeconds | int | `60` | TBD |
@@ -122,4 +124,4 @@ A Helm chart for Kubernetes
 | volumes | list | `[]` | ------ |
 
 ----------------------------------------------
-Autogenerated from chart metadata using [helm-docs v1.11.0](https://github.com/norwoodj/helm-docs/releases/v1.11.0)
+Autogenerated from chart metadata using [helm-docs v1.7.0](https://github.com/norwoodj/helm-docs/releases/v1.7.0)
