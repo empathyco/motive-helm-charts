@@ -1,13 +1,8 @@
 {{- if and .Values.rollouts.enabled .Values.rollouts.canary.enabled (has .Values.kind (list "Deployment" "StatefulSet")) .Values.ingress.enabled }}
-{{ $counter := 0 | int }}
-{{- range .Values.ingresses }}
-{{- if .rolloutEnabled }}
-{{- $svcName := .backend.service.name -}}
----
 apiVersion: argoproj.io/v1alpha1
 kind: Rollout
 metadata:
-  name: {{ template "multi-service.fullname" $ }}-{{ $counter }}
+  name: {{ template "multi-service.fullname" $ }}
   labels:
     {{- include "multi-service.labels" $ | nindent 4 }}
 spec:
@@ -39,11 +34,13 @@ spec:
   strategy:
     # Canary update strategy
     canary:
+      {{- with (first .Values.services )}}
       # Reference to a service which the controller will update to select canary pods. Required for traffic routing.
-      canaryService: {{ include "multi-service.fullname" $ }}-{{ $svcName }}-canary
+      canaryService: {{ include "multi-service.fullname" $ }}-{{ .name }}-canary
 
       # Reference to a service which the controller will update to select stable pods. Required for traffic routing.
-      stableService: {{ include "multi-service.fullname" $ }}-{{ $svcName }}
+      stableService: {{ include "multi-service.fullname" $ }}-{{ .name }}
+      {{- end }}
 
       # Metadata which will be attached to the canary pods. This metadata will only exist during an update, since there
       # are no canary pods in a fully promoted rollout.
@@ -124,7 +121,13 @@ spec:
         {{- if $.Values.rollouts.canary.trafficRouting.nginx.enabled }}
         # NGINX Ingress Controller routing configuration
         nginx:
-          stableIngress: {{ include "multi-service.fullname" $ }}-{{ $svcName }}-{{ $counter }} # required
+          stableIngresses:
+            {{ $counter := 0 | int }}
+            {{- range .Values.ingresses }}
+            {{- $svcName := .backend.service.name -}}
+            - {{ include "multi-service.fullname" $ }}-{{ $svcName }}-{{ $counter }} # required
+            {{- $counter = add1 $counter }}
+            {{- end }}
           annotationPrefix: {{ $.Values.rollouts.canary.trafficRouting.nginx.annotationPrefix }} # optional
           {{- if $.Values.rollouts.canary.trafficRouting.nginx.additionalIngressAnnotations }}
           additionalIngressAnnotations: # optional
@@ -138,7 +141,4 @@ spec:
           rootService: {{ $.Values.rollouts.canary.trafficRouting.smi.rootService }} # optional
           trafficSplitName: {{ $.Values.rollouts.canary.trafficRouting.smi.trafficSplitName }} # optional
         {{- end }}
-{{- end }}
-{{ $counter = add1 $counter }}
-{{- end }}
 {{- end }}
