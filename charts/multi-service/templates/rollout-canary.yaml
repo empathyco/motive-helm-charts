@@ -121,12 +121,12 @@ spec:
         {{- if $.Values.rollouts.canary.trafficRouting.nginx.enabled }}
         # NGINX Ingress Controller routing configuration
         nginx:
-          stableIngresses:
+          stableIngresses: # required
             {{ $counter := 0 | int }}
             {{- range .Values.ingresses }}
             {{- $svcName := .backend.service.name -}}
-            - {{ include "multi-service.fullname" $ }}-{{ $svcName }}-{{ $counter }} # required
-            {{- $counter = add1 $counter }}
+            - {{ include "multi-service.fullname" $ }}-{{ $svcName }}-{{ $counter }}
+            {{ $counter = add1 $counter }}
             {{- end }}
           annotationPrefix: {{ $.Values.rollouts.canary.trafficRouting.nginx.annotationPrefix }} # optional
           {{- if $.Values.rollouts.canary.trafficRouting.nginx.additionalIngressAnnotations }}
