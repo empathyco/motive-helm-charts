@@ -15,13 +15,7 @@ spec:
     {{- if and .Values.rollouts.enabled .Values.rollouts.canary.enabled .Values.ingress.enabled }}
     apiVersion: argoproj.io/v1alpha1
     kind: Rollout
-    {{- $counter := 0 | int }}
-    {{- range .Values.ingresses }}
-    {{- if .rolloutEnabled }}
-    name: {{ template "multi-service.fullname" $ }}-{{ $counter }}
-    {{- end }}
-    {{- $counter = add1 $counter }}
-    {{- end }}
+    name: {{ template "multi-service.fullname" $ }}
     {{- else }}
     apiVersion: apps/v1
     kind: {{ .Values.kind }}
