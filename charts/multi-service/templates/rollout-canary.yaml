@@ -2,9 +2,9 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Rollout
 metadata:
-  name: {{ template "multi-service.fullname" $ }}
+  name: {{ template "multi-service.fullname" . }}
   labels:
-    {{- include "multi-service.labels" $ | nindent 4 }}
+    {{- include "multi-service.labels" . | nindent 4 }}
 spec:
   replicas: {{ $.Values.replicaCount }}
 
@@ -17,12 +17,12 @@ spec:
 
   selector:
     matchLabels:
-      {{- include "multi-service.selectorLabels" $ | nindent 6 }}
+      {{- include "multi-service.selectorLabels" . | nindent 6 }}
 
   workloadRef:
     apiVersion: apps/v1
     kind: {{ $.Values.kind }}
-    name: {{ include "multi-service.fullname" $ }}
+    name: {{ include "multi-service.fullname" . }}
 
   minReadySeconds: {{ $.Values.rollouts.minReadySeconds }}
 
