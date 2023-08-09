@@ -263,6 +263,20 @@ metrics:
     # -- Prometheus [MetricRelabelConfigs] to apply to samples before ingestion
     #   metricRelabelings: []
 
+  podMonitors: {}
+    # - name: "example1"
+    #   labels: {}
+    #   scrapeInterval: "15s"
+    #   scrapeTimeout: "10s"
+    #   metricsPortName: "metrics"
+    #   metricsPath: "/metrics"
+    #   metricsScheme: "http"
+    # -- Prometheus [RelabelConfigs] to apply to samples before scraping
+    #   relabelings: []
+    # -- Prometheus [MetricRelabelConfigs] to apply to samples before ingestion
+    #   metricRelabelings: []
+    #   selectorLabels: {}
+
   # -- Enable and configure Prometheus Rules for the chart under this key.
   # @default -- See values.yaml
   prometheusRule:
