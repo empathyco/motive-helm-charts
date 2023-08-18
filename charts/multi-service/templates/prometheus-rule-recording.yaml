@@ -1,4 +1,4 @@
-{{- if and .Values.metrics.enabled .Values.metrics.prometheusRule.enabled .Values.metrics.prometheusRule.recording.rules -}}
+{{- if .Values.metrics.enabled -}}
 apiVersion: monitoring.coreos.com/v1
 kind: PrometheusRule
 metadata:
@@ -11,9 +11,22 @@ metadata:
     {{- end }}
 spec:
   groups:
+    {{ if .Values.metrics.prometheusRule.defaultAlerts.kafka.enabled }}
+    - name: {{ include "multi-service.fullname" . }}-kafka-recording
+      rules:
+        {{- if .Values.metrics.prometheusRule.defaultAlerts.kafka.deadLetter.enabled }}
+        {{- with .Values.metrics.prometheusRule.defaultAlerts.kafka.deadLetter.topic }}
+        - record: kafka:topic:messages:in
+          expr: sum(kafka_server_brokertopicmetrics_messagesin_total{topic="{{ . }}"} or clamp_max(absent(kafka_server_brokertopicmetrics_messagesin_total{topic="{{ . }}"}), 0)) by (topic)
+        {{- end }}
+        {{- end }}
+    {{ end }}
+
+    {{ if and .Values.metrics.enabled .Values.metrics.prometheusRule.enabled .Values.metrics.prometheusRule.recording.rules -}}
     - name: {{ include "multi-service.fullname" . }}-recording
       rules:
         {{- with .Values.metrics.prometheusRule.recording.rules }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
+    {{ end }}
 {{ end }}

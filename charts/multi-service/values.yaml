@@ -283,6 +283,20 @@ metrics:
     enabled: false
     labels: {}
 
+    defaultAlerts:
+      kafka:
+        enabled: false
+        deadLetter:
+          enabled: false
+          topic:
+        lag:
+          enabled: false
+          consumerGroup:
+          topics: []
+          # - topic: my-topic-1
+          #   threshold: 10
+          #   for: 10s
+
     # -- Configure additional alerting rules for the chart under this key
     alerting:
       rules: []
