@@ -52,7 +52,7 @@ spec:
         {{- if .Values.metrics.prometheusRule.defaultAlerts.kafka.lag.enabled }}
         {{- range .Values.metrics.prometheusRule.defaultAlerts.kafka.lag.topics }}
         - alert: TopicLag-{{ include "multi-service.fullname" $ }}
-          expr: kafka_consumergroup_lag{namespace="kafka-events", consumergroup="{{ $.Values.metrics.prometheusRule.defaultAlerts.kafka.lag.consumerGroup | required "consumerGroup is required" }}", topic="{{ .topic | required "topic is required" }}"} > {{ .threshold | required "threshold is required" }}
+          expr: sum(kafka_consumergroup_lag{namespace="kafka-events", consumergroup="{{ $.Values.metrics.prometheusRule.defaultAlerts.kafka.lag.consumerGroup | required "consumerGroup is required" }}", topic="{{ .topic | required "topic is required" }}"}) > {{ .threshold | required "threshold is required" }}
           for: {{ .for | default "10s" }}
           labels:
             severity: critical
