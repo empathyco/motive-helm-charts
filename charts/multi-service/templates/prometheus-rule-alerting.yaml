@@ -38,7 +38,7 @@ spec:
         {{- if .Values.metrics.prometheusRule.defaultAlerts.kafka.deadLetter.enabled }}
         {{- with .Values.metrics.prometheusRule.defaultAlerts.kafka.deadLetter.topic }}
         - alert: DeadQueueItemsIncoming-{{ include "multi-service.fullname" $ }}
-          expr: (kafka:topic:messages:in{topic={{ . }} - kafka:topic:messages:in{{ . }} offset 5m) > 0
+          expr: (kafka:topic:messages:in{topic="{{ . }}"} - kafka:topic:messages:in{topic="{{ . }}"} offset 5m) > 0
           for: 0m
           labels:
             severity: critical
