@@ -102,11 +102,8 @@ affinity:
   podAntiAffinity:
     requiredDuringSchedulingIgnoredDuringExecution:
       - labelSelector:
-          matchExpressions:
-            - key: app.kubernetes.io/name
-              operator: In
-              values:
-                - {{ include "motive-service.name" $ }}
+          matchLabels:
+            {{- include "motive-service.selectorLabels" $ | nindent 12 }}
         topologyKey: {{ .Values.service.podAntiAffinityTopologyKey }}
   {{- else if eq $.Values.service.podAntiAffinity "soft" }}
   podAntiAffinity:
@@ -114,11 +111,8 @@ affinity:
       - weight: 100
         podAffinityTerm:
           labelSelector:
-            matchExpressions:
-              - key: app.kubernetes.io/name
-                operator: In
-                values:
-                  - {{ include "motive-service.name" $ }}
+            matchLabels:
+              {{- include "motive-service.selectorLabels" $ | nindent 14 }}
           topologyKey: {{ .Values.service.podAntiAffinityTopologyKey }}
   {{- end }}
 {{- end }}
@@ -126,7 +120,6 @@ affinity:
 
 {{- define "motive-service.topologySpreadConstraints" -}}
 {{- $topologySpreadConstraintsSection := $.Values.service.topologySpreadConstraints -}}
-{{- $selectorLabels := include "motive-service.selectorLabels" $ -}}
 {{- if $topologySpreadConstraintsSection -}}
 {{- $constraints := kindIs "slice" $topologySpreadConstraintsSection | ternary $topologySpreadConstraintsSection (list $topologySpreadConstraintsSection) -}}
 topologySpreadConstraints:
@@ -139,7 +132,7 @@ topologySpreadConstraints:
       {{- tpl (toYaml $constraint.labelSelector) $ | nindent 6 -}}
       {{- else }}
       matchLabels:
-        {{- $selectorLabels | nindent 8 }}
+        {{- include "motive-service.selectorLabels" $ | nindent 8 }}
       {{- end -}}
   {{- end -}}
 {{- end -}}
