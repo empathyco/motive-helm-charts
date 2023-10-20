@@ -4,8 +4,7 @@ kind: PodDisruptionBudget
 metadata:
   name: "{{ include "motive-service.serviceAccountName" . }}"
   labels:
-    {{- include "motive-service.labels" . | nindent 4 }}
-    app.kubernetes.io/component: service
+    {{- include "motive-service.serviceLabels" . | nindent 4 }}
     {{- with .Values.service.labels }}
     {{- toYaml . | nindent 4 }}
     {{- end }}
@@ -24,6 +23,5 @@ spec:
   {{- end }}
   selector:
     matchLabels:
-      {{- include "motive-service.selectorLabels" . | nindent 6 }}
-      app.kubernetes.io/component: service
+      {{- include "motive-service.serviceSelectorLabels" . | nindent 6 }}
 {{- end }}

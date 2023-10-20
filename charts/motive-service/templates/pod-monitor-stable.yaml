@@ -9,8 +9,7 @@ metadata:
   namespace: {{ .Release.Namespace }}
   {{- end }}
   labels:
-    {{- include "motive-service.labels" . | nindent 4 }}
-    app.kubernetes.io/component: service
+    {{- include "motive-service.serviceLabels" . | nindent 4 }}
     {{- with .Values.metrics.podMonitor.labels }}
     {{- toYaml . | nindent 4 }}
     {{- end }}
@@ -50,8 +49,7 @@ spec:
 
   selector:
     matchLabels:
-      {{- include "motive-service.selectorLabels" $ | nindent 6 }}
-      app.kubernetes.io/component: service
+      {{- include "motive-service.serviceSelectorLabels" $ | nindent 6 }}
       {{- if .Values.rollouts.enabled }}
       {{- toYaml .Values.rollouts.canary.stableMetadata.labels | nindent 6 }}
       {{- end }}

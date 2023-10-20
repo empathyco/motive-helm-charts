@@ -1,4 +1,4 @@
-{{- if and .Values.metrics.enabled .Values.metrics.podMonitor.enabled .Values.service.rollouts.enabled (.Capabilities.APIVersions.Has "monitoring.coreos.com/v1") -}}
+{{- if and .Values.metrics.enabled .Values.metrics.podMonitor.enabled .Values.rollouts.enabled (.Capabilities.APIVersions.Has "monitoring.coreos.com/v1") -}}
 apiVersion: monitoring.coreos.com/v1
 kind: PodMonitor
 metadata:
@@ -9,8 +9,7 @@ metadata:
   namespace: {{ .Release.Namespace }}
   {{- end }}
   labels:
-    {{- include "motive-service.labels" . | nindent 4 }}
-    app.kubernetes.io/component: service
+    {{- include "motive-service.serviceLabels" . | nindent 4 }}
     {{- with .Values.metrics.podMonitor.labels }}
     {{- toYaml . | nindent 4 }}
     {{- end }}
@@ -50,8 +49,7 @@ spec:
 
   selector:
     matchLabels:
-      {{- include "motive-service.selectorLabels" $ | nindent 6 }}
-      app.kubernetes.io/component: service
+      {{- include "motive-service.serviceSelectorLabels" $ | nindent 6 }}
       {{- toYaml .Values.rollouts.canary.canaryMetadata.labels | nindent 6 }}
   {{- if .Values.metrics.podMonitor.namespaceSelector }}
   namespaceSelector:

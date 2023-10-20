@@ -5,8 +5,7 @@ kind: ScaledObject
 metadata:
   name: {{ include "motive-service.fullname" . }}
   labels:
-    {{- include "motive-service.labels" . | nindent 4 }}
-    app.kubernetes.io/component: service
+    {{- include "motive-service.serviceLabels" . | nindent 4 }}
   {{- with .Values.service.keda.scaledObject.annotations }}
   annotations:
     {{- toYaml . | nindent 4 }}

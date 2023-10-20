@@ -43,11 +43,33 @@ app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{- end }}
 
 {{/*
+Service labels
+*/}}
+{{- define "motive-service.serviceLabels" -}}
+helm.sh/chart: {{ include "motive-service.chart" . }}
+{{ include "motive-service.serviceSelectorLabels" . }}
+{{- if .Chart.AppVersion }}
+app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
+{{- end }}
+app.kubernetes.io/managed-by: {{ .Release.Service }}
+{{- end }}
+
+{{/*
 Selector labels
 */}}
 {{- define "motive-service.selectorLabels" -}}
 app.kubernetes.io/name: {{ include "motive-service.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
+app.kubernetes.io/component: service
+{{- end }}
+
+{{/*
+Service selector labels
+*/}}
+{{- define "motive-service.serviceSelectorLabels" -}}
+app.kubernetes.io/name: {{ include "motive-service.name" . }}
+app.kubernetes.io/instance: {{ .Release.Name }}
+app.kubernetes.io/component: service
 {{- end }}
 
 {{/*
@@ -60,3 +82,65 @@ Create the name of the service account to use
 {{- default "default" .Values.serviceAccount.name }}
 {{- end }}
 {{- end }}
+
+{{/*
+Common affinity definition
+Pod affinity
+  - Soft prefers different nodes
+  - Hard requires different nodes and prefers different availibility zones
+Node affinity
+  - Soft prefers given user expressions
+  - Hard requires given user expressions
+*/}}
+{{- define "motive-service.affinity" -}}
+{{- if or $.Values.service.podAntiAffinity $.Values.service.affinity -}}
+affinity:
+  {{- with $.Values.service.affinity }}
+  {{- toYaml . | nindent 2 }}
+  {{- end }}
+  {{- if eq $.Values.service.podAntiAffinity "hard" }}
+  podAntiAffinity:
+    requiredDuringSchedulingIgnoredDuringExecution:
+      - labelSelector:
+          matchExpressions:
+            - key: app.kubernetes.io/name
+              operator: In
+              values:
+                - {{ include "motive-service.name" $ }}
+        topologyKey: {{ .Values.service.podAntiAffinityTopologyKey }}
+  {{- else if eq $.Values.service.podAntiAffinity "soft" }}
+  podAntiAffinity:
+    preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 100
+        podAffinityTerm:
+          labelSelector:
+            matchExpressions:
+              - key: app.kubernetes.io/name
+                operator: In
+                values:
+                  - {{ include "motive-service.name" $ }}
+          topologyKey: {{ .Values.service.podAntiAffinityTopologyKey }}
+  {{- end }}
+{{- end }}
+{{- end }}
+
+{{- define "motive-service.topologySpreadConstraints" -}}
+{{- $topologySpreadConstraintsSection := $.Values.service.topologySpreadConstraints -}}
+{{- $selectorLabels := include "motive-service.selectorLabels" $ -}}
+{{- if $topologySpreadConstraintsSection -}}
+{{- $constraints := kindIs "slice" $topologySpreadConstraintsSection | ternary $topologySpreadConstraintsSection (list $topologySpreadConstraintsSection) -}}
+topologySpreadConstraints:
+  {{- range $constraint := $constraints }}
+  - maxSkew: {{ $constraint.maxSkew }}
+    topologyKey: {{ $constraint.topologyKey }}
+    whenUnsatisfiable: {{ $constraint.whenUnsatisfiable }}
+    labelSelector:
+      {{- if $constraint.labelSelector -}}
+      {{- tpl (toYaml $constraint.labelSelector) $ | nindent 6 -}}
+      {{- else }}
+      matchLabels:
+        {{- $selectorLabels | nindent 8 }}
+      {{- end -}}
+  {{- end -}}
+{{- end -}}
+{{- end -}}

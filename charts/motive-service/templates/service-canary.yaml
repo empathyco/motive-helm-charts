@@ -4,8 +4,7 @@ kind: Service
 metadata:
   name: {{ include "motive-service.fullname" . }}-canary
   labels:
-    {{- include "motive-service.labels" . | nindent 4 }}
-    app.kubernetes.io/component: service
+    {{- include "motive-service.serviceLabels" . | nindent 4 }}
     {{- with .Values.service.labels }}
       {{- toYaml . | nindent 4 }}
     {{- end }}
@@ -25,6 +24,5 @@ spec:
       targetPort: metrics
       protocol: {{ .Values.service.ports.metricsProtocol }}
   selector:
-    {{- include "motive-service.selectorLabels" . | nindent 4 }}
-    app.kubernetes.io/component: service
+    {{- include "motive-service.serviceSelectorLabels" . | nindent 4 }}
 {{- end }}

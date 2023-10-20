@@ -4,8 +4,7 @@ kind: Deployment
 metadata:
   name: {{ include "motive-service.fullname" . }}
   labels:
-    {{- include "motive-service.labels" . | nindent 4 }}
-    app.kubernetes.io/component: service
+    {{- include "motive-service.serviceLabels" . | nindent 4 }}
     {{- with .Values.service.labels }}
     {{- toYaml . | nindent 4 }}
     {{- end }}
@@ -23,8 +22,7 @@ spec:
   revisionHistoryLimit: {{ .Values.revisionHistoryLimit | default 3 }}
   selector:
     matchLabels:
-      {{- include "motive-service.selectorLabels" . | nindent 6 }}
-      app.kubernetes.io/component: service
+      {{- include "motive-service.serviceSelectorLabels" . | nindent 6 }}
   {{- with .Values.service.updateStrategy }}
   strategy:
     {{- toYaml . | nindent 4 }}
@@ -36,8 +34,7 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       labels:
-        {{- include "motive-service.selectorLabels" . | nindent 8 }}
-        app.kubernetes.io/component: service
+        {{- include "motive-service.serviceSelectorLabels" . | nindent 8 }}
       {{- with .Values.service.labels }}
         {{- toYaml . | nindent 8 }}
       {{- end }}
@@ -46,12 +43,12 @@ spec:
       {{- end }}
     spec:
       terminationGracePeriodSeconds: {{ .Values.service.terminationGracePeriodSeconds | default 60 }}
-      {{- with .Values.imagePullSecrets }}
+      {{- with .Values.imagePullSecrets -}}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       serviceAccountName: {{ include "motive-service.serviceAccountName" . }}
-      {{- if or .Values.service.podSecurityContext .Values.service.sysctls }}
+      {{- if or .Values.service.podSecurityContext .Values.service.sysctls -}}
       securityContext:
         {{- with .Values.service.podSecurityContext }}
         {{- toYaml . | nindent 8 }}
@@ -64,13 +61,10 @@ spec:
           {{- end }}
         {{- end }}
       {{- end }}
-      {{- with .Values.service.topologySpreadConstraints }}
-      topologySpreadConstraints:
-        {{- tpl (toYaml .) $ | nindent 8 }}
-      {{- end }}
-      {{- with .Values.service.extraInitContainers }}
+      {{- include "motive-service.topologySpreadConstraints" $ | nindent 6 -}}
+      {{- with .Values.service.extraInitContainers -}}
       initContainers:
-        {{- toYaml . | nindent 8}}
+        {{- toYaml . | nindent 8 }}
       {{- end }}
       containers:
         - name: {{ .Chart.Name }}
@@ -130,10 +124,7 @@ spec:
       nodeSelector:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with .Values.service.affinity }}
-      affinity:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
+      {{- include "motive-service.affinity" $ | nindent 6 -}}
       {{- with .Values.service.tolerations }}
       tolerations:
         {{- toYaml . | nindent 8 }}
