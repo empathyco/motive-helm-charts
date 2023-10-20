@@ -1,0 +1,28 @@
+{{- if and .Values.metrics.enabled (.Capabilities.APIVersions.Has "pyrra.dev/v1alpha1") -}}
+{{- range .Values.slos.latency }}
+---
+apiVersion: pyrra.dev/v1alpha1
+kind: ServiceLevelObjective
+metadata:
+  name: {{ include "motive-service.fullname" $ }}-latency-{{ .name | required "slos.name is required." }}
+  labels:
+    prometheus: k8s
+    role: alert-rules
+    pyrra.dev/team: {{ .team | default "platform" }}
+spec:
+#  alerting:
+#    name: ErrorBudgetBurn
+#    absent: true
+#    burnrates: true
+#    disabled: false
+  description: "{{ .description | default "" }}"
+  indicator:
+    latency:
+      success:
+        metric: {{ .metric | required "slos.metrics is required." }}
+      total:
+        metric: {{ .metricTotal | required "slos.metricTotal is required." }}
+  target: "{{ .target | default 99 }}"
+  window: "{{ .window | default "4w" }}"
+{{ end }}
+{{- end }}

@@ -1,0 +1,41 @@
+{{- if and .Values.metrics.enabled .Values.metrics.prometheusRule.enabled (.Capabilities.APIVersions.Has "monitoring.coreos.com/v1") -}}
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: {{ include "motive-service.fullname" . }}-recording
+  {{- if .Values.metrics.prometheusRule.namespace }}
+  namespace: {{ .Values.metrics.prometheusRule.namespace | quote }}
+  {{- else }}
+  namespace: {{ .Release.Namespace }}
+  {{- end }}
+  labels:
+    {{- include "motive-service.labels" . | nindent 4 }}
+    app.kubernetes.io/component: service
+    {{- with .Values.metrics.prometheusRule.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  {{- with .Values.metrics.prometheusRule.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  groups:
+    # Kafka default alerts - START
+    {{ if .Values.metrics.prometheusRule.defaultAlerts.kafka.enabled }}
+    - name: {{ include "motive-service.fullname" . }}-kafka-recording
+      rules:
+        {{- if .Values.metrics.prometheusRule.defaultAlerts.kafka.deadLetter.enabled }}
+        {{- with .Values.metrics.prometheusRule.defaultAlerts.kafka.deadLetter.topic }}
+        - record: kafka:topic:messages:in
+          expr: sum(kafka_server_brokertopicmetrics_messagesin_total{topic="{{ . }}"} or clamp_max(absent(kafka_server_brokertopicmetrics_messagesin_total{topic="{{ . }}"}), 0)) by (topic)
+        {{- end }}
+        {{- end }}
+    {{ end }}
+    # Kafka default alerts - END
+
+    {{- with .Values.metrics.prometheusRule.extraRecordingRules }}
+    - name: {{ include "motive-service.fullname" $ }}-extra-recording
+      rules:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+{{- end }}

@@ -1,0 +1,29 @@
+{{- if or (and .Values.service.autoscaling.enabled (gt (.Values.service.autoscaling.minReplicas | int) 1)) (and .Values.service.keda.enabled (gt (.Values.service.keda.minReplicas | int) 1)) (and (not .Values.service.autoscaling.enabled) (gt (.Values.service.replicaCount | int) 1)) }}
+apiVersion: {{ ternary "policy/v1" "policy/v1beta1" (semverCompare ">=1.21.0-0" .Capabilities.KubeVersion.Version) }}
+kind: PodDisruptionBudget
+metadata:
+  name: "{{ include "motive-service.serviceAccountName" . }}"
+  labels:
+    {{- include "motive-service.labels" . | nindent 4 }}
+    app.kubernetes.io/component: service
+    {{- with .Values.service.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+    {{- with .Values.service.pdb.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  {{- with .Values.service.pdb.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  {{- if .Values.service.pdb.maxUnavailable }}
+  maxUnavailable: {{ .Values.service.pdb.maxUnavailable }}
+  {{- else if .Values.service.pdb.minAvailable }}
+  minAvailable: {{ .Values.service.pdb.minAvailable }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "motive-service.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: service
+{{- end }}

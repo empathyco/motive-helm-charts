@@ -1,0 +1,44 @@
+{{- if and (eq .Values.service.kind "Deployment") .Values.service.autoscaling.enabled (not .Values.service.keda.enabled) }}
+apiVersion: {{ ternary "autoscaling/v2" "autoscaling/v2beta2" (.Capabilities.APIVersions.Has "autoscaling/v2") }}
+kind: HorizontalPodAutoscaler
+metadata:
+  name: {{ include "motive-service.fullname" . }}
+  {{- with .Values.service.autoscaling.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  labels:
+    {{- include "motive-service.labels" . | nindent 4 }}
+    app.kubernetes.io/component: service
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: {{ include "motive-service.fullname" . }}
+  minReplicas: {{ .Values.service.autoscaling.minReplicas }}
+  maxReplicas: {{ .Values.service.autoscaling.maxReplicas }}
+  metrics:
+    {{- with .Values.service.autoscaling.targetCPUUtilizationPercentage }}
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: {{ . }}
+    {{- end }}
+    {{- with .Values.service.autoscaling.targetMemoryUtilizationPercentage }}
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: {{ . }}
+    {{- end }}
+  {{- with .Values.service.autoscalingTemplate }}
+    {{- toYaml . | nindent 2 }}
+  {{- end }}
+  {{- with .Values.service.autoscaling.behavior }}
+  behavior:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+{{- end }}

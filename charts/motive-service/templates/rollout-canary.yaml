@@ -1,0 +1,143 @@
+{{- if and .Values.rollouts.enabled (or .Values.ingress.public.enabled .Values.ingress.internal.enabled) }}
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
+metadata:
+  name: {{ template "motive-service.fullname" . }}
+  labels:
+    {{- include "motive-service.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.service.replicaCount }}
+
+  analysis:
+    # limits the number of successful analysis runs and experiments to be stored in a history
+    successfulRunHistoryLimit: 3
+    # limits the number of unsuccessful analysis runs and experiments to be stored in a history.
+    # Stages for unsuccessful: "Error", "Failed", "Inconclusive"
+    unsuccessfulRunHistoryLimit: 3
+
+  selector:
+    matchLabels:
+      {{- include "motive-service.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: service
+
+  workloadRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: {{ include "motive-service.fullname" . }}
+
+  minReadySeconds: {{ .Values.rollouts.minReadySeconds }}
+
+  revisionHistoryLimit: {{ .Values.rollouts.revisionHistoryLimit }}
+
+  rollbackWindow:
+    revisions: {{ .Values.rollouts.rollbackWindow }}
+
+  strategy:
+    # Canary update strategy
+    canary:
+      # Reference to a service which the controller will update to select canary pods. Required for traffic routing.
+      canaryService: {{ include "motive-service.fullname" . }}-canary
+
+      # Reference to a service which the controller will update to select stable pods. Required for traffic routing.
+      stableService: {{ include "motive-service.fullname" . }}
+
+      # Metadata which will be attached to the canary pods. This metadata will only exist during an update, since there
+      # are no canary pods in a fully promoted rollout.
+      canaryMetadata:
+        annotations:
+          {{- toYaml .Values.rollouts.canary.canaryMetadata.annotations | nindent 10 }}
+        labels:
+          {{- toYaml .Values.rollouts.canary.canaryMetadata.labels | nindent 10 }}
+
+      # metadata which will be attached to the stable pods
+      stableMetadata:
+        annotations:
+          {{- toYaml .Values.rollouts.canary.stableMetadata.annotations | nindent 10 }}
+        labels:
+          {{- toYaml .Values.rollouts.canary.stableMetadata.labels | nindent 10 }}
+
+      # The maximum number of pods that can be unavailable during the update. Value can be an absolute number
+      # (ex: 5) or a percentage of total pods at the start of update (ex: 10%). Absolute number is calculated from
+      # percentage by rounding down. This can not be 0 if  MaxSurge is 0. By default, a fixed value of 1 is used.
+      # Example: when this is set to 30%, the old RC can be scaled down by 30% immediately when the rolling
+      # update starts. Once new pods are ready, old RC can be scaled down further, followed by scaling up the new
+      # RC, ensuring that at least 70% of original number of pods are available at all times during the update.
+      maxUnavailable: {{ .Values.rollouts.canary.maxUnavailable }}
+
+      # The maximum number of pods that can be scheduled above the original number of pods. Value can be an
+      # absolute number (ex: 5) or a percentage of total pods at the start of the update (ex: 10%). This can not
+      # be 0 if MaxUnavailable is 0. Absolute number is calculated from percentage by rounding up. By default, a
+      # value of 1 is used. Example: when this is set to 30%, the new RC can be scaled up by 30%  immediately when
+      # the rolling update starts. Once old pods have been killed, new RC can be scaled up further, ensuring that
+      # total number of pods running at any time during the update is at most 130% of original pods.
+      maxSurge: {{ .Values.rollouts.canary.maxSurge }}
+
+      dynamicStableScale: {{ .Values.rollouts.canary.dynamicStableScale }}
+
+      # Adds a delay before scaling down the previous ReplicaSet when the canary strategy is used with traffic
+      # routing (default 30 seconds). A delay in scaling down the previous ReplicaSet is needed after switching
+      # the stable service selector to point to the new ReplicaSet, in order to give time for traffic providers
+      # to re-target the new pods. This value is ignored with basic, replica-weighted canary without traffic routing.
+      {{- if not .Values.rollouts.canary.dynamicStableScale }}
+      scaleDownDelaySeconds: {{ .Values.rollouts.canary.scaleDownDelaySeconds }}
+      {{- end }}
+
+      # Add a delay in second before scaling down the canary pods when update is aborted for canary strategy with
+      # traffic routing (not applicable for basic canary). 0 means canary pods are not scaled down.
+      abortScaleDownDelaySeconds: {{ .Values.rollouts.canary.abortScaleDownDelaySeconds }}
+
+      # The minimum number of pods that will be requested for each ReplicaSet when using traffic routed canary.
+      # This is to ensure high availability of each ReplicaSet.
+      minPodsPerReplicaSet: {{ .Values.rollouts.canary.minPodsPerReplicaSet }}
+
+      # Limits the number of old RS that can run at one time before getting scaled down.
+      scaleDownDelayRevisionLimit: {{ .Values.rollouts.canary.scaleDownDelayRevisionLimit }}
+
+      # Background analysis to run during a rollout update.
+      # Skipped upon initial deploy of a rollout.
+      {{- if .Values.rollouts.canary.analysis }}
+      analysis:
+        {{- toYaml .Values.rollouts.canary.analysis | nindent 8 }}
+      {{- end }}
+
+      # Steps define sequence of steps to take during an update of the canary.
+      # Skipped upon initial deploy of a rollout.
+      {{- if .Values.rollouts.canary.steps }}
+      steps:
+        {{- toYaml .Values.rollouts.canary.steps | nindent 8 }}
+      {{- end }}
+
+      # Anti-affinity configuration between desired and previous ReplicaSet.
+      # Only one must be specified.
+      {{- if .Values.rollouts.canary.antiAffinity }}
+      antiAffinity:
+        {{- toYaml .Values.rollouts.canary.antiAffinity | nindent 8 }}
+      {{- end }}
+
+      # Traffic routing specifies the ingress controller or service mesh configuration to achieve advanced traffic
+      # splitting. If omitted, will achieve traffic split via a weighted replica counts between the canary and stable ReplicaSet.
+      trafficRouting:
+        {{- if .Values.rollouts.canary.trafficRouting.nginx.enabled }}
+        # NGINX Ingress Controller routing configuration
+        nginx:
+          stableIngresses: # required
+            {{- if .Values.ingress.public.enabled }}
+            - {{ include "motive-service.fullname" $ }}-public
+            {{- end }}
+            {{- if .Values.ingress.internal.enabled }}
+            - {{ include "motive-service.fullname" $ }}-internal
+            {{- end }}
+          annotationPrefix: {{ .Values.rollouts.canary.trafficRouting.nginx.annotationPrefix }} # optional
+          {{- if .Values.rollouts.canary.trafficRouting.nginx.additionalIngressAnnotations }}
+          additionalIngressAnnotations: # optional
+            {{- toYaml .Values.rollouts.canary.trafficRouting.nginx.additionalIngressAnnotations | nindent 12 }}
+          {{- end }}
+        {{- end }}
+
+        {{- if .Values.rollouts.canary.trafficRouting.smi.enabled }}
+        # Service Mesh Interface routing configuration
+        smi:
+          rootService: {{ .Values.rollouts.canary.trafficRouting.smi.rootService }} # optional
+          trafficSplitName: {{ .Values.rollouts.canary.trafficRouting.smi.trafficSplitName }} # optional
+        {{- end }}
+{{- end }}
