@@ -1,0 +1,87 @@
+{{- if and .Values.metrics.enabled .Values.metrics.prometheusRule.enabled (.Capabilities.APIVersions.Has "monitoring.coreos.com/v1") -}}
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: {{ include "motive-service.fullname" . }}-alerting
+  {{- if .Values.metrics.prometheusRule.namespace }}
+  namespace: {{ .Values.metrics.prometheusRule.namespace | quote }}
+  {{- else }}
+  namespace: {{ .Release.Namespace }}
+  {{- end }}
+  labels:
+    {{- include "motive-service.labels" . | nindent 4 }}
+    app.kubernetes.io/component: service
+    {{- with .Values.metrics.prometheusRule.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  {{- with .Values.metrics.prometheusRule.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  groups:
+    # default alerts - START
+    - name: {{ include "motive-service.fullname" . }}-default-alerting
+      rules:
+        {{- if gt (.Values.service.replicaCount | int) 1 }}
+        - alert: HighAvailability-{{ include "motive-service.fullname" . }}
+          expr: sum(kube_pod_status_ready{namespace="{{ $.Release.Namespace }}", pod=~"{{ include "motive-service.fullname" . }}-.+"}) < 2
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: 'Number of Pods < 2'
+            description: 'Service reports having not enough pods to ensure High Availability'
+        {{- end }}
+
+        - alert: ZeroPods-{{ include "motive-service.fullname" . }}
+          expr: sum(kube_pod_status_ready{namespace="{{ $.Release.Namespace }}", pod=~"{{ include "motive-service.fullname" . }}-.+"}) == 0
+          for: 0m
+          labels:
+            severity: critical
+            oncall: 'true'
+          annotations:
+            summary: 'Number of Pods == 0'
+            description: 'Service reports no pods running'
+    # default alerts - END
+
+    # Kafka default alerts - START
+    {{ if .Values.metrics.prometheusRule.defaultAlerts.kafka.enabled }}
+    - name: {{ include "motive-service.fullname" . }}-kafka-alerting
+      rules:
+        {{- if .Values.metrics.prometheusRule.defaultAlerts.kafka.deadLetter.enabled }}
+        {{- with .Values.metrics.prometheusRule.defaultAlerts.kafka.deadLetter.topic }}
+        - alert: DeadQueueItemsIncoming-{{ include "motive-service.fullname" $ }}
+          expr: (kafka:topic:messages:in{topic="{{ . }}"} - kafka:topic:messages:in{topic="{{ . }}"} offset 5m) > 0
+          for: 0m
+          labels:
+            severity: critical
+            skip_resolved: 'true'
+          annotations:
+            summary: 'Topic "{{ . }}" has new incoming messages'
+            description: 'Service reports there are new messages which could not be processed correctly'
+        {{- end }}
+        {{- end }}
+
+        {{- if .Values.metrics.prometheusRule.defaultAlerts.kafka.lag.enabled }}
+        {{- range .Values.metrics.prometheusRule.defaultAlerts.kafka.lag.topics }}
+        - alert: TopicLag-{{ include "motive-service.fullname" $ }}
+          expr: sum(kafka_consumergroup_lag{namespace="kafka-events", consumergroup="{{ $.Values.metrics.prometheusRule.defaultAlerts.kafka.lag.consumerGroup | required "consumerGroup is required." }}", topic="{{ .topic | required "topic is required" }}"}) > {{ .threshold | required "threshold is required" }}
+          for: {{ .for | default "10s" }}
+          labels:
+            severity: critical
+            skip_resolved: 'false'
+          annotations:
+            summary: 'Topic "{{ .topic }}" lag > {{ .threshold }}'
+            description: 'Service reports there is lag consuming events from topic'
+        {{- end }}
+        {{- end }}
+    {{ end }}
+    # Kafka default alerts - END
+
+    {{- with .Values.metrics.prometheusRule.extraAlertingRules }}
+    - name: {{ include "motive-service.fullname" $ }}-extra-alerting
+      rules:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+{{- end }}

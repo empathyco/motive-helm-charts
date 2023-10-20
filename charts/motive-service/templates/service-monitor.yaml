@@ -1,0 +1,63 @@
+{{- if and .Values.metrics.enabled .Values.metrics.serviceMonitor.enabled (.Capabilities.APIVersions.Has "monitoring.coreos.com/v1") -}}
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ include "motive-service.fullname" . }}
+  {{- if .Values.metrics.serviceMonitor.namespace }}
+  namespace: {{ .Values.metrics.serviceMonitor.namespace | quote }}
+  {{- else }}
+  namespace: {{ .Release.Namespace }}
+  {{- end }}
+  labels:
+    {{- include "motive-service.labels" . | nindent 4 }}
+    app.kubernetes.io/component: service
+    {{- with .Values.metrics.serviceMonitor.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  {{- with .Values.metrics.serviceMonitor.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  endpoints:
+    - port: "metrics"
+      interval: {{ .Values.metrics.serviceMonitor.scrapeInterval | default "30s" }}
+      scrapeTimeout: {{ .Values.metrics.serviceMonitor.scrapeTimeout | default "10s"  }}
+      {{- if .Values.metrics.serviceMonitor.honorLabels }}
+      honorLabels: true
+      {{- end }}
+      {{- with .Values.metrics.serviceMonitor.relabelings }}
+      relabelings:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.metrics.serviceMonitor.metricRelabelings }}
+      metricRelabelings:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      path: {{ .Values.metrics.serviceMonitor.metricsPath | default "/metrics" }}
+      scheme: {{ .Values.metrics.serviceMonitor.metricsScheme | default "http" }}
+
+  {{- with .Values.metrics.serviceMonitor.jobLabel }}
+  jobLabel: {{ . | quote }}
+  {{- end }}
+
+  {{- if .Values.metrics.serviceMonitor.targetLabels }}
+  targetLabels:
+    {{- range .Values.metrics.serviceMonitor.targetLabels }}
+    - {{ . }}
+    {{- end }}
+  {{- end }}
+
+  selector:
+    matchLabels:
+      {{- include "motive-service.selectorLabels" $ | nindent 6 }}
+      app.kubernetes.io/component: service
+  {{- if .Values.metrics.serviceMonitor.namespaceSelector }}
+  namespaceSelector:
+    {{- toYaml .Values.metrics.serviceMonitor.namespaceSelector | nindent 4 }}
+  {{- else }}
+  namespaceSelector:
+    matchNames:
+      - {{ .Release.Namespace }}
+  {{- end }}
+{{- end }}
