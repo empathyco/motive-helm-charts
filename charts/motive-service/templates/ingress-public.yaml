@@ -16,7 +16,7 @@ kind: Ingress
 metadata:
   name: {{ include "motive-service.fullname" $ }}-public
   labels:
-    {{- include "motive-service.labels" $ | nindent 4 }}
+    {{- include "motive-service.serviceLabels" $ | nindent 4 }}
   {{- with .annotations }}
   annotations:
     {{- toYaml . | nindent 4 }}

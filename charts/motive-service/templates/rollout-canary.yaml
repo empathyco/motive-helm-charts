@@ -4,7 +4,7 @@ kind: Rollout
 metadata:
   name: {{ template "motive-service.fullname" . }}
   labels:
-    {{- include "motive-service.labels" . | nindent 4 }}
+    {{- include "motive-service.serviceLabels" . | nindent 4 }}
 spec:
   replicas: {{ .Values.service.replicaCount }}
 
@@ -17,8 +17,7 @@ spec:
 
   selector:
     matchLabels:
-      {{- include "motive-service.selectorLabels" . | nindent 6 }}
-      app.kubernetes.io/component: service
+      {{- include "motive-service.serviceSelectorLabels" . | nindent 6 }}
 
   workloadRef:
     apiVersion: apps/v1
