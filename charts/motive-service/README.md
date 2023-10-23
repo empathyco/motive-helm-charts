@@ -1,6 +1,6 @@
 # motive-service
 
-![Version: 1.0.2](https://img.shields.io/badge/Version-1.0.2-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 1.0.0](https://img.shields.io/badge/AppVersion-1.0.0-informational?style=flat-square)
+![Version: 1.0.3](https://img.shields.io/badge/Version-1.0.3-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 1.0.0](https://img.shields.io/badge/AppVersion-1.0.0-informational?style=flat-square)
 
 A Helm chart for Kubernetes
 
@@ -152,6 +152,11 @@ A Helm chart for Kubernetes
 | serviceAccount.annotations | object | `{}` |  |
 | serviceAccount.automountServiceAccountToken | bool | `true` |  |
 | serviceAccount.create | bool | `true` |  |
+| serviceAccount.iam.enabled | bool | `false` |  |
+| serviceAccount.iam.policy | string | `""` |  |
+| serviceAccount.iam.role.awsAccountID | string | `""` |  |
+| serviceAccount.iam.role.eksClusterOIDCIssuer | string | `""` |  |
+| serviceAccount.iam.role.maxSessionDuration | int | `3600` |  |
 | serviceAccount.name | string | `""` |  |
 | slos.latency | list | `[]` | Latency SLOs |
 | slos.ratio | list | `[]` | Ration SLOs |

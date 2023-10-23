@@ -1,0 +1,36 @@
+{{- if and .Values.serviceAccount.iam.enabled .Capabilities.APIVersions.Has "iam.services.k8s.aws/v1alpha1" }}
+{{- $serviceAccountName := include "motive-service.serviceAccountName" . }}
+apiVersion: iam.services.k8s.aws/v1alpha1
+kind: Role
+metadata:
+  name: {{ $serviceAccountName }}
+spec:
+  name: {{ $serviceAccountName }}@{{ .Release.Namespace }}
+  description: 'Role assumed by EKS ServiceAccount {{ $serviceAccountName }}'
+  assumeRolePolicyDocument: |
+    {
+      "Version": "2012-10-17",
+      "Statement": [
+        {
+          "Sid": "",
+          "Effect": "Allow",
+          "Principal": {
+            "Federated": "arn:aws:iam::{{ .Values.serviceAccount.iam.role.awsAccountID | required ".serviceAccount.iam.role.awsAccountID is required." }}:oidc-provider/{{ .Values.serviceAccount.iam.role.eksClusterOIDCIssuer | required ".serviceAccount.iam.role.eksClusterOIDCIssuer is required." }}"
+          },
+          "Action": "sts:AssumeRoleWithWebIdentity",
+          "Condition": {
+            "StringLike": {
+              "{{ .Values.serviceAccount.iam.role.eksClusterOIDCIssuer }}:sub": "system:serviceaccount:{{ .Release.Namespace }}:{{ $serviceAccountName }}"
+            }
+          }
+        }
+      ]
+    }
+  maxSessionDuration: {{ .Values.serviceAccount.iam.role.maxSessionDuration | int | default 3600 }}
+  path: /
+  policies:
+    - arn:aws:iam::{{ .Values.serviceAccount.iam.role.awsAccountID }}:policy/{{ $serviceAccountName }}@{{ .Release.Namespace }}
+  tags:
+    - key: namespace
+      value: {{ .Release.Namespace }}
+{{- end }}
