@@ -31,6 +31,33 @@ serviceAccount:
   name: ""
   automountServiceAccountToken: true
 
+  iam:
+    enabled: false
+    role:
+      awsAccountID: ''
+      eksClusterOIDCIssuer: ''
+      maxSessionDuration: 3600
+    policy: ""
+#    policy: |
+#      {
+#        "Version": "2012-10-17",
+#        "Statement": [
+#           {
+#             "Sid": "",
+#             "Effect": "Allow",
+#             "Action": [
+#               "secretsmanager:ListSecretVersionIds",
+#               "secretsmanager:GetSecretValue",
+#               "secretsmanager:GetResourcePolicy",
+#               "secretsmanager:DescribeSecret"
+#             ],
+#             "Resource": [
+#               "arn:aws:secretsmanager:eu-west-1:{{ .Values.serviceAccount.iam.role.awsAccountID }}:secret:*"
+#             ]
+#           }
+#        ]
+#      }
+
 
 
 # -- --------------
