@@ -1,4 +1,4 @@
-{{- if and .Values.serviceAccount.iam.enabled .Capabilities.APIVersions.Has "iam.services.k8s.aws/v1alpha1" }}
+{{- if and .Values.serviceAccount.iam.enabled (.Capabilities.APIVersions.Has "iam.services.k8s.aws/v1alpha1") }}
 {{- $serviceAccountName := include "motive-service.serviceAccountName" . }}
 apiVersion: iam.services.k8s.aws/v1alpha1
 kind: Role
