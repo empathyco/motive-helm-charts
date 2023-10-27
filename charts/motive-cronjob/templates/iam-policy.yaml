@@ -1,0 +1,16 @@
+{{- if and .Values.serviceAccount.iam.enabled (.Capabilities.APIVersions.Has "iam.services.k8s.aws/v1alpha1") }}
+{{- $serviceAccountName := include "motive-cronjob.serviceAccountName" . }}
+apiVersion: iam.services.k8s.aws/v1alpha1
+kind: Policy
+metadata:
+  name: {{ $serviceAccountName }}
+spec:
+  name: {{ $serviceAccountName }}@{{ .Release.Namespace }}
+  description: 'Grant permissions to EKS ServiceAccount {{ $serviceAccountName }}'
+  path: /
+  policyDocument: |
+    {{- tpl .Values.serviceAccount.iam.policy . | nindent 4 }}
+  tags:
+    - key: namespace
+      value: {{ .Release.Namespace }}
+{{- end }}
