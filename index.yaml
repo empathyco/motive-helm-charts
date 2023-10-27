@@ -1,5 +1,16 @@
 apiVersion: v1
 entries:
+  motive-cronjob:
+  - apiVersion: v2
+    appVersion: 1.0.0
+    created: "2023-10-27T17:58:15.5363654Z"
+    description: A Helm chart for Kubernetes
+    digest: 95efad1ef0d6662edf14b3d2bff2e92f0fb557c07363f66fddb4468ce9dbb1b1
+    name: motive-cronjob
+    type: application
+    urls:
+    - https://github.com/empathyco/motive-helm-charts/releases/download/motive-cronjob-1.0.0/motive-cronjob-1.0.0.tgz
+    version: 1.0.0
   motive-service:
   - apiVersion: v2
     appVersion: 1.0.0
@@ -312,4 +323,4 @@ entries:
     urls:
     - https://github.com/empathyco/motive-helm-charts/releases/download/multi-service-0.3.1/multi-service-0.3.1.tgz
     version: 0.3.1
-generated: "2023-10-23T17:45:43.823942398Z"
+generated: "2023-10-27T17:58:15.536519502Z"
