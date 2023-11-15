@@ -12,7 +12,7 @@ metadata:
   {{- end }}
 spec:
   scaleTargetRef:
-    {{- if and .Values.rollouts.enabled .Values.rollouts.canary.enabled .Values.ingress.enabled }}
+    {{- if and .Values.rollouts.enabled .Values.rollouts.canary.enabled }}
     apiVersion: argoproj.io/v1alpha1
     kind: Rollout
     name: {{ template "motive-service.fullname" $ }}
