@@ -11,9 +11,15 @@ metadata:
     {{- include "motive-service.serviceLabels" . | nindent 4 }}
 spec:
   scaleTargetRef:
+    {{- if and .Values.rollouts.enabled .Values.rollouts.canary.enabled }}
+    apiVersion: argoproj.io/v1alpha1
+    kind: Rollout
+    name: {{ template "motive-service.fullname" $ }}
+    {{- else }}
     apiVersion: apps/v1
     kind: Deployment
     name: {{ include "motive-service.fullname" . }}
+    {{- end }}
   minReplicas: {{ .Values.service.autoscaling.minReplicas }}
   maxReplicas: {{ .Values.service.autoscaling.maxReplicas }}
   metrics:

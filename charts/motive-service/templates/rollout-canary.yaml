@@ -1,4 +1,4 @@
-{{- if and .Values.rollouts.enabled (or .Values.ingress.public.enabled .Values.ingress.internal.enabled) }}
+{{- if and .Values.rollouts.enabled .Values.rollouts.canary.enabled }}
 apiVersion: argoproj.io/v1alpha1
 kind: Rollout
 metadata:
