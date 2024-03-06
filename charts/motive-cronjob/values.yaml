@@ -230,6 +230,8 @@ cronjob:
 
   # -- The schedule in cron format
   schedule: "0 0 * * *"
+  # -- The time zone https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
+  timeZone: "Etc/UTC"
   # -- Specifies how to treat concurrent executions of a Job
   concurrencyPolicy: Forbid
   # -- Optional deadline in seconds for starting the job
