@@ -381,6 +381,8 @@ externalSecrets:
 #      targetCreationPolicy: "Owner|Merge|None"
 #      targetDeletionPolicy: "Delete|Merge|Retain"
 #      targetImmutable: false
+#      targetTemplateData:
+#        USERNAME: "{{ .username }}
 #      data:
 #        - secretKey: username
 #          remoteRef:
@@ -631,7 +633,7 @@ rollouts:
     antiAffinity: {}
       # requiredDuringSchedulingIgnoredDuringExecution: {}
       # preferredDuringSchedulingIgnoredDuringExecution:
-    #   weight: 1 # Between 1 - 100
+      #   weight: 1 # Between 1 - 100
 
     # -- TBD
     trafficRouting:
@@ -646,7 +648,7 @@ rollouts:
         # @default -- `{}`
         additionalIngressAnnotations: {}
           # canary-by-header: X-Canary
-        # canary-by-header-value: iwantsit
+          # canary-by-header-value: iwantsit
 
       # -- TBD
       smi:

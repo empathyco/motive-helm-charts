@@ -48,7 +48,7 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       serviceAccountName: {{ include "motive-service.serviceAccountName" . }}
-      {{- if or .Values.service.podSecurityContext .Values.service.sysctls -}}
+      {{- if or .Values.service.podSecurityContext .Values.service.sysctls }}
       securityContext:
         {{- with .Values.service.podSecurityContext }}
         {{- toYaml . | nindent 8 }}

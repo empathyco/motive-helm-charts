@@ -133,7 +133,11 @@ topologySpreadConstraints:
       {{- else }}
       matchLabels:
         {{- include "motive-service.selectorLabels" $ | nindent 8 }}
-      {{- end -}}
+      {{- end }}
+    nodeAffinityPolicy: Honor
+    nodeTaintsPolicy: Honor
+    matchLabelKeys:
+      - pod-template-hash
   {{- end -}}
 {{- end -}}
 {{- end -}}

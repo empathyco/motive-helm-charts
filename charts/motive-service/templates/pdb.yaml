@@ -21,6 +21,9 @@ spec:
   {{- else if .Values.service.pdb.minAvailable }}
   minAvailable: {{ .Values.service.pdb.minAvailable }}
   {{- end }}
+  {{- if (semverCompare ">=1.27.0-0" .Capabilities.KubeVersion.Version) }}
+  unhealthyPodEvictionPolicy: IfHealthyBudget
+  {{- end }}
   selector:
     matchLabels:
       {{- include "motive-service.serviceSelectorLabels" . | nindent 6 }}
