@@ -121,6 +121,9 @@ spec:
       ttlSecondsAfterFinished: {{ .Values.cronjob.job.ttlSecondsAfterFinished }}
       suspend: {{ .Values.cronjob.job.suspend }}
   schedule: {{ .Values.cronjob.schedule }}
+  {{- if (semverCompare ">=1.27.0-0" .Capabilities.KubeVersion.Version) }}
+  timeZone: {{ .Values.cronjob.timeZone }}
+  {{- end }}
   concurrencyPolicy: {{ .Values.cronjob.concurrencyPolicy }}
   startingDeadlineSeconds: {{ .Values.cronjob.startingDeadlineSeconds }}
   suspend: {{ .Values.cronjob.suspend }}

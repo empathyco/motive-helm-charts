@@ -4,11 +4,12 @@ metadata:
   name: {{ include "motive-service.fullname" . }}
   labels:
     {{- include "motive-service.serviceLabels" . | nindent 4 }}
-    {{- with .Values.service.labels }}
-      {{- toYaml . | nindent 4 }}
-    {{- end }}
-  {{- with .Values.service.annotations }}
+  {{- with .Values.service.labels }}
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
   annotations:
+    service.kubernetes.io/topology-mode: Auto
+  {{- with .Values.service.annotations }}
     {{- toYaml . | nindent 4 }}
   {{- end }}
 spec:
@@ -18,7 +19,7 @@ spec:
       port: 8080
       targetPort: service
       protocol: {{ .Values.service.ports.serviceProtocol }}
-    {{- if $.Values.metrics.enabled }}
+    {{- if .Values.metrics.enabled }}
     - name: metrics
       port: 8081
       targetPort: metrics
