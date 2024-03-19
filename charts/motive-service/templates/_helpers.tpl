@@ -134,10 +134,14 @@ topologySpreadConstraints:
       matchLabels:
         {{- include "motive-service.selectorLabels" $ | nindent 8 }}
       {{- end }}
+    {{- if (semverCompare ">=1.26.0-0" .Capabilities.KubeVersion.Version) }}
     nodeAffinityPolicy: Honor
     nodeTaintsPolicy: Honor
+    {{- end }}
+    {{- if (semverCompare ">=1.27.0-0" .Capabilities.KubeVersion.Version) }}
     matchLabelKeys:
       - pod-template-hash
+    {{- end }}
   {{- end -}}
 {{- end -}}
 {{- end -}}
