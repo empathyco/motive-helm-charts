@@ -105,6 +105,10 @@ affinity:
           matchLabels:
             {{- include "motive-service.selectorLabels" $ | nindent 12 }}
         topologyKey: {{ .Values.service.podAntiAffinityTopologyKey }}
+        {{- if (semverCompare ">=1.29.0-0" $.Capabilities.KubeVersion.Version) }}
+        matchLabelKeys:
+          - pod-template-hash
+        {{- end }}
   {{- else if eq $.Values.service.podAntiAffinity "soft" }}
   podAntiAffinity:
     preferredDuringSchedulingIgnoredDuringExecution:
@@ -114,6 +118,10 @@ affinity:
             matchLabels:
               {{- include "motive-service.selectorLabels" $ | nindent 14 }}
           topologyKey: {{ .Values.service.podAntiAffinityTopologyKey }}
+          {{- if (semverCompare ">=1.29.0-0" $.Capabilities.KubeVersion.Version) }}
+          matchLabelKeys:
+            - pod-template-hash
+          {{- end }}
   {{- end }}
 {{- end }}
 {{- end }}
