@@ -50,10 +50,10 @@ spec:
               service:
                 name: {{ include "motive-service.fullname" $ }}
                 port:
-                  name: http
+                  name: {{ .portName | default "http" }}
               {{- else }}
               serviceName: {{ include "motive-service.fullname" $ }}
-              servicePort: 8080
+              servicePort: {{ .port | default 8080 }}
               {{- end }}
           {{- end }}
     {{- end }}
