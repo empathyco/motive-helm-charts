@@ -493,8 +493,10 @@ metrics:
     # -- Configure default alerting rules
     defaultAlerts:
       extraLabels: {}
-      #  team: 'motive'
-      #  slackChannel: 'motive-alerts-dev'
+      team: ""
+      slackChannelInfo: ""
+      slackChannelWarning: ""
+      slackChannelCritical: ""
       kafka:
         enabled: false
         deadLetter:
