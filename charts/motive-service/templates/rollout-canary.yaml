@@ -101,9 +101,9 @@ spec:
 
       # Steps define sequence of steps to take during an update of the canary.
       # Skipped upon initial deploy of a rollout.
-      {{- if .Values.rollouts.canary.steps }}
+      {{- with .Values.rollouts.canary.steps }}
       steps:
-        {{- toYaml .Values.rollouts.canary.steps | nindent 8 }}
+        {{- toYaml . | nindent 8 }}
       {{- end }}
 
       # Anti-affinity configuration between desired and previous ReplicaSet.
@@ -127,9 +127,9 @@ spec:
             - {{ include "motive-service.fullname" $ }}-internal
             {{- end }}
           annotationPrefix: {{ .Values.rollouts.canary.trafficRouting.nginx.annotationPrefix }} # optional
-          {{- if .Values.rollouts.canary.trafficRouting.nginx.additionalIngressAnnotations }}
+          {{- with .Values.rollouts.canary.trafficRouting.nginx.additionalIngressAnnotations }}
           additionalIngressAnnotations: # optional
-            {{- toYaml .Values.rollouts.canary.trafficRouting.nginx.additionalIngressAnnotations | nindent 12 }}
+            {{- toYaml . | nindent 12 }}
           {{- end }}
         {{- end }}
 

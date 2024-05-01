@@ -28,6 +28,9 @@ spec:
           for: 10m
           labels:
             severity: warning
+            {{- with $.Values.metrics.prometheusRule.defaultAlerts.extraLabels }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
           annotations:
             summary: 'Number of Pods < 2'
             description: 'Service reports having not enough pods to ensure High Availability'
@@ -38,6 +41,9 @@ spec:
           for: 0m
           labels:
             severity: critical
+            {{- with $.Values.metrics.prometheusRule.defaultAlerts.extraLabels }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
             oncall: 'true'
           annotations:
             summary: 'Number of Pods == 0'
@@ -55,6 +61,9 @@ spec:
           for: 0m
           labels:
             severity: critical
+            {{- with $.Values.metrics.prometheusRule.defaultAlerts.extraLabels }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
             skip_resolved: 'true'
           annotations:
             summary: 'Topic "{{ . }}" has new incoming messages'
@@ -69,7 +78,9 @@ spec:
           for: {{ .for | default "10s" }}
           labels:
             severity: critical
-            skip_resolved: 'false'
+            {{- with $.Values.metrics.prometheusRule.defaultAlerts.extraLabels }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
           annotations:
             summary: 'Topic "{{ .topic }}" lag > {{ .threshold }}'
             description: 'Service reports there is lag consuming events from topic'

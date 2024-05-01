@@ -492,6 +492,9 @@ metrics:
 
     # -- Configure default alerting rules
     defaultAlerts:
+      extraLabels: {}
+      #  team: 'motive'
+      #  slackChannel: 'motive-alerts-dev'
       kafka:
         enabled: false
         deadLetter:
@@ -511,7 +514,9 @@ metrics:
       #   expr: job:request_latency_seconds:mean5m{job="myjob"} > 0.5
       #   for: 10m
       #   labels:
-      #     severity: page
+      #     severity: critical
+      #     team: motive
+      #     slack_channel: 'motive-alerts-dev'
       #   annotations:
       #     summary: High request latency
 
