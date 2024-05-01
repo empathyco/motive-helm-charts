@@ -231,7 +231,7 @@ service:
   ports:
     servicePort: 8080
     serviceProtocol: TCP
-    metricsPort: 8080
+    metricsPort: 8081
     metricsProtocol: TCP
 
 
@@ -412,6 +412,8 @@ ingress:
         paths:
           - path: /
             pathType: ImplementationSpecific
+            portName: http
+            port: 8080
     tls: []
       #  - secretName: chart-example-tls
       #    hosts:
@@ -429,6 +431,8 @@ ingress:
         paths:
           - path: /
             pathType: ImplementationSpecific
+            portName: http
+            port: 8080
     tls: []
       #  - secretName: chart-example-tls
       #    hosts:
