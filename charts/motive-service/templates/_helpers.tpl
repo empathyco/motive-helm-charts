@@ -179,9 +179,9 @@ topologySpreadConstraints:
 {{- end -}}
 
 {{- define "motive-service.metricsPortName" -}}
-{{- if (eq $.Values.service.ports.servicePort $.Values.service.ports.metricsPort) -}}
-service
-{{- else }}
-metrics
-{{- end -}}
+  {{- if (eq $.Values.service.ports.servicePort $.Values.service.ports.metricsPort) -}}
+    {{- "service" }}
+  {{- else }}
+    {{- "metrics" }}
+  {{- end -}}
 {{- end -}}
