@@ -509,11 +509,13 @@ metrics:
           topic:
         lag:
           enabled: false
+          namespace: 'kafka-events'
           consumerGroup:
           topics: []
             # - topic: my-topic-1
             #   threshold: 10
             #   for: 10s
+            #   consumerGroup: my-consumer-group
 
     # -- Configure additional alerting rules for the chart under this key
     extraAlertingRules: []
