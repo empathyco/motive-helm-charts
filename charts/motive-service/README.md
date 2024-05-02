@@ -1,6 +1,6 @@
 # motive-service
 
-![Version: 2.0.2](https://img.shields.io/badge/Version-2.0.2-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 1.0.0](https://img.shields.io/badge/AppVersion-1.0.0-informational?style=flat-square)
+![Version: 2.0.3](https://img.shields.io/badge/Version-2.0.3-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 1.0.0](https://img.shields.io/badge/AppVersion-1.0.0-informational?style=flat-square)
 
 A Helm chart for Kubernetes
 
@@ -44,7 +44,7 @@ A Helm chart for Kubernetes
 | metrics.podMonitor.scrapeInterval | string | `"30s"` |  |
 | metrics.podMonitor.scrapeTimeout | string | `"10s"` |  |
 | metrics.prometheusRule | object | See values.yaml | Enable and configure Prometheus Rules for the chart under this key. |
-| metrics.prometheusRule.defaultAlerts | object | `{"extraLabels":{},"kafka":{"deadLetter":{"enabled":false,"topic":null},"enabled":false,"lag":{"consumerGroup":null,"enabled":false,"topics":[]}},"slackChannel":"","slackChannelCritical":"","slackChannelInfo":"","slackChannelWarning":"","team":""}` | Configure default alerting rules |
+| metrics.prometheusRule.defaultAlerts | object | `{"extraLabels":{},"kafka":{"deadLetter":{"enabled":false,"topic":null},"enabled":false,"lag":{"consumerGroup":null,"enabled":false,"namespace":"kafka-events","topics":[]}},"slackChannel":"","slackChannelCritical":"","slackChannelInfo":"","slackChannelWarning":"","team":""}` | Configure default alerting rules |
 | metrics.prometheusRule.extraAlertingRules | list | `[]` | Configure additional alerting rules for the chart under this key |
 | metrics.prometheusRule.extraRecordingRules | list | `[]` | Configure additional recording rules for the chart under this key |
 | metrics.serviceMonitor.annotations | object | `{}` |  |
