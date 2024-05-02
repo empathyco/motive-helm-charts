@@ -177,3 +177,11 @@ topologySpreadConstraints:
 {{- $.Values.metrics.prometheusRule.defaultAlerts.slackChannel }}
 {{- end }}
 {{- end -}}
+
+{{- define "motive-service.metricsPortName" -}}
+{{- if (eq $.Values.service.ports.servicePort $.Values.service.ports.metricsPort) -}}
+service
+{{- else }}
+metrics
+{{- end -}}
+{{- end -}}

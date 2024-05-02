@@ -22,7 +22,7 @@ spec:
     {{- if .Values.metrics.enabled }}
     - name: metrics
       port: 8081
-      targetPort: metrics
+      targetPort: {{ include "motive-service.metricsPortName" . }}
       protocol: {{ .Values.service.ports.metricsProtocol }}
     {{- end }}
   selector:
