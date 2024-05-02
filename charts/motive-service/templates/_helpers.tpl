@@ -153,3 +153,35 @@ topologySpreadConstraints:
   {{- end -}}
 {{- end -}}
 {{- end -}}
+
+{{- define "motive-service.slackChannelInfo" -}}
+{{- if $.Values.metrics.prometheusRule.defaultAlerts.slackChannelInfo }}
+{{- $.Values.metrics.prometheusRule.defaultAlerts.slackChannelWarning }}
+{{- else }}
+{{- $.Values.metrics.prometheusRule.defaultAlerts.slackChannel }}
+{{- end }}
+{{- end -}}
+
+{{- define "motive-service.slackChannelWarning" -}}
+{{- if $.Values.metrics.prometheusRule.defaultAlerts.slackChannelWarning }}
+{{- $.Values.metrics.prometheusRule.defaultAlerts.slackChannelWarning }}
+{{- else }}
+{{- $.Values.metrics.prometheusRule.defaultAlerts.slackChannel }}
+{{- end }}
+{{- end -}}
+
+{{- define "motive-service.slackChannelCritical" -}}
+{{- if $.Values.metrics.prometheusRule.defaultAlerts.slackChannelCritical }}
+{{- $.Values.metrics.prometheusRule.defaultAlerts.slackChannelCritical }}
+{{- else }}
+{{- $.Values.metrics.prometheusRule.defaultAlerts.slackChannel }}
+{{- end }}
+{{- end -}}
+
+{{- define "motive-service.metricsPortName" -}}
+{{- if (eq $.Values.service.ports.servicePort $.Values.service.ports.metricsPort) -}}
+service
+{{- else }}
+metrics
+{{- end -}}
+{{- end -}}

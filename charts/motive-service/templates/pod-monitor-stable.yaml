@@ -19,7 +19,7 @@ metadata:
   {{- end }}
 spec:
   podMetricsEndpoints:
-    - port: "metrics"
+    - port: {{ include "motive-service.metricsPortName" . }}
       interval: {{ .Values.metrics.podMonitor.scrapeInterval | default "30s" }}
       scrapeTimeout: {{ .Values.metrics.podMonitor.scrapeTimeout | default "10s"  }}
       {{- if .Values.metrics.podMonitor.honorLabels }}

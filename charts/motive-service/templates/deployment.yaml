@@ -94,7 +94,7 @@ spec:
             - name: service
               containerPort: {{ .servicePort }}
               protocol: {{ .serviceProtocol }}
-            {{- if $.Values.metrics.enabled }}
+            {{- if and ($.Values.metrics.enabled) (not (eq .servicePort .metricsPort)) }}
             - name: metrics
               containerPort: {{ .metricsPort }}
               protocol: {{ .metricsProtocol }}

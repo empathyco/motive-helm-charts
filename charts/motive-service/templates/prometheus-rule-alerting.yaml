@@ -31,7 +31,7 @@ spec:
             {{- with $.Values.metrics.prometheusRule.defaultAlerts.team }}
             team: {{ . | quote }}
             {{- end }}
-            {{- with $.Values.metrics.prometheusRule.defaultAlerts.slackChannelWarning }}
+            {{- with (include "motive-service.slackChannelWarning" $) }}
             slack_channel: {{ . | quote }}
             {{- end }}
             {{- with $.Values.metrics.prometheusRule.defaultAlerts.extraLabels }}
@@ -51,7 +51,7 @@ spec:
             {{- with $.Values.metrics.prometheusRule.defaultAlerts.team }}
             team: {{ . | quote }}
             {{- end }}
-            {{- with $.Values.metrics.prometheusRule.defaultAlerts.slackChannelCritical }}
+            {{- with (include "motive-service.slackChannelCritical" $) }}
             slack_channel: {{ . | quote }}
             {{- end }}
             {{- with $.Values.metrics.prometheusRule.defaultAlerts.extraLabels }}
@@ -77,7 +77,7 @@ spec:
             {{- with $.Values.metrics.prometheusRule.defaultAlerts.team }}
             team: {{ . | quote }}
             {{- end }}
-            {{- with $.Values.metrics.prometheusRule.defaultAlerts.slackChannelCritical }}
+            {{- with (include "motive-service.slackChannelCritical" $) }}
             slack_channel: {{ . | quote }}
             {{- end }}
             {{- with $.Values.metrics.prometheusRule.defaultAlerts.extraLabels }}
@@ -99,7 +99,7 @@ spec:
             {{- with $.Values.metrics.prometheusRule.defaultAlerts.team }}
             team: {{ . | quote }}
             {{- end }}
-            {{- with $.Values.metrics.prometheusRule.defaultAlerts.slackChannelCritical }}
+            {{- with (include "motive-service.slackChannelCritical" $) }}
             slack_channel: {{ . | quote }}
             {{- end }}
             {{- with $.Values.metrics.prometheusRule.defaultAlerts.extraLabels }}

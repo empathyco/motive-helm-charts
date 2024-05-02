@@ -1,6 +1,6 @@
 # motive-service
 
-![Version: 2.0.0](https://img.shields.io/badge/Version-2.0.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 1.0.0](https://img.shields.io/badge/AppVersion-1.0.0-informational?style=flat-square)
+![Version: 2.0.1](https://img.shields.io/badge/Version-2.0.1-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 1.0.0](https://img.shields.io/badge/AppVersion-1.0.0-informational?style=flat-square)
 
 A Helm chart for Kubernetes
 
@@ -18,6 +18,8 @@ A Helm chart for Kubernetes
 | ingress.internal.hosts[0].host | string | `"chart-example.local"` |  |
 | ingress.internal.hosts[0].paths[0].path | string | `"/"` |  |
 | ingress.internal.hosts[0].paths[0].pathType | string | `"ImplementationSpecific"` |  |
+| ingress.internal.hosts[0].paths[0].port | int | `8080` |  |
+| ingress.internal.hosts[0].paths[0].portName | string | `"http"` |  |
 | ingress.internal.tls | list | `[]` |  |
 | ingress.public.annotations | object | `{}` |  |
 | ingress.public.className | string | `"nginx-public"` |  |
@@ -25,6 +27,8 @@ A Helm chart for Kubernetes
 | ingress.public.hosts[0].host | string | `"chart-example.local"` |  |
 | ingress.public.hosts[0].paths[0].path | string | `"/"` |  |
 | ingress.public.hosts[0].paths[0].pathType | string | `"ImplementationSpecific"` |  |
+| ingress.public.hosts[0].paths[0].port | int | `8080` |  |
+| ingress.public.hosts[0].paths[0].portName | string | `"http"` |  |
 | ingress.public.tls | list | `[]` |  |
 | metrics.enabled | bool | See values.yaml | Enable and configure a Prometheus serviceMonitor for the chart under this key. |
 | metrics.podMonitor.annotations | object | `{}` |  |
@@ -40,7 +44,7 @@ A Helm chart for Kubernetes
 | metrics.podMonitor.scrapeInterval | string | `"30s"` |  |
 | metrics.podMonitor.scrapeTimeout | string | `"10s"` |  |
 | metrics.prometheusRule | object | See values.yaml | Enable and configure Prometheus Rules for the chart under this key. |
-| metrics.prometheusRule.defaultAlerts | object | `{"kafka":{"deadLetter":{"enabled":false,"topic":null},"enabled":false,"lag":{"consumerGroup":null,"enabled":false,"topics":[]}}}` | Configure default alerting rules |
+| metrics.prometheusRule.defaultAlerts | object | `{"extraLabels":{},"kafka":{"deadLetter":{"enabled":false,"topic":null},"enabled":false,"lag":{"consumerGroup":null,"enabled":false,"topics":[]}},"slackChannel":"","slackChannelCritical":"","slackChannelInfo":"","slackChannelWarning":"","team":""}` | Configure default alerting rules |
 | metrics.prometheusRule.extraAlertingRules | list | `[]` | Configure additional alerting rules for the chart under this key |
 | metrics.prometheusRule.extraRecordingRules | list | `[]` | Configure additional recording rules for the chart under this key |
 | metrics.serviceMonitor.annotations | object | `{}` |  |
@@ -133,7 +137,7 @@ A Helm chart for Kubernetes
 | service.podAntiAffinityTopologyKey | string | `"kubernetes.io/hostname"` |  |
 | service.podLabels | object | `{}` | Configurable labels applied to all pods |
 | service.podSecurityContext | object | `{}` | Allows you to set the securityContext for the pod |
-| service.ports.metricsPort | int | `8080` |  |
+| service.ports.metricsPort | int | `8081` |  |
 | service.ports.metricsProtocol | string | `"TCP"` |  |
 | service.ports.servicePort | int | `8080` |  |
 | service.ports.serviceProtocol | string | `"TCP"` |  |
