@@ -7,21 +7,38 @@ metadata:
   name: {{ include "motive-service.fullname" $ }}-latency-{{ .name | required "slos.name is required." }}
   labels:
     prometheus: k8s
-    role: alert-rules
-    pyrra.dev/team: {{ .team | default "platform" }}
+      role: alert-rules
+      release: prometheus
+      pyrra.dev/team: {{ .team | default "motive" }}
+      {{- with .slackChannel }}
+      pyrra.dev/slack_channel: {{ . }}
+      {{- end }}
+      {{- with .extraLabels }}
+      {{- toYaml . | nindent 4 }}
+      {{- end }}
 spec:
-#  alerting:
-#    name: ErrorBudgetBurn
-#    absent: true
-#    burnrates: true
-#    disabled: false
+  {{- $alerting := .alerting | default (dict) }}
+  alerting:
+    name: {{ $alerting.name | default "ErrorBudgetBurn" }}
+    absent: {{ $alerting.absent | default true }}
+    burnrates: {{ $alerting.burnrates | default true }}
+    disabled: {{ $alerting.disabled | default false }}
   description: "{{ .description | default "" }}"
   indicator:
+    {{- if .latency }}
+    latencyNative:
+      latency: {{ .latency | required "slos.latency is required." }}
+    {{- else }}
     latency:
       success:
         metric: {{ .metric | required "slos.metrics is required." }}
+    {{- end }}
       total:
         metric: {{ .metricTotal | required "slos.metricTotal is required." }}
+      {{- with .groupBy }}
+      grouping:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
   target: "{{ .target | default 99 }}"
   window: "{{ .window | default "4w" }}"
 {{ end }}
