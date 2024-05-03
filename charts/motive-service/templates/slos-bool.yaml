@@ -1,10 +1,10 @@
 {{- if and .Values.metrics.enabled (.Capabilities.APIVersions.Has "pyrra.dev/v1alpha1") -}}
-{{- range .Values.slos.ratio }}
+{{- range .Values.slos.bool }}
 ---
 apiVersion: pyrra.dev/v1alpha1
 kind: ServiceLevelObjective
 metadata:
-  name: {{ include "motive-service.fullname" $ }}-ratio-{{ .name | required "slos.name is required." }}
+  name: {{ include "motive-service.fullname" $ }}-bool-{{ .name | required "slos.name is required." }}
   labels:
     prometheus: k8s
     role: alert-rules
@@ -25,11 +25,8 @@ spec:
     disabled: {{ $alerting.disabled | default false }}
   description: "{{ .description | default "" }}"
   indicator:
-    ratio:
-      errors:
-        metric: {{ .metric | required "slos.metrics is required." }}
-      total:
-        metric: {{ .metricTotal | required "slos.metricTotal is required." }}
+    bool_gauge:
+      metric: {{ .metric | required "slos.metric is required." }}
       {{- with .groupBy }}
       grouping:
         {{- toYaml . | nindent 8 }}

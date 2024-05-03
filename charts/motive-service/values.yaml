@@ -551,17 +551,49 @@ slos:
   latency: []
     # - name: latency
     #   description: ""
+    #   team: ""
+    #   slackChannel: ""
+    #   extraLabels: {}
+    #   latency: 200ms # native latency (or metric)
     #   metric: http_request_duration_seconds_bucket{status="200", le="0.25"}
     #   metricTotal: http_request_duration_seconds_count{status="200"}
+    #   groupBy: []
+    #   alerting:
+    #     name: ErrorBudgetBurn
+    #     absent: true
+    #     burnrates: true
+    #     disabled: false
 
   # -- Ration SLOs
   ratio: []
     # - name: ratio
     #   description: ""
+    #   team: ""
+    #   slackChannel: ""
+    #   extraLabels: {}
     #   metric: http_requests{status=~"5.."}
     #   metricTotal: http_requests
+    #   groupBy: []
+    #   alerting:
+    #     name: ErrorBudgetBurn
+    #     absent: true
+    #     burnrates: true
+    #     disabled: false
 
-
+  # -- Bool SLOs
+  bool: []
+    # - name: bool
+    #   description: ""
+    #   team: ""
+    #   slackChannel: ""
+    #   extraLabels: {}
+    #   metric: http_requests{status="500"} > 0
+    #   target: 0.01
+    #   alerting:
+    #     name: ErrorBudgetBurn
+    #     absent: true
+    #     burnrates: true
+    #     disabled: false
 
 # -- --------------
 # Rollouts
