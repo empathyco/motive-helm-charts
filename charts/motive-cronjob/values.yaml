@@ -189,20 +189,25 @@ cronjob:
   #      command:
   #        - /wait-shutdown
 
-  env: {}
+  env: []
     # - name: NAME
     #   valueFrom:
     #     secretKeyRef:
     #       name: KEY_NAME
     #       key: SECRET_KEY
 
-  extraEnv: {}
+  extraEnv: []
     # - name: NAME
     #   valueFrom:
     #     secretKeyRef:
     #       name: KEY_NAME
     #       key: SECRET_KEY
 
+  envFrom: []
+    # - secretRef:
+    #     name: secret-name
+    # - configMapRef:
+    #     name: config-map-name
 
   # -- ------
   # Storage
