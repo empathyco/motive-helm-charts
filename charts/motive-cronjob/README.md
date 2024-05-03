@@ -1,6 +1,6 @@
 # motive-cronjob
 
-![Version: 1.0.1](https://img.shields.io/badge/Version-1.0.1-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 1.0.0](https://img.shields.io/badge/AppVersion-1.0.0-informational?style=flat-square)
+![Version: 1.0.2](https://img.shields.io/badge/Version-1.0.2-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 1.0.0](https://img.shields.io/badge/AppVersion-1.0.0-informational?style=flat-square)
 
 A Helm chart for Kubernetes
 
@@ -12,8 +12,9 @@ A Helm chart for Kubernetes
 | cronjob.annotations | object | `{}` | Annotations to be added to the controller Deployment or DaemonSet |
 | cronjob.concurrencyPolicy | string | `"Forbid"` | Specifies how to treat concurrent executions of a Job |
 | cronjob.containerSecurityContext | object | `{}` | Allows you to set the securityContext for the main container See https://kubernetes.io/docs/tasks/administer-cluster/sysctl-cluster/ for notes on enabling and using sysctls |
-| cronjob.env | object | `{}` |  |
-| cronjob.extraEnv | object | `{}` |  |
+| cronjob.env | list | `[]` |  |
+| cronjob.envFrom | list | `[]` |  |
+| cronjob.extraEnv | list | `[]` |  |
 | cronjob.extraInitContainers | list | `[]` | Containers, which are run before the app containers are started. |
 | cronjob.extraVolumeMounts | list | `[]` | Additional volumeMounts to the service main container. |
 | cronjob.extraVolumes | list | `[]` | Additional volumes to the controller pod. |

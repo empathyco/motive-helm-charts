@@ -1,6 +1,6 @@
 # motive-service
 
-![Version: 2.0.3](https://img.shields.io/badge/Version-2.0.3-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 1.0.0](https://img.shields.io/badge/AppVersion-1.0.0-informational?style=flat-square)
+![Version: 2.0.4](https://img.shields.io/badge/Version-2.0.4-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 1.0.0](https://img.shields.io/badge/AppVersion-1.0.0-informational?style=flat-square)
 
 A Helm chart for Kubernetes
 
@@ -103,8 +103,9 @@ A Helm chart for Kubernetes
 | service.autoscaling.targetMemoryUtilizationPercentage | int | `80` |  |
 | service.autoscalingTemplate | list | `[]` |  |
 | service.containerSecurityContext | object | `{}` | Allows you to set the securityContext for the main container See https://kubernetes.io/docs/tasks/administer-cluster/sysctl-cluster/ for notes on enabling and using sysctls |
-| service.env | object | `{}` |  |
-| service.extraEnv | object | `{}` |  |
+| service.env | list | `[]` |  |
+| service.envFrom | list | `[]` |  |
+| service.extraEnv | list | `[]` |  |
 | service.extraInitContainers | list | `[]` | Containers, which are run before the app containers are started. |
 | service.extraVolumeMounts | list | `[]` | Additional volumeMounts to the service main container. |
 | service.extraVolumes | list | `[]` | Additional volumes to the controller pod. |
