@@ -34,6 +34,16 @@ entries:
   motive-service:
   - apiVersion: v2
     appVersion: 1.0.0
+    created: "2024-05-03T15:45:40.905831858Z"
+    description: A Helm chart for Kubernetes
+    digest: 088d8e899f95cac221794d38e1ed51c887931f02b4c4dd5553a38e1442f039d1
+    name: motive-service
+    type: application
+    urls:
+    - https://github.com/empathyco/motive-helm-charts/releases/download/motive-service-2.0.5/motive-service-2.0.5.tgz
+    version: 2.0.5
+  - apiVersion: v2
+    appVersion: 1.0.0
     created: "2024-05-03T11:01:56.68412947Z"
     description: A Helm chart for Kubernetes
     digest: 7232481b580dc40d28c7983c8c035f3671f85ee916e39caf195046b69bdcf1ad
@@ -473,4 +483,4 @@ entries:
     urls:
     - https://github.com/empathyco/motive-helm-charts/releases/download/multi-service-0.3.1/multi-service-0.3.1.tgz
     version: 0.3.1
-generated: "2024-05-03T11:01:56.684339744Z"
+generated: "2024-05-03T15:45:40.906045206Z"
