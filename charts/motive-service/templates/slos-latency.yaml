@@ -7,15 +7,15 @@ metadata:
   name: {{ include "motive-service.fullname" $ }}-latency-{{ .name | required "slos.name is required." }}
   labels:
     prometheus: k8s
-      role: alert-rules
-      release: prometheus
-      pyrra.dev/team: {{ .team | default "motive" }}
-      {{- with .slackChannel }}
-      pyrra.dev/slack_channel: {{ . }}
-      {{- end }}
-      {{- with .extraLabels }}
-      {{- toYaml . | nindent 4 }}
-      {{- end }}
+    role: alert-rules
+    release: prometheus
+    pyrra.dev/team: {{ .team | default "motive" }}
+    {{- with .slackChannel }}
+    pyrra.dev/slack_channel: {{ . }}
+    {{- end }}
+    {{- with .extraLabels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
 spec:
   {{- $alerting := .alerting | default (dict) }}
   alerting:
