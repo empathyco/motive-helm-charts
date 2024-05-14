@@ -427,6 +427,7 @@ ingress:
 
   public:
     enabled: false
+    split: false
     className: nginx-public
     annotations: {}
       # nginx.ingress.kubernetes.io/enable-opentelemetry: "true"
