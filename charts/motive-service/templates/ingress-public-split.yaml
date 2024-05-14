@@ -1,10 +1,13 @@
 {{- with .Values.ingress.public -}}
-{{- if and .enabled (not .split) -}}
+{{- if and .enabled .split -}}
 {{- if and .className (not (semverCompare ">=1.18-0" $.Capabilities.KubeVersion.GitVersion)) }}
   {{- if not (hasKey .annotations "kubernetes.io/ingress.class") }}
   {{- $_ := set .annotations "kubernetes.io/ingress.class" .className}}
   {{- end }}
 {{- end }}
+{{- $ingressConfig := . -}}
+{{- $counter := 0 | int -}}
+{{- range $host := .hosts }}
 {{- if semverCompare ">=1.19-0" $.Capabilities.KubeVersion.GitVersion -}}
 apiVersion: networking.k8s.io/v1
 {{- else if semverCompare ">=1.14-0" $.Capabilities.KubeVersion.GitVersion -}}
@@ -14,20 +17,21 @@ apiVersion: extensions/v1beta1
 {{- end }}
 kind: Ingress
 metadata:
-  name: {{ include "motive-service.fullname" $ }}-public
+  name: {{ include "motive-service.fullname" $ }}-public-{{ $counter }}
   labels:
     {{- include "motive-service.serviceLabels" $ | nindent 4 }}
-  {{- with .annotations }}
+  {{- $annotations := merge ($host.annotations | default (dict)) $ingressConfig.annotations -}}
+  {{- with $annotations }}
   annotations:
     {{- toYaml . | nindent 4 }}
   {{- end }}
 spec:
-  {{- if and .className (semverCompare ">=1.18-0" $.Capabilities.KubeVersion.GitVersion) }}
-  ingressClassName: {{ .className }}
+  {{- if and $ingressConfig.className (semverCompare ">=1.18-0" $.Capabilities.KubeVersion.GitVersion) }}
+  ingressClassName: {{ $ingressConfig.className }}
   {{- end }}
-  {{- if .tls }}
+  {{- if $ingressConfig.tls }}
   tls:
-    {{- range .tls }}
+    {{- range $ingressConfig.tls }}
     - hosts:
         {{- range .hosts }}
         - {{ . | quote }}
@@ -36,11 +40,10 @@ spec:
     {{- end }}
   {{- end }}
   rules:
-    {{- range .hosts }}
-    - host: {{ .host | quote }}
+    - host: {{ $host.host | quote }}
       http:
         paths:
-          {{- range .paths }}
+          {{- range $host.paths }}
           - path: {{ .path }}
             {{- if and .pathType (semverCompare ">=1.18-0" $.Capabilities.KubeVersion.GitVersion) }}
             pathType: {{ .pathType }}
@@ -56,6 +59,8 @@ spec:
               servicePort: {{ .port | default 8080 }}
               {{- end }}
           {{- end }}
-    {{- end }}
+---
+{{- $counter = add1 $counter -}}
+{{- end }}
 {{- end }}
 {{- end }}

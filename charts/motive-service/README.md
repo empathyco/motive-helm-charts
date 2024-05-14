@@ -1,6 +1,6 @@
 # motive-service
 
-![Version: 2.0.6](https://img.shields.io/badge/Version-2.0.6-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 1.0.0](https://img.shields.io/badge/AppVersion-1.0.0-informational?style=flat-square)
+![Version: 2.0.7](https://img.shields.io/badge/Version-2.0.7-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 1.0.0](https://img.shields.io/badge/AppVersion-1.0.0-informational?style=flat-square)
 
 A Helm chart for Kubernetes
 
@@ -29,6 +29,7 @@ A Helm chart for Kubernetes
 | ingress.public.hosts[0].paths[0].pathType | string | `"ImplementationSpecific"` |  |
 | ingress.public.hosts[0].paths[0].port | int | `8080` |  |
 | ingress.public.hosts[0].paths[0].portName | string | `"http"` |  |
+| ingress.public.split | bool | `false` |  |
 | ingress.public.tls | list | `[]` |  |
 | metrics.enabled | bool | See values.yaml | Enable and configure a Prometheus serviceMonitor for the chart under this key. |
 | metrics.podMonitor.annotations | object | `{}` |  |
