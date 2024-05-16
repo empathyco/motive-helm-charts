@@ -107,5 +107,5 @@ spec:
   {{- end }}
 
   vcl: # required
-    configMapName: {{ .Values.vcl.configMapName | required ".Values.vcl.configMapName is required." }}
+    configMapName: {{ tpl (.Values.vcl.configMapName | required ".Values.vcl.configMapName is required.") $ }}
     entrypointFileName: {{ .Values.vcl.entrypointFileName | required ".Values.vcl.entrypointFileName is required." }}
