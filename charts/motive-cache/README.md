@@ -1,6 +1,6 @@
 # motive-cache
 
-![Version: 0.1.0](https://img.shields.io/badge/Version-0.1.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 1.0.0](https://img.shields.io/badge/AppVersion-1.0.0-informational?style=flat-square)
+![Version: 0.1.1](https://img.shields.io/badge/Version-0.1.1-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 1.0.0](https://img.shields.io/badge/AppVersion-1.0.0-informational?style=flat-square)
 
 A Helm chart for Kubernetes
 
@@ -11,8 +11,8 @@ A Helm chart for Kubernetes
 | affinity | object | `{}` | Similar to the nodeSelector, but slightly different: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#affinity-and-anti-affinity |
 | backend.namespaces | list | `[]` | Namespace(s) to look for backend pods. By default - namespace the VarnishCluster is deployed to. |
 | backend.onlyReady | bool | `false` | Include (false, by default) or exclude (true) backend pods from the VCL (.Backends template var). Alters .Backends template variable based on Kubernetes health checks (by default not ready pods are also included in VCL) instead of Varnish health probes. |
-| backend.port | string | `"backend-port"` | The port of the backend pods being cached by Varnish. Can be port name or port number. |
-| backend.selector | object | `{}` | The selector used to identify the backend Pods. |
+| backend.port | string | `""` | The port of the backend pods being cached by Varnish. Can be port name or port number. |
+| backend.selector | string | `nil` | The selector used to identify the backend Pods. |
 | backend.zoneBalancing | object | `{"thresholds":[],"type":"disabled"}` | Controls Varnish backend topology aware routing which can assign weights to backends according to their geographical location. |
 | backend.zoneBalancing.thresholds | list | `[]` | Array of thresholds objects to determine condition and respective weights to be assigned to backends: threshold, local - local backend weight, remote - remote backend weight |
 | backend.zoneBalancing.type | string | `"disabled"` | Varnish backend zone-balancing type. Accepted values: disabled, auto, thresholds |
@@ -28,15 +28,15 @@ A Helm chart for Kubernetes
 | ingress.internal.tls | list | `[]` |  |
 | logFormat | string | `"json"` | Format of the logs. Can be json and console. |
 | logLevel | string | `"info"` | The minimum enabled logging level. Allowed values: debug, info, warn, error, dpanic, panic, fatal. |
-| monitoring | object | `{"grafanaDashboard":{"datasourceName":"","enabled":false,"labels":{},"namespace":"","title":""},"prometheusServiceMonitor":{"enabled":true,"labels":{},"namespace":""}}` | The operator monitoring configuration object |
+| monitoring | object | `{"grafanaDashboard":{"datasourceName":"","enabled":false,"labels":{},"namespace":"","title":""},"prometheusServiceMonitor":{"enabled":false,"labels":{},"namespace":""}}` | The operator monitoring configuration object |
 | monitoring.grafanaDashboard | object | `{"datasourceName":"","enabled":false,"labels":{},"namespace":"","title":""}` | A dashboard that can be installed along with the operator and used in grafana. Installed as a ConfigMap. |
 | monitoring.grafanaDashboard.datasourceName | string | `""` | Name of the Grafana datasource the dashboard should use. (required) |
 | monitoring.grafanaDashboard.enabled | bool | `false` | Enable or disable the ConfigMap installation. |
 | monitoring.grafanaDashboard.labels | object | `{}` | ConfigMap labels. Can be used to for discovery by grafana. |
 | monitoring.grafanaDashboard.namespace | string | `""` | Namespace that the ConfigMap with the dashboard should be installed to. Default to the namespace VarnishCluster is installed to |
 | monitoring.grafanaDashboard.title | string | `""` | Title of the Grafana dashboard. Default: Varnish (<cluster namespace>/<name>) |
-| monitoring.prometheusServiceMonitor | object | `{"enabled":true,"labels":{},"namespace":""}` | The Prometheus ServiceMonitor that is preconfigured to monitors the operator pods. |
-| monitoring.prometheusServiceMonitor.enabled | bool | `true` | Enable or disable ServiceMontitor installation. |
+| monitoring.prometheusServiceMonitor | object | `{"enabled":false,"labels":{},"namespace":""}` | The Prometheus ServiceMonitor that is preconfigured to monitors the operator pods. |
+| monitoring.prometheusServiceMonitor.enabled | bool | `false` | Enable or disable ServiceMontitor installation. |
 | monitoring.prometheusServiceMonitor.labels | object | `{}` | ServiceMonitor labels that will be used by Prometheus instance to discover this ServiceMonitor. |
 | monitoring.prometheusServiceMonitor.namespace | string | `""` | The namespace it should be installed to. Default to the namespace VarnishCluster is installed to |
 | nameOverride | string | `""` |  |
@@ -68,9 +68,9 @@ A Helm chart for Kubernetes
 | varnish.imagePullPolicy | string | `"IfNotPresent"` | Image pull policy for the Varnish container. |
 | varnish.metricsExporter | object | `{"imagePullPolicy":"IfNotPresent","resources":{"limits":{"memory":"32Mi"},"requests":{"cpu":"10m","memory":"16Mi"}}}` | An object that defines the configuration of a particular Varnish Prometheus metrics exporter being deployed |
 | varnish.resources | object | `{"limits":{"memory":"192Mi"},"requests":{"cpu":"20m","memory":"128Mi"}}` | Resource requests and limits for Varnish container. |
-| vcl | object | `{"configMapName":"tmp","entrypointFileName":"tmp"}` | An object that defines the VCL ConfigMap configuration |
-| vcl.configMapName | string | `"tmp"` | Name of the ConfigMap containing the VCL configuration files |
-| vcl.entrypointFileName | string | `"tmp"` | The name of the main VCL file |
+| vcl | object | `{"configMapName":"","entrypointFileName":""}` | An object that defines the VCL ConfigMap configuration |
+| vcl.configMapName | string | `""` | Name of the ConfigMap containing the VCL configuration files |
+| vcl.entrypointFileName | string | `""` | The name of the main VCL file |
 
 ----------------------------------------------
 Autogenerated from chart metadata using [helm-docs v1.11.3](https://github.com/norwoodj/helm-docs/releases/v1.11.3)

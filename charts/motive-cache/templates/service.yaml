@@ -25,5 +25,5 @@ spec:
       targetPort: ctrl-metrics
   selector:
     varnish-component: varnish
-    statefulset.kubernetes.io/pod-name: {{ include "motive-cache.fullname" $ }}-{{ . }}
+    statefulset.kubernetes.io/pod-name: {{ include "motive-cache.fullname" $ }}-varnish-{{ . }}
 {{- end }}

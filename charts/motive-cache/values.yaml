@@ -3,16 +3,13 @@
 # Declare variables to be passed into your templates.
 
 
-
 # -- --------------
 # Global
 # -- --------------
 
 
-
 nameOverride: ""
 fullnameOverride: ""
-
 
 
 # -- --------------
@@ -54,10 +51,10 @@ backend:
   onlyReady: false
 
   # -- The port of the backend pods being cached by Varnish. Can be port name or port number.
-  port: "backend-port"
+  port: ""
 
   # -- The selector used to identify the backend Pods.
-  selector: {}
+  selector:
 
   # -- Controls Varnish backend topology aware routing which can assign weights to backends according to their geographical location.
   zoneBalancing:
@@ -89,7 +86,7 @@ monitoring:
   # -- The Prometheus ServiceMonitor that is preconfigured to monitors the operator pods.
   prometheusServiceMonitor:
     # -- Enable or disable ServiceMontitor installation.
-    enabled: true
+    enabled: false
     # -- ServiceMonitor labels that will be used by Prometheus instance to discover this ServiceMonitor.
     labels: {}
     # -- The namespace it should be installed to. Default to the namespace VarnishCluster is installed to
@@ -176,14 +173,16 @@ varnish:
 # -- An object that defines the VCL ConfigMap configuration
 vcl:
   # -- Name of the ConfigMap containing the VCL configuration files
-  configMapName: "tmp"
+  configMapName: ""
   # -- The name of the main VCL file
-  entrypointFileName: "tmp"
+  entrypointFileName: ""
 
 
 # -- --------------
 # Ingress
 # -- --------------
+
+
 ingress:
   internal:
     enabled: false
