@@ -1,0 +1,111 @@
+apiVersion: caching.ibm.com/v1alpha1
+kind: VarnishCluster
+metadata:
+  name: {{ include "motive-cache.fullname" . }}
+  labels:
+    {{- include "motive-cache.labels" . | nindent 4 }}
+  {{- with .Values.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  {{- include "motive-cache.affinity" $ | nindent 2 }}
+
+  backend: # required
+    {{- with .Values.backend.namespaces }}
+    namespaces:
+      {{- toYaml . | nindent 6 }}
+    {{- end }}
+    onlyReady: {{ .Values.backend.onlyReady | default true }}
+    port: {{ .Values.backend.port | required ".Values.backend.port is required." }} # required
+    selector: # required
+      {{- toYaml (.Values.backend.selector | required ".Values.backend.selector is required.") | nindent 6 }}
+    zoneBalancing:
+      type: {{ .Values.backend.zoneBalancing.type }}
+      {{- with .Values.backend.zoneBalancing.thresholds }}
+      thresholds:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+
+  logFormat: {{ .Values.logFormat | default "json" }}
+
+  logLevel: {{ .Values.logLevel | default "info" }}
+
+  {{- if or .Values.monitoring.grafanaDashboard.enabled .Values.monitoring.prometheusServiceMonitor.enabled }}
+  monitoring:
+    {{- if .Values.monitoring.grafanaDashboard.enabled }}
+    grafanaDashboard:
+      enabled: true
+      datasourceName: {{ .Values.monitoring.grafanaDashboard.datasourceName | required "monitoring.grafanaDashboard.datasourceName is required." }}
+      {{- with .Values.monitoring.grafanaDashboard.labels }}
+      labels:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      namespace: {{ .Values.monitoring.grafanaDashboard.namespace | default .Release.Namespace }}
+      {{- with .Values.monitoring.grafanaDashboard.title }}
+      title: {{ . }}
+      {{- end }}
+    {{- end }}
+    {{- if .Values.monitoring.prometheusServiceMonitor.enabled }}
+    prometheusServiceMonitor:
+      enabled: true
+      {{- with .Values.monitoring.prometheusServiceMonitor.labels }}
+      labels:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      namespace: {{ .Values.monitoring.prometheusServiceMonitor.namespace | default .Release.Namespace }}
+    {{- end }}
+  {{- end }}
+
+  {{- with .Values.nodeSelector }}
+  nodeSelector:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+
+  {{- if (gt (.Values.replicas | int) 1) }}
+  podDisruptionBudget:
+    {{- if .Values.podDisruptionBudget.maxUnavailable }}
+    maxUnavailable: {{ .Values.podDisruptionBudget.maxUnavailable }}
+    {{- else if .Values.podDisruptionBudget.minAvailable }}
+    minAvailable: {{ .Values.podDisruptionBudget.minAvailable }}
+    {{- end }}
+  {{- end }}
+
+  # priorityClassName: ""
+
+  replicas: {{ .Values.replicas | default 1 }}
+
+  service: # required
+    type: {{ .Values.service.type | default "ClusterIP" }}
+    {{- if .Values.service.type | default "ClusterIP" | eq "ClusterIP" }}
+    port: {{ .Values.service.port | default 80 }}
+    metricsPort: {{ .Values.service.metricsPort | default 9131 }}
+    {{- else if .Values.service.type | default "ClusterIP" | eq "NodePort" }}
+    nodePort: {{ .Values.service.nodePort | default 30000 }}
+    metricsNodePort: {{ .Values.service.metricsNodePort | default 30001 }}
+    controllerMetricsNodePort: {{ .Values.service.controllerMetricsNodePort | default 30002 }}
+    {{- end }}
+
+  {{- with .Values.tolerations }}
+  tolerations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+
+  updateStrategy:
+    type: {{ .Values.updateStrategy.type | default "OnDelete" }}
+    {{- if .Values.updateStrategy.type | default "OnDelete" | eq "DelayedRollingUpdate" }}
+    delayedRollingUpdate:
+      delaySeconds: {{ .Values.updateStrategy.delayedRollingUpdate.delaySeconds | default 60 }}
+    {{- else if .Values.updateStrategy.type | default "OnDelete" | eq "RollingUpdate" }}
+    rollingUpdate:
+      partition: {{ .Values.updateStrategy.rollingUpdate.partition | default 0 }}
+    {{- end }}
+
+  {{- with .Values.varnish }}
+  varnish:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+
+  vcl: # required
+    configMapName: {{ .Values.vcl.configMapName | required ".Values.vcl.configMapName is required." }}
+    entrypointFileName: {{ .Values.vcl.entrypointFileName | required ".Values.vcl.entrypointFileName is required." }}
