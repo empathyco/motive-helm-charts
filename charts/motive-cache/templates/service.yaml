@@ -1,0 +1,29 @@
+{{- range untilStep 0 (int .Values.replicas) 1 }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "motive-cache.fullname" $ }}-{{ . }}
+  labels:
+    {{- include "motive-cache.labels" $ | nindent 4 }}
+  annotations:
+    service.kubernetes.io/topology-mode: Auto
+spec:
+  type: ClusterIP
+  ports:
+    - name: varnish
+      port: 80
+      targetPort: varnish
+      protocol: TCP
+    - name: metrics
+      port: 9131
+      protocol: TCP
+      targetPort: metrics
+    - name: ctrl-metrics
+      port: 8235
+      protocol: TCP
+      targetPort: ctrl-metrics
+  selector:
+    varnish-component: varnish
+    statefulset.kubernetes.io/pod-name: {{ include "motive-cache.fullname" $ }}-{{ . }}
+{{- end }}

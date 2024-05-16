@@ -1,0 +1,205 @@
+# Default values for motive-cache.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+
+
+# -- --------------
+# Global
+# -- --------------
+
+
+
+nameOverride: ""
+fullnameOverride: ""
+
+
+
+# -- --------------
+# Varnish Cluster
+# -- --------------
+
+
+## Pod anti-affinity can prevent the scheduler from placing service replicas on the same node.
+## The default value "soft" means that the scheduler should *prefer* to not schedule two replica pods onto the same node but no guarantee is provided.
+## The value "hard" means that the scheduler is *required* to not schedule two replica pods onto the same node.
+## The value "" will disable pod anti-affinity so that no anti-affinity rules will be configured.
+##
+podAntiAffinity: "hard"
+
+## If anti-affinity is enabled sets the topologyKey to use for anti-affinity.
+## This can be changed to, for example, failure-domain.beta.kubernetes.io/zone
+##
+podAntiAffinityTopologyKey: kubernetes.io/hostname
+
+# -- Similar to the nodeSelector, but slightly different:
+# https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#affinity-and-anti-affinity
+affinity: {}
+# nodeAffinity:
+#   requiredDuringSchedulingIgnoredDuringExecution:
+#     nodeSelectorTerms:
+#     - matchExpressions:
+#       - key: kubernetes.io/e2e-az-name
+#         operator: In
+#         values:
+#         - e2e-az1
+#         - e2e-az2
+
+backend:
+  # -- Namespace(s) to look for backend pods. By default - namespace the VarnishCluster is deployed to.
+  namespaces: []
+
+  # -- Include (false, by default) or exclude (true) backend pods from the VCL (.Backends template var).
+  # Alters .Backends template variable based on Kubernetes health checks (by default not ready pods are also included in VCL) instead of Varnish health probes.
+  onlyReady: false
+
+  # -- The port of the backend pods being cached by Varnish. Can be port name or port number.
+  port: "backend-port"
+
+  # -- The selector used to identify the backend Pods.
+  selector: {}
+
+  # -- Controls Varnish backend topology aware routing which can assign weights to backends according to their geographical location.
+  zoneBalancing:
+    # -- Varnish backend zone-balancing type. Accepted values: disabled, auto, thresholds
+    type: "disabled"
+    # -- Array of thresholds objects to determine condition and respective weights to be assigned to backends: threshold, local - local backend weight, remote - remote backend weight
+    thresholds: []
+
+# -- The minimum enabled logging level. Allowed values: debug, info, warn, error, dpanic, panic, fatal.
+logLevel: "info"
+
+# -- Format of the logs. Can be json and console.
+logFormat: "json"
+
+# -- The operator monitoring configuration object
+monitoring:
+  # -- A dashboard that can be installed along with the operator and used in grafana. Installed as a ConfigMap.
+  grafanaDashboard:
+    # -- Enable or disable the ConfigMap installation.
+    enabled: false
+    # -- Name of the Grafana datasource the dashboard should use. (required)
+    datasourceName: ""
+    # -- ConfigMap labels. Can be used to for discovery by grafana.
+    labels: {}
+    # -- Namespace that the ConfigMap with the dashboard should be installed to. Default to the namespace VarnishCluster is installed to
+    namespace: ""
+    # -- Title of the Grafana dashboard. Default: Varnish (<cluster namespace>/<name>)
+    title: ""
+  # -- The Prometheus ServiceMonitor that is preconfigured to monitors the operator pods.
+  prometheusServiceMonitor:
+    # -- Enable or disable ServiceMontitor installation.
+    enabled: true
+    # -- ServiceMonitor labels that will be used by Prometheus instance to discover this ServiceMonitor.
+    labels: {}
+    # -- The namespace it should be installed to. Default to the namespace VarnishCluster is installed to
+    namespace: ""
+
+# -- Node selector to control where the Varnish pods should be scheduled
+nodeSelector: {}
+
+# -- Pod Disruption Budget configuration. Can be used to tell Kubernetes how many pods are required to be up (or allowed to be down) to not cause service disruption
+podDisruptionBudget:
+  # -- An eviction is allowed if at least minAvailable pods will still be available after the eviction, i.e. even in the absence of the evicted pod
+  minAvailable: 1
+  # -- An eviction is allowed if at most maxUnavailable pods are unavailable after the eviction, i.e. even in absence of the evicted pod. This is a mutually exclusive setting with minAvailable
+  maxUnavailable: # 1
+
+# -- Number of Varnish nodes
+replicas: 1
+
+# -- Varnish service configuration.
+service:
+  # -- Additional annotations for the service.
+  annotations: {}
+  # -- The port number used to expose Varnish pods.
+  port: 80
+  # -- The port that will expose the Prometheus metrics exporter.
+  metricsPort: 9131
+  # -- The port number used to set NodePort for Varnish. Service type `NodePort should be selected.
+  nodePort: 30000
+  # -- The port number used to set NodePort for Varnish Metrics Exporter. Service type `NodePort should be selected.
+  metricsNodePort: 30001
+  # -- The port number used to set NodePort for Varnish Controller Metrics exporter. Service type `NodePort should be selected.
+  controllerMetricsNodePort: 30002
+  # -- Type of the Service. Allowed values: ClusterIP; LoadBalancer; NodePort
+  type: ClusterIP
+
+# -- Configuration that defines which node taints can the pods tolerate. For example to allow Varnish pods to run on nodes that are marked (tainted) as machines dedicated for in-memory cache
+tolerations: []
+
+# -- Allows to control the way Varnish pods will be updated.
+updateStrategy:
+  # -- Defines the type of the update strategy. (RollingUpdate, OnDelete, DelayedRollingUpdate)
+  type: OnDelete
+  # -- Configuration for DelayedRollingUpdate strategy
+  delayedRollingUpdate:
+    # -- Indicates the wait time between pod reloads during rolling update
+    delaySeconds: 60
+  # -- Used to communicate parameters when type is RollingUpdate
+  rollingUpdate:
+    # -- Partition indicates the ordinal at which the StatefulSet should be partitioned.
+    partition: 0
+
+# -- An object that defines the configuration of a particular Varnish instance being deployed
+varnish:
+  # -- Additional Varnish daemon arguments
+  args: []
+  # -- An object that defines the configuration of a particular Varnish controller being deployed
+  controller:
+    imagePullPolicy: IfNotPresent
+    resources:
+      requests:
+        cpu: 10m
+        memory: 64Mi
+      limits:
+        memory: 128Mi
+  # -- An object that defines the configuration of a particular Varnish Prometheus metrics exporter being deployed
+  metricsExporter:
+    imagePullPolicy: IfNotPresent
+    resources:
+      requests:
+        cpu: 10m
+        memory: 16Mi
+      limits:
+        memory: 32Mi
+  # -- Image pull policy for the Varnish container.
+  imagePullPolicy: IfNotPresent
+  # -- Resource requests and limits for Varnish container.
+  resources:
+    requests:
+      cpu: 20m
+      memory: 128Mi
+    limits:
+      memory: 192Mi
+
+# -- An object that defines the VCL ConfigMap configuration
+vcl:
+  # -- Name of the ConfigMap containing the VCL configuration files
+  configMapName: "tmp"
+  # -- The name of the main VCL file
+  entrypointFileName: "tmp"
+
+
+# -- --------------
+# Ingress
+# -- --------------
+ingress:
+  internal:
+    enabled: false
+    className: "nginx-internal"
+    annotations: {}
+      # nginx.ingress.kubernetes.io/enable-opentelemetry: "true"
+      # nginx.ingress.kubernetes.io/load-balance: "ewma"
+      # nginx.ingress.kubernetes.io/use-regex: "false"
+    hosts:
+      - host: chart-example.local
+        paths:
+          - path: /
+            pathType: ImplementationSpecific
+            portName: http
+            port: 8080
+    tls: []
+      #  - secretName: chart-example-tls
+      #    hosts:
+      #      - chart-example.local
