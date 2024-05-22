@@ -1,0 +1,23 @@
+{{- if .Values.rbac.enabled }}
+{{- range .Values.rbac.roles }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: {{ include "motive-service.fullname" $ }}-role-{{ .name | required ".roles.name is required." }}
+
+  labels:
+    {{- include "motive-service.labels" $ | nindent 4 }}
+    {{- with .labels }}
+      {{- toYaml . | nindent 4 }}
+    {{- end }}
+
+  {{- with .annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+
+rules:
+  {{- tpl (toYaml .rules) $ | nindent 2 }}
+{{- end }}
+{{- end }}

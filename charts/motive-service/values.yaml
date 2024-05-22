@@ -359,6 +359,36 @@ service:
     annotations: {}
 
 
+# -- --------------
+# RBAC
+# -- --------------
+
+rbac:
+  # -- Specifies whether RBAC resources should be created
+  enabled: false
+
+  # -- List of roles to create
+  roles: []
+#    - name: 'test'
+#      labels: {}
+#      annotations: {}
+#      rules:
+#        - apiGroups: [""]
+#          resources: ["secrets"]
+#          verbs: ["get", "watch", "list"]
+
+  # -- List of role bindings to create
+  bindings: []
+#    - name: 'test-binding'
+#      labels: {}
+#      annotations: {}
+#      roleRef:
+#        kind: 'Role' # Role or ClusterRole (default is Role)
+#        name: 'test-role-{{ include "motive-service.fullname" $ }}'
+#      subjects:
+#        - kind: 'ServiceAccount' # User, Group, ServiceAccount
+#          name: 'default'
+#          namespace: 'default'
 
 # -- --------------
 # External Secrets

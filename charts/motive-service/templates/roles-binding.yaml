@@ -1,0 +1,28 @@
+{{- if .Values.rbac.enabled }}
+{{- range .Values.rbac.bindings }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ include "motive-service.fullname" $ }}-role-binding-{{ .name | required ".bindings.name is required." }}
+
+  labels:
+    {{- include "motive-service.labels" $ | nindent 4 }}
+    {{- with .labels }}
+      {{- toYaml . | nindent 4 }}
+    {{- end }}
+
+  {{- with .annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+
+roleRef:
+    apiGroup: rbac.authorization.k8s.io
+    kind: {{ .roleRef.kind | default "Role" }}
+    name: {{ tpl .roleRef.name $ }}
+
+subjects:
+  {{- tpl (toYaml .subjects) $ | nindent 2 }}
+{{- end }}
+{{- end }}
