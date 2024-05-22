@@ -104,7 +104,7 @@ affinity:
       - labelSelector:
           matchLabels:
             {{- include "motive-service.selectorLabels" $ | nindent 12 }}
-        topologyKey: {{ .Values.service.podAntiAffinityTopologyKey }}
+        topologyKey: {{ $.Values.service.podAntiAffinityTopologyKey }}
         {{- if (semverCompare ">=1.29.0-0" $.Capabilities.KubeVersion.Version) }}
         matchLabelKeys:
           - pod-template-hash
@@ -117,7 +117,7 @@ affinity:
           labelSelector:
             matchLabels:
               {{- include "motive-service.selectorLabels" $ | nindent 14 }}
-          topologyKey: {{ .Values.service.podAntiAffinityTopologyKey }}
+          topologyKey: {{ $.Values.service.podAntiAffinityTopologyKey }}
           {{- if (semverCompare ">=1.29.0-0" $.Capabilities.KubeVersion.Version) }}
           matchLabelKeys:
             - pod-template-hash
