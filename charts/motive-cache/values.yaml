@@ -202,3 +202,29 @@ ingress:
       #  - secretName: chart-example-tls
       #    hosts:
       #      - chart-example.local
+
+
+
+# -- --------------
+# Monitoring
+# -- --------------
+
+
+metrics:
+  # -- Enable and configure a Prometheus serviceMonitor for the chart under this key.
+  # @default -- See values.yaml
+  enabled: false
+
+  # -- Enable and configure Prometheus Rules for the chart under this key.
+  # @default -- See values.yaml
+  prometheusRule:
+    enabled: false
+    namespace: ""
+    labels: {}
+    annotations: {}
+
+    # -- Configure default alerting rules
+    defaultAlerts:
+      extraLabels: {}
+      team: ""
+      slackChannel: ""
