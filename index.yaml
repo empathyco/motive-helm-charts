@@ -3,6 +3,16 @@ entries:
   motive-cache:
   - apiVersion: v2
     appVersion: 1.0.0
+    created: "2024-05-27T21:05:05.950053037Z"
+    description: A Helm chart for Kubernetes
+    digest: e21fa90b86f1b13e5d5aed1670447af5bcbbad0426a48a2538914c91aaf085c8
+    name: motive-cache
+    type: application
+    urls:
+    - https://github.com/empathyco/motive-helm-charts/releases/download/motive-cache-0.1.2/motive-cache-0.1.2.tgz
+    version: 0.1.2
+  - apiVersion: v2
+    appVersion: 1.0.0
     created: "2024-05-16T18:03:13.867050341Z"
     description: A Helm chart for Kubernetes
     digest: 268e0709cfa0c8be499baa93c437a7568939484729f9280e6e8cb744b4945e61
@@ -534,4 +544,4 @@ entries:
     urls:
     - https://github.com/empathyco/motive-helm-charts/releases/download/multi-service-0.3.1/multi-service-0.3.1.tgz
     version: 0.3.1
-generated: "2024-05-22T16:12:17.438104621Z"
+generated: "2024-05-27T21:05:05.950170396Z"
