@@ -1,0 +1,99 @@
+{{- if and .Values.metrics.enabled .Values.metrics.prometheusRule.enabled (.Capabilities.APIVersions.Has "monitoring.coreos.com/v1") -}}
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: {{ include "motive-cache.fullname" . }}-alerting
+  {{- if .Values.metrics.prometheusRule.namespace }}
+  namespace: {{ .Values.metrics.prometheusRule.namespace | quote }}
+  {{- else }}
+  namespace: {{ .Release.Namespace }}
+  {{- end }}
+  labels:
+    {{- include "motive-cache.labels" . | nindent 4 }}
+    {{- with .Values.metrics.prometheusRule.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  {{- with .Values.metrics.prometheusRule.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  groups:
+    # default alerts - START
+    - name: {{ include "motive-cache.fullname" . }}-default-alerting
+      rules:
+        {{- if gt (.Values.replicas | int) 1 }}
+        - alert: HighAvailability-{{ include "motive-cache.fullname" . }}
+          expr: sum(kube_pod_status_ready{namespace="{{ $.Release.Namespace }}", pod=~"{{ include "motive-cache.fullname" . }}-.+"}) < 2
+          for: 10m
+          labels:
+            severity: warning
+            {{- with $.Values.metrics.prometheusRule.defaultAlerts.team }}
+            team: {{ . | quote }}
+            {{- end }}
+            {{- with $.Values.metrics.prometheusRule.defaultAlerts.slackChannel }}
+            slack_channel: {{ . | quote }}
+            {{- end }}
+            {{- with $.Values.metrics.prometheusRule.defaultAlerts.extraLabels }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+          annotations:
+            summary: 'Number of Pods < 2'
+            description: 'Service reports having not enough pods to ensure High Availability'
+        {{- end }}
+
+        - alert: ZeroPods-{{ include "motive-cache.fullname" . }}
+          expr: sum(kube_pod_status_ready{namespace="{{ $.Release.Namespace }}", pod=~"{{ include "motive-cache.fullname" . }}-.+"}) == 0
+          for: 0m
+          labels:
+            severity: critical
+            {{- with $.Values.metrics.prometheusRule.defaultAlerts.team }}
+            team: {{ . | quote }}
+            {{- end }}
+            {{- with $.Values.metrics.prometheusRule.defaultAlerts.slackChannel }}
+            slack_channel: {{ . | quote }}
+            {{- end }}
+            {{- with $.Values.metrics.prometheusRule.defaultAlerts.extraLabels }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+          annotations:
+            summary: 'Number of Pods == 0'
+            description: 'Service reports no pods running'
+
+        - alert: IndexVarnish-MemoryUsageMoreThan80Percent-{{ include "motive-cache.fullname" . }}
+          expr: 100 * (varnish_sma_g_bytes{namespace="{{ $.Release.Namespace }}", pod=~"{{ include "motive-cache.fullname" . }}-.+"} / varnish_sma_g_space{namespace="{{ $.Release.Namespace }}", pod=~"{{ include "motive-cache.fullname" . }}-.+"}) > 80
+          for: 15m
+          labels:
+            severity: warning
+            {{- with $.Values.metrics.prometheusRule.defaultAlerts.team }}
+            team: {{ . | quote }}
+            {{- end }}
+            {{- with $.Values.metrics.prometheusRule.defaultAlerts.slackChannel }}
+            slack_channel: {{ . | quote }}
+            {{- end }}
+            {{- with $.Values.metrics.prometheusRule.defaultAlerts.extraLabels }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+          annotations:
+            summary: 'Index Varnish - memory usage is above 80%'
+            description: 'Service reports its memory usage is above 80%'
+
+        - alert: IndexVarnish-MemoryUsageMoreThan90Percent-{{ include "motive-cache.fullname" . }}
+          expr: 100 * (varnish_sma_g_bytes{namespace="{{ $.Release.Namespace }}", pod=~"{{ include "motive-cache.fullname" . }}-.+"} / varnish_sma_g_space{namespace="{{ $.Release.Namespace }}", pod=~"{{ include "motive-cache.fullname" . }}-.+"}) > 90
+          for: 5m
+          labels:
+            severity: critical
+            {{- with $.Values.metrics.prometheusRule.defaultAlerts.team }}
+            team: {{ . | quote }}
+            {{- end }}
+            {{- with $.Values.metrics.prometheusRule.defaultAlerts.slackChannel }}
+            slack_channel: {{ . | quote }}
+            {{- end }}
+            {{- with $.Values.metrics.prometheusRule.defaultAlerts.extraLabels }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+          annotations:
+            summary: 'Index Varnish - memory usage is above 90%'
+            description: 'Service reports its memory usage is above 90%'
+    # default alerts - END
+{{- end }}

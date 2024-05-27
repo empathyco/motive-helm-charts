@@ -1,6 +1,6 @@
 # motive-cache
 
-![Version: 0.1.1](https://img.shields.io/badge/Version-0.1.1-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 1.0.0](https://img.shields.io/badge/AppVersion-1.0.0-informational?style=flat-square)
+![Version: 0.1.2](https://img.shields.io/badge/Version-0.1.2-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 1.0.0](https://img.shields.io/badge/AppVersion-1.0.0-informational?style=flat-square)
 
 A Helm chart for Kubernetes
 
@@ -28,6 +28,9 @@ A Helm chart for Kubernetes
 | ingress.internal.tls | list | `[]` |  |
 | logFormat | string | `"json"` | Format of the logs. Can be json and console. |
 | logLevel | string | `"info"` | The minimum enabled logging level. Allowed values: debug, info, warn, error, dpanic, panic, fatal. |
+| metrics.enabled | bool | See values.yaml | Enable and configure a Prometheus serviceMonitor for the chart under this key. |
+| metrics.prometheusRule | object | See values.yaml | Enable and configure Prometheus Rules for the chart under this key. |
+| metrics.prometheusRule.defaultAlerts | object | `{"extraLabels":{},"slackChannel":"","team":""}` | Configure default alerting rules |
 | monitoring | object | `{"grafanaDashboard":{"datasourceName":"","enabled":false,"labels":{},"namespace":"","title":""},"prometheusServiceMonitor":{"enabled":false,"labels":{},"namespace":""}}` | The operator monitoring configuration object |
 | monitoring.grafanaDashboard | object | `{"datasourceName":"","enabled":false,"labels":{},"namespace":"","title":""}` | A dashboard that can be installed along with the operator and used in grafana. Installed as a ConfigMap. |
 | monitoring.grafanaDashboard.datasourceName | string | `""` | Name of the Grafana datasource the dashboard should use. (required) |
