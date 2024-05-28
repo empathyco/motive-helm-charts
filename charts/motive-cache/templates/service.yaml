@@ -24,6 +24,6 @@ spec:
       protocol: TCP
       targetPort: ctrl-metrics
   selector:
-    varnish-component: varnish
-    statefulset.kubernetes.io/pod-name: {{ include "motive-cache.fullname" $ }}-varnish-{{ . }}
+    {{- include "motive-cache.selectorLabels" $ | nindent 4 }}
+    apps.kubernetes.io/pod-index: {{ . | quote }}
 {{- end }}
