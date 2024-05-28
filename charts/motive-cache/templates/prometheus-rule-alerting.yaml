@@ -60,7 +60,7 @@ spec:
             summary: 'Number of Pods == 0'
             description: 'Service reports no pods running'
 
-        - alert: IndexVarnish-MemoryUsageMoreThan80Percent-{{ include "motive-cache.fullname" . }}
+        - alert: MemoryUsageMoreThan80Percent-{{ include "motive-cache.fullname" . }}
           expr: 100 * (varnish_sma_g_bytes{namespace="{{ $.Release.Namespace }}", pod=~"{{ include "motive-cache.fullname" . }}-.+"} / varnish_sma_g_space{namespace="{{ $.Release.Namespace }}", pod=~"{{ include "motive-cache.fullname" . }}-.+"}) > 80
           for: 15m
           labels:
@@ -75,10 +75,10 @@ spec:
             {{- toYaml . | nindent 12 }}
             {{- end }}
           annotations:
-            summary: 'Index Varnish - memory usage is above 80%'
+            summary: 'Varnish - memory usage is above 80%'
             description: 'Service reports its memory usage is above 80%'
 
-        - alert: IndexVarnish-MemoryUsageMoreThan90Percent-{{ include "motive-cache.fullname" . }}
+        - alert: MemoryUsageMoreThan90Percent-{{ include "motive-cache.fullname" . }}
           expr: 100 * (varnish_sma_g_bytes{namespace="{{ $.Release.Namespace }}", pod=~"{{ include "motive-cache.fullname" . }}-.+"} / varnish_sma_g_space{namespace="{{ $.Release.Namespace }}", pod=~"{{ include "motive-cache.fullname" . }}-.+"}) > 90
           for: 5m
           labels:
@@ -93,7 +93,7 @@ spec:
             {{- toYaml . | nindent 12 }}
             {{- end }}
           annotations:
-            summary: 'Index Varnish - memory usage is above 90%'
+            summary: 'Varnish - memory usage is above 90%'
             description: 'Service reports its memory usage is above 90%'
     # default alerts - END
 {{- end }}
