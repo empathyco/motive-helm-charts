@@ -51,17 +51,6 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
 
 {{/*
-Create the name of the service account to use
-*/}}
-{{- define "motive-cache.serviceAccountName" -}}
-{{- if .Values.serviceAccount.create }}
-{{- default (include "motive-cache.fullname" .) .Values.serviceAccount.name }}
-{{- else }}
-{{- default "default" .Values.serviceAccount.name }}
-{{- end }}
-{{- end }}
-
-{{/*
 Common affinity definition
 Pod affinity
   - Soft prefers different nodes

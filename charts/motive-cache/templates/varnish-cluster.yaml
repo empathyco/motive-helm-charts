@@ -3,7 +3,7 @@ kind: VarnishCluster
 metadata:
   name: {{ include "motive-cache.fullname" . }}
   labels:
-    {{- include "motive-cache.labels" . | nindent 4 }}
+    {{- include "motive-cache.selectorLabels" . | nindent 4 }}
   {{- with .Values.annotations }}
   annotations:
     {{- toYaml . | nindent 4 }}
