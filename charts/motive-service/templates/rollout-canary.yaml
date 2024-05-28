@@ -126,7 +126,10 @@ spec:
             {{- if .Values.ingress.internal.enabled }}
             - {{ include "motive-service.fullname" $ }}-internal
             {{- end }}
-          annotationPrefix: {{ .Values.rollouts.canary.trafficRouting.nginx.annotationPrefix }} # optional
+
+          {{ with .Values.rollouts.canary.trafficRouting.nginx.annotationPrefix }}
+          annotationPrefix: {{ . }} # optional
+          {{- end }}
           {{- with .Values.rollouts.canary.trafficRouting.nginx.additionalIngressAnnotations }}
           additionalIngressAnnotations: # optional
             {{- toYaml . | nindent 12 }}
@@ -136,7 +139,11 @@ spec:
         {{- if .Values.rollouts.canary.trafficRouting.smi.enabled }}
         # Service Mesh Interface routing configuration
         smi:
-          rootService: {{ .Values.rollouts.canary.trafficRouting.smi.rootService }} # optional
-          trafficSplitName: {{ .Values.rollouts.canary.trafficRouting.smi.trafficSplitName }} # optional
+          {{ with .Values.rollouts.canary.trafficRouting.smi.rootService }}
+          rootService: {{ . }} # optional
+          {{- end }}
+          {{ with .Values.rollouts.canary.trafficRouting.smi.trafficSplitName }}
+          trafficSplitName: {{ . }} # optional
+          {{- end }}
         {{- end }}
 {{- end }}
