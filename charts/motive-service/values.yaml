@@ -582,6 +582,7 @@ slos:
   latency: []
     # - name: latency
     #   description: ""
+    #   namespace: ""
     #   team: ""
     #   slackChannel: ""
     #   extraLabels: {}
@@ -599,6 +600,7 @@ slos:
   ratio: []
     # - name: ratio
     #   description: ""
+    #   namespace: ""
     #   team: ""
     #   slackChannel: ""
     #   extraLabels: {}
@@ -615,6 +617,7 @@ slos:
   bool: []
     # - name: bool
     #   description: ""
+    #   namespace: ""
     #   team: ""
     #   slackChannel: ""
     #   extraLabels: {}
