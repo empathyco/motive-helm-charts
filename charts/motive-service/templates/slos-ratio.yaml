@@ -9,6 +9,7 @@ metadata:
     prometheus: k8s
     role: alert-rules
     release: prometheus
+    namespace: {{ .namespace | default "monitoring" }}
     pyrra.dev/team: {{ .team | default "motive" }}
     {{- with .slackChannel }}
     pyrra.dev/slack_channel: {{ . }}
