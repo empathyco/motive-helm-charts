@@ -5,11 +5,11 @@ apiVersion: pyrra.dev/v1alpha1
 kind: ServiceLevelObjective
 metadata:
   name: {{ include "motive-service.fullname" $ }}-latency-{{ .name | required "slos.name is required." }}
+  namespace: {{ .namespace | default $.Release.Namespace }}
   labels:
     prometheus: k8s
     role: alert-rules
-    release: prometheus
-    namespace: {{ .namespace | default "monitoring" }}
+    release: {{ .release | default "prometheus" }}
     pyrra.dev/team: {{ .team | default "motive" }}
     {{- with .slackChannel }}
     pyrra.dev/slack_channel: {{ . }}
