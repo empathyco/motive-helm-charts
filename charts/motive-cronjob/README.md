@@ -1,6 +1,6 @@
 # motive-cronjob
 
-![Version: 1.0.2](https://img.shields.io/badge/Version-1.0.2-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 1.0.0](https://img.shields.io/badge/AppVersion-1.0.0-informational?style=flat-square)
+![Version: 1.0.3](https://img.shields.io/badge/Version-1.0.3-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 1.0.0](https://img.shields.io/badge/AppVersion-1.0.0-informational?style=flat-square)
 
 A Helm chart for Kubernetes
 
@@ -56,6 +56,10 @@ A Helm chart for Kubernetes
 | externalSecrets.secretStores | list | `[]` |  |
 | fullnameOverride | string | `""` |  |
 | imagePullSecrets | list | `[]` | Configuration for imagePullSecrets so that you can use a private registry for your image # Ref: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/ |
+| metrics.enabled | bool | See values.yaml | Enable and configure a Prometheus serviceMonitor for the chart under this key. |
+| metrics.prometheusRule | object | See values.yaml | Enable and configure Prometheus Rules for the chart under this key. |
+| metrics.prometheusRule.extraAlertingRules | list | `[]` | Configure additional alerting rules for the chart under this key |
+| metrics.prometheusRule.extraRecordingRules | list | `[]` | Configure additional recording rules for the chart under this key |
 | nameOverride | string | `""` |  |
 | revisionHistoryLimit | int | 3 | How many old ReplicaSets to maintain for the Deployment |
 | serviceAccount.annotations | object | `{}` |  |
