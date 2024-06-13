@@ -313,3 +313,40 @@ externalSecrets:
 #            property: username
 #            decodingStrategy: "None|Base64|Base64URL|Auto"
 #      dataFrom: {}
+
+
+
+# -- --------------
+# Monitoring
+# -- --------------
+
+
+metrics:
+  # -- Enable and configure a Prometheus serviceMonitor for the chart under this key.
+  # @default -- See values.yaml
+  enabled: false
+
+  # -- Enable and configure Prometheus Rules for the chart under this key.
+  # @default -- See values.yaml
+  prometheusRule:
+    enabled: false
+    namespace: ""
+    labels: {}
+    annotations: {}
+
+    # -- Configure additional alerting rules for the chart under this key
+    extraAlertingRules: []
+      # - alert: HighRequestLatency
+      #   expr: job:request_latency_seconds:mean5m{job="myjob"} > 0.5
+      #   for: 10m
+      #   labels:
+      #     severity: critical
+      #     team: motive
+      #     slack_channel: 'motive-alerts-dev'
+    #   annotations:
+    #     summary: High request latency
+
+    # -- Configure additional recording rules for the chart under this key
+    extraRecordingRules: []
+    # - record: instance_id:node_cpu:count
+    #   expr: count(node_cpu_seconds_total{mode="idle"}) without (cpu,mode)
