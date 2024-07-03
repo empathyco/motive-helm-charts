@@ -1,5 +1,5 @@
 {{- if and .Values.metrics.enabled .Values.metrics.prometheusRule.enabled (.Capabilities.APIVersions.Has "monitoring.coreos.com/v1") -}}
-{{- if or (.Values.metrics.prometheusRule.defaultAlerts.kafka.enabled) (.Values.metrics.prometheusRule.extraRecordingRules) -}}
+{{- if or (and .Values.metrics.prometheusRule.defaultAlerts.kafka.enabled .Values.metrics.prometheusRule.defaultAlerts.kafka.deadLetter.enabled) (.Values.metrics.prometheusRule.extraRecordingRules) -}}
 apiVersion: monitoring.coreos.com/v1
 kind: PrometheusRule
 metadata:
