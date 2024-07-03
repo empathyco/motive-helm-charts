@@ -72,7 +72,7 @@ affinity:
           matchLabels:
             {{- include "motive-cache.selectorLabels" $ | nindent 12 }}
         topologyKey: {{ $.Values.podAntiAffinityTopologyKey }}
-        {{- if (semverCompare ">=1.29.0-0" $.Capabilities.KubeVersion.Version) -}}
+        {{- if (semverCompare ">=1.29.0-0" $.Capabilities.KubeVersion.Version) }}
         matchLabelKeys:
           - pod-template-hash
         {{- end -}}
@@ -85,7 +85,7 @@ affinity:
             matchLabels:
               {{- include "motive-cache.selectorLabels" $ | nindent 14 }}
           topologyKey: {{ $.Values.podAntiAffinityTopologyKey }}
-          {{- if (semverCompare ">=1.29.0-0" $.Capabilities.KubeVersion.Version) -}}
+          {{- if (semverCompare ">=1.29.0-0" $.Capabilities.KubeVersion.Version) }}
           matchLabelKeys:
             - pod-template-hash
           {{- end -}}
