@@ -72,10 +72,10 @@ affinity:
           matchLabels:
             {{- include "motive-cache.selectorLabels" $ | nindent 12 }}
         topologyKey: {{ $.Values.podAntiAffinityTopologyKey }}
-        {{- if (semverCompare ">=1.29.0-0" $.Capabilities.KubeVersion.Version) }}
-        matchLabelKeys:
-          - pod-template-hash
-        {{- end -}}
+{{/*        {{- if (semverCompare ">=1.29.0-0" $.Capabilities.KubeVersion.Version) }}*/}}
+{{/*        matchLabelKeys:*/}}
+{{/*          - pod-template-hash*/}}
+{{/*        {{- end -}}*/}}
   {{- else if eq $.Values.podAntiAffinity "soft" }}
   podAntiAffinity:
     preferredDuringSchedulingIgnoredDuringExecution:
@@ -85,10 +85,10 @@ affinity:
             matchLabels:
               {{- include "motive-cache.selectorLabels" $ | nindent 14 }}
           topologyKey: {{ $.Values.podAntiAffinityTopologyKey }}
-          {{- if (semverCompare ">=1.29.0-0" $.Capabilities.KubeVersion.Version) }}
-          matchLabelKeys:
-            - pod-template-hash
-          {{- end -}}
+{{/*          {{- if (semverCompare ">=1.29.0-0" $.Capabilities.KubeVersion.Version) }}*/}}
+{{/*          matchLabelKeys:*/}}
+{{/*            - pod-template-hash*/}}
+{{/*          {{- end -}}*/}}
   {{- end -}}
 {{- end }}
 {{- end }}
