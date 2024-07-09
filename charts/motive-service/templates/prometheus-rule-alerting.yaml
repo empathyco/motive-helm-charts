@@ -47,7 +47,6 @@ spec:
           for: 0m
           labels:
             severity: critical
-            oncall: 'true'
             {{- with $.Values.metrics.prometheusRule.defaultAlerts.team }}
             team: {{ . | quote }}
             {{- end }}
