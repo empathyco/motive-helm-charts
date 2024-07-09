@@ -94,8 +94,35 @@ spec:
 
       # Background analysis to run during a rollout update.
       # Skipped upon initial deploy of a rollout.
-      {{- if .Values.rollouts.canary.analysis }}
+      {{- if and .Values.rollouts.canary.analysis (or .Values.rollouts.analysis.promotionAnalysis.errorRequests.enabled .Values.rollouts.analysis.promotionAnalysis.latency.enabled) }}
       analysis:
+        {{- if or .Values.rollouts.analysis.promotionAnalysis.errorRequests.enabled .Values.rollouts.analysis.promotionAnalysis.latency.enabled }}
+        templates:
+          {{- if .Values.rollouts.analysis.promotionAnalysis.errorRequests.enabled }}
+          - templateName: {{ include "motive-service.fullname" $ }}-error-requests
+          {{- end }}
+
+          {{- if .Values.rollouts.analysis.promotionAnalysis.latency.enabled }}
+          - templateName: {{ include "motive-service.fullname" $ }}-latency
+          {{- end }}
+
+        startingStep: {{ .Values.rollouts.analysis.promotionAnalysis.startingStep }}
+        args:
+          {{- if .Values.rollouts.analysis.promotionAnalysis.errorRequests.enabled }}
+          - name: error_requests_ingress
+            value: {{ .Values.rollouts.analysis.promotionAnalysis.errorRequests.args.ingress | required "ingress required" }}
+          - name: error_requests_slo
+            value: {{ .Values.rollouts.analysis.promotionAnalysis.errorRequests.args.slo | required "slo required" }}
+          {{- end }}
+
+          {{- if .Values.rollouts.analysis.promotionAnalysis.latency.enabled }}
+          - name: latency_ingress
+            value: {{ .Values.rollouts.analysis.promotionAnalysis.latency.args.ingress | required "ingress required" }}
+          - name: latency_slo
+            value: {{ .Values.rollouts.analysis.promotionAnalysis.latency.args.slo | required "slo required" }}
+          {{- end }}
+        {{- end }}
+        {{- else }}
         {{- toYaml .Values.rollouts.canary.analysis | nindent 8 }}
       {{- end }}
 

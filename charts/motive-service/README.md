@@ -1,6 +1,6 @@
 # motive-service
 
-![Version: 2.0.12](https://img.shields.io/badge/Version-2.0.12-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 1.0.0](https://img.shields.io/badge/AppVersion-1.0.0-informational?style=flat-square)
+![Version: 2.1.0](https://img.shields.io/badge/Version-2.1.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 1.0.0](https://img.shields.io/badge/AppVersion-1.0.0-informational?style=flat-square)
 
 A Helm chart for Kubernetes
 
@@ -65,6 +65,25 @@ A Helm chart for Kubernetes
 | rbac.enabled | bool | `false` | Specifies whether RBAC resources should be created |
 | rbac.roles | list | `[]` | List of roles to create |
 | revisionHistoryLimit | int | 3 | How many old ReplicaSets to maintain for the Deployment |
+| rollouts.analysis.promotionAnalysis.errorRequests.args.ingress | string | `""` |  |
+| rollouts.analysis.promotionAnalysis.errorRequests.args.slo | string | `""` |  |
+| rollouts.analysis.promotionAnalysis.errorRequests.count | int | `1` |  |
+| rollouts.analysis.promotionAnalysis.errorRequests.enabled | bool | `false` |  |
+| rollouts.analysis.promotionAnalysis.errorRequests.failureLimit | int | `1` |  |
+| rollouts.analysis.promotionAnalysis.errorRequests.initialDelay | string | `"2m"` |  |
+| rollouts.analysis.promotionAnalysis.errorRequests.interval | string | `"1m"` |  |
+| rollouts.analysis.promotionAnalysis.errorRequests.nanSuccessful | bool | `false` |  |
+| rollouts.analysis.promotionAnalysis.errorRequests.prometheusAddress | string | `""` |  |
+| rollouts.analysis.promotionAnalysis.latency.args.ingress | string | `""` |  |
+| rollouts.analysis.promotionAnalysis.latency.args.slo | string | `""` |  |
+| rollouts.analysis.promotionAnalysis.latency.count | int | `5` |  |
+| rollouts.analysis.promotionAnalysis.latency.enabled | bool | `false` |  |
+| rollouts.analysis.promotionAnalysis.latency.failureLimit | int | `1` |  |
+| rollouts.analysis.promotionAnalysis.latency.initialDelay | string | `"2m"` |  |
+| rollouts.analysis.promotionAnalysis.latency.interval | string | `"1m"` |  |
+| rollouts.analysis.promotionAnalysis.latency.nanSuccessful | bool | `false` |  |
+| rollouts.analysis.promotionAnalysis.latency.prometheusAddress | string | `""` |  |
+| rollouts.analysis.promotionAnalysis.startingStep | int | 1 | Specify analysis starting step |
 | rollouts.canary.abortScaleDownDelaySeconds | int | `30` | TBD |
 | rollouts.canary.analysis | object | `{}` | TBD |
 | rollouts.canary.antiAffinity | object | `{}` | TBD |

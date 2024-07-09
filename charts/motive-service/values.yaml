@@ -745,3 +745,60 @@ rollouts:
         rootService: ""
         # -- TBD
         trafficSplitName: ""
+
+  analysis:
+    #-- Analysis during rollout
+    promotionAnalysis:
+      # -- Specify analysis starting step
+      # @default -- 1
+      startingStep: 1
+
+      # PromotionAnalysis based on Error Requests
+      errorRequests:
+        # @default -- false
+        enabled: false
+        prometheusAddress: ""
+
+        # Analysis count
+        # @default -- 5
+        count: 1
+        # Analysis failure limit
+        # @default -- 1
+        failureLimit: 1
+        # Analysis initial delay
+        # @default -- 2m
+        initialDelay: 2m
+        # Analysis interval
+        # @default -- 1m
+        interval: 1m
+        # NaN Successful condition on Analysis
+        # @default -- false
+        nanSuccessful: false
+
+        args:
+          ingress: ""
+          slo: ""
+
+      # PromotionAnalysis based on Latency
+      latency:
+        # @default -- false
+        enabled: false
+        prometheusAddress: ""
+
+        count: 5
+        # Analysis failure limit
+        # @default -- 1
+        failureLimit: 1
+        # Analysis initial delay
+        # @default -- 2m
+        initialDelay: 2m
+        # Analysis interval
+        # @default -- 1m
+        interval: 1m
+        # NaN Successful condition on Analysis
+        # @default -- false
+        nanSuccessful: false
+
+        args:
+          ingress: ""
+          slo: ""

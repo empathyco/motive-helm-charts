@@ -1,0 +1,56 @@
+# Promotion Analysis: This analysis checks the error rate of the service during the rollout.
+# It uses a Prometheus provider to query a Prometheus server for metrics related to the service's error rate.
+# The success conditions for the metrics are defined using expressions that check the results of the Prometheus queries.
+
+{{- if and .Values.rollouts.enabled .Values.rollouts.analysis.promotionAnalysis.errorRequests.enabled }}
+apiVersion: argoproj.io/v1alpha1
+kind: AnalysisTemplate
+metadata:
+  name: {{ include "motive-service.fullname" $ }}-error-requests
+spec:
+  args:
+    - name: error_requests_ingress
+    - name: error_requests_slo
+
+  metrics:
+    - name: {{ include "motive-service.fullname" . }}-burnrate5m
+    {{- if .Values.rollouts.analysis.promotionAnalysis.errorRequests.initialDelay }}
+      initialDelay: {{ .Values.rollouts.analysis.promotionAnalysis.errorRequests.initialDelay  }}
+    {{- end }}
+      interval: {{ .Values.rollouts.analysis.promotionAnalysis.errorRequests.interval  }}
+      # NOTE: prometheus queries return results in the form of a vector.
+      # So it is common to access the index 0 of the returned array to obtain the value
+    {{- if .Values.rollouts.analysis.promotionAnalysis.errorRequests.nanSuccessful }}
+      successCondition: len(result) == 0 || isNaN(result[0]) || result[0] <= (14 * (1 - 0.99))
+    {{- else }}
+      successCondition: len(result) == 0 || result[0] <= (14 * (1 - 0.99))
+    {{- end }}
+      failureLimit: {{ .Values.rollouts.analysis.promotionAnalysis.errorRequests.failureLimit }}
+      count: {{ .Values.rollouts.analysis.promotionAnalysis.errorRequests.count  }}
+      provider:
+        prometheus:
+          address: {{ .Values.rollouts.analysis.promotionAnalysis.errorRequests.prometheusAddress | required "prometheusAddress is required" }}
+          query: |
+            nginx_ingress_controller_request_duration_seconds:burnrate5m{ingress="{{`{{args.error_requests_ingress}}`}}", canary=~".+", slo="{{`{{args.error_requests_slo}}`}}"}
+
+    - name: {{ include "motive-service.fullname" . }}-burnrate1h
+    {{- if .Values.rollouts.analysis.promotionAnalysis.errorRequests.initialDelay }}
+      initialDelay: {{ .Values.rollouts.analysis.promotionAnalysis.errorRequests.initialDelay  }}
+    {{- end }}
+      interval: {{ .Values.rollouts.analysis.promotionAnalysis.errorRequests.interval  }}
+      # NOTE: prometheus queries return results in the form of a vector.
+      # So it is common to access the index 0 of the returned array to obtain the value
+    {{- if .Values.rollouts.analysis.promotionAnalysis.errorRequests.nanSuccessful }}
+      successCondition: len(result) == 0 || isNaN(result[0]) || result[0] <= (14 * (1 - 0.99))
+    {{- else }}
+      successCondition: len(result) == 0 || result[0] <= (14 * (1 - 0.99))
+    {{- end }}
+
+      failureLimit: {{ .Values.rollouts.analysis.promotionAnalysis.errorRequests.failureLimit }}
+      count: {{ .Values.rollouts.analysis.promotionAnalysis.errorRequests.count  }}
+      provider:
+        prometheus:
+          address: {{ .Values.rollouts.analysis.promotionAnalysis.errorRequests.prometheusAddress | required "prometheusAddress is required" }}
+          query: |
+            nginx_ingress_controller_request_duration_seconds:burnrate1h{ingress="{{`{{args.error_requests_ingress}}`}}", canary=~".+", slo="{{`{{args.error_requests_slo}}`}}"}
+{{- end }}
