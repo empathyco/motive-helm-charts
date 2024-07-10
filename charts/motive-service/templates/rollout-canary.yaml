@@ -94,7 +94,7 @@ spec:
 
       # Background analysis to run during a rollout update.
       # Skipped upon initial deploy of a rollout.
-      {{- if and .Values.rollouts.canary.analysis (or .Values.rollouts.analysis.promotionAnalysis.errorRequests.enabled .Values.rollouts.analysis.promotionAnalysis.latency.enabled) }}
+      {{- if or .Values.rollouts.canary.analysis .Values.rollouts.analysis.promotionAnalysis.errorRequests.enabled .Values.rollouts.analysis.promotionAnalysis.latency.enabled }}
       analysis:
         {{- if or .Values.rollouts.analysis.promotionAnalysis.errorRequests.enabled .Values.rollouts.analysis.promotionAnalysis.latency.enabled }}
         templates:
