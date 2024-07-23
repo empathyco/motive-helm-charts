@@ -71,7 +71,7 @@ spec:
           expr: (kafka:topic:messages:in{topic="{{ . }}"} - kafka:topic:messages:in{topic="{{ . }}"} offset 5m) > 0
           for: 0m
           labels:
-            severity: critical
+            severity: warning
             skip_resolved: 'true'
             {{- with $.Values.metrics.prometheusRule.defaultAlerts.team }}
             team: {{ . | quote }}
@@ -94,7 +94,7 @@ spec:
           expr: sum(kafka_consumergroup_lag{namespace="{{ $.Values.metrics.prometheusRule.defaultAlerts.kafka.lag.namespace | required "namespace is required" }}", consumergroup="{{ .consumerGroup | default $.Values.metrics.prometheusRule.defaultAlerts.kafka.lag.consumerGroup | required "consumerGroup is required." }}", topic="{{ .topic | required "topic is required" }}"}) > {{ .threshold | required "threshold is required" }}
           for: {{ .for | default "10s" }}
           labels:
-            severity: critical
+            severity: warning
             {{- with $.Values.metrics.prometheusRule.defaultAlerts.team }}
             team: {{ . | quote }}
             {{- end }}
