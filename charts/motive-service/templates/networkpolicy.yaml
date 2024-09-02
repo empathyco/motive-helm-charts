@@ -1,13 +1,48 @@
+{{- with .Values.networkPolicies }}
+{{- if .enabled }}
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
-  name: {{ include "motive-service.fullname" . }}-allow-all
+  name: {{ include "motive-service.fullname" $ }}
+  labels:
+    {{- include "motive-service.labels" $ | nindent 4 }}
+    {{- with .labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  {{- with .annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
 spec:
-  podSelector: {}
+  podSelector:
+    matchLabels:
+      {{- include "motive-service.serviceSelectorLabels" . | nindent 6 }}
+  {{- if or .ingressRules .egressRules }}
   policyTypes:
+  {{- if .ingressRules }}
     - Ingress
+  {{- end }}
+  {{- if .egressRules }}
     - Egress
+  {{- end }}
+  {{- end }}
+  {{- if .ingressRules }}
   ingress:
-    - {}
+    {{- range $rule := .ingressRules }}
+    - from:
+      {{- toYaml $rule.selectors | nindent 8 }}
+      ports:
+        {{- toYaml $rule.ports | nindent 8 }}
+    {{- end }}
+  {{- end }}
+  {{- if .egressRules }}
   egress:
-    - {}
+    {{- range $rule := .egressRules }}
+    - to:
+        {{- toYaml $rule.selectors | nindent 8 }}
+      ports:
+        {{- toYaml $rule.ports | nindent 8 }}
+    {{- end }}
+  {{- end }}
+{{- end }}
+{{- end }}

@@ -802,3 +802,38 @@ rollouts:
         args:
           ingress: ""
           slo: ""
+
+
+
+# -- --------------
+# Network Policies
+# -- --------------
+
+networkPolicies:
+  # -- Specify network policy enablement
+  # @default -- false
+  enabled: false
+
+  labels: {}
+
+  annotations: {}
+
+  # -- Ingress rules
+  ingressRules: []
+    # - selectors:
+    #     - podSelector: {}
+    #   ports:
+    #     - port: 8080
+    #       protocol: TCP
+    #     - port: 8081
+    #       protocol: TCP
+
+  # -- Egress rules
+  egressRules: []
+    # - selectors:
+    #     - podSelector: {}
+    #   ports:
+    #     - port: 8080
+    #       protocol: TCP
+    #     - port: 8081
+    #       protocol: TCP
