@@ -79,7 +79,7 @@ spec:
               {{- end }}
               {{- with .Values.cronjob.envFrom }}
               envFrom:
-                {{- toYaml . | nindent 12 }}
+                {{- toYaml . | nindent 16 }}
               {{- end }}
               {{- with .Values.cronjob.resources }}
               resources:
