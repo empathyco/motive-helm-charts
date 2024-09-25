@@ -87,10 +87,10 @@ service:
 
   # -- Specifies the strategy used to replace old Pods by new ones
   updateStrategy:
+    type: RollingUpdate
     rollingUpdate:
       maxSurge: 25%
       maxUnavailable: 25%
-    type: RollingUpdate
 
   # -- Configurable annotations applied to all pods
   podAnnotations: {}

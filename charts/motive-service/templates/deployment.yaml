@@ -25,7 +25,12 @@ spec:
       {{- include "motive-service.serviceSelectorLabels" . | nindent 6 }}
   {{- with .Values.service.updateStrategy }}
   strategy:
-    {{- toYaml . | nindent 4 }}
+    type: {{ .type }}
+    {{- if .type | eq "RollingUpdate" }}
+    rollingUpdate:
+      maxSurge: {{ .rollingUpdate.maxSurge | default "25%" }}
+      maxUnavailable: {{ .rollingUpdate.maxUnavailable | default "25%" }}
+    {{- end }}
   {{- end }}
   template:
     metadata:
