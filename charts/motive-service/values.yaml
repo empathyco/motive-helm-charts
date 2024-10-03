@@ -8,6 +8,8 @@
 # Global
 # -- --------------
 
+global:
+  imageTag: ""
 
 
 nameOverride: ""

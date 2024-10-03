@@ -78,7 +78,7 @@ spec:
             {{- toYaml . | nindent 12 }}
           {{- end }}
           {{- with .Values.service.image }}
-          image: "{{ .repository }}:{{ .tag | default $.Chart.AppVersion }}"
+          image: "{{ .repository }}:{{ .tag | default $.Values.global.imageTag | default $.Chart.AppVersion }}"
           imagePullPolicy: {{ .pullPolicy }}
           {{- end }}
           {{- with .Values.service.lifecycle }}
