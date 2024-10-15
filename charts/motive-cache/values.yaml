@@ -91,6 +91,8 @@ monitoring:
     labels: {}
     # -- The namespace it should be installed to. Default to the namespace VarnishCluster is installed to
     namespace: ""
+    # -- The interval at which Prometheus should scrape the metrics. Default: 1m
+    scrapeInterval: "1m"
 
 # -- Node selector to control where the Varnish pods should be scheduled
 nodeSelector: {}

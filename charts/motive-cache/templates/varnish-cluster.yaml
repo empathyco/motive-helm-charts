@@ -54,6 +54,7 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       namespace: {{ .Values.monitoring.prometheusServiceMonitor.namespace | default .Release.Namespace }}
+      scrapeInterval: {{ .Values.monitoring.prometheusServiceMonitor.scrapeInterval | default "1m" }}
     {{- end }}
   {{- end }}
 
