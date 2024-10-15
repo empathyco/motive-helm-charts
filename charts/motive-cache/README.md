@@ -1,6 +1,6 @@
 # motive-cache
 
-![Version: 0.1.6](https://img.shields.io/badge/Version-0.1.6-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 1.0.0](https://img.shields.io/badge/AppVersion-1.0.0-informational?style=flat-square)
+![Version: 0.1.7](https://img.shields.io/badge/Version-0.1.7-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 1.0.0](https://img.shields.io/badge/AppVersion-1.0.0-informational?style=flat-square)
 
 A Helm chart for Kubernetes
 
@@ -31,17 +31,18 @@ A Helm chart for Kubernetes
 | metrics.enabled | bool | See values.yaml | Enable and configure a Prometheus serviceMonitor for the chart under this key. |
 | metrics.prometheusRule | object | See values.yaml | Enable and configure Prometheus Rules for the chart under this key. |
 | metrics.prometheusRule.defaultAlerts | object | `{"extraLabels":{},"slackChannel":"","team":""}` | Configure default alerting rules |
-| monitoring | object | `{"grafanaDashboard":{"datasourceName":"","enabled":false,"labels":{},"namespace":"","title":""},"prometheusServiceMonitor":{"enabled":false,"labels":{},"namespace":""}}` | The operator monitoring configuration object |
+| monitoring | object | `{"grafanaDashboard":{"datasourceName":"","enabled":false,"labels":{},"namespace":"","title":""},"prometheusServiceMonitor":{"enabled":false,"labels":{},"namespace":"","scrapeInterval":"1m"}}` | The operator monitoring configuration object |
 | monitoring.grafanaDashboard | object | `{"datasourceName":"","enabled":false,"labels":{},"namespace":"","title":""}` | A dashboard that can be installed along with the operator and used in grafana. Installed as a ConfigMap. |
 | monitoring.grafanaDashboard.datasourceName | string | `""` | Name of the Grafana datasource the dashboard should use. (required) |
 | monitoring.grafanaDashboard.enabled | bool | `false` | Enable or disable the ConfigMap installation. |
 | monitoring.grafanaDashboard.labels | object | `{}` | ConfigMap labels. Can be used to for discovery by grafana. |
 | monitoring.grafanaDashboard.namespace | string | `""` | Namespace that the ConfigMap with the dashboard should be installed to. Default to the namespace VarnishCluster is installed to |
 | monitoring.grafanaDashboard.title | string | `""` | Title of the Grafana dashboard. Default: Varnish (<cluster namespace>/<name>) |
-| monitoring.prometheusServiceMonitor | object | `{"enabled":false,"labels":{},"namespace":""}` | The Prometheus ServiceMonitor that is preconfigured to monitors the operator pods. |
+| monitoring.prometheusServiceMonitor | object | `{"enabled":false,"labels":{},"namespace":"","scrapeInterval":"1m"}` | The Prometheus ServiceMonitor that is preconfigured to monitors the operator pods. |
 | monitoring.prometheusServiceMonitor.enabled | bool | `false` | Enable or disable ServiceMontitor installation. |
 | monitoring.prometheusServiceMonitor.labels | object | `{}` | ServiceMonitor labels that will be used by Prometheus instance to discover this ServiceMonitor. |
 | monitoring.prometheusServiceMonitor.namespace | string | `""` | The namespace it should be installed to. Default to the namespace VarnishCluster is installed to |
+| monitoring.prometheusServiceMonitor.scrapeInterval | string | `"1m"` | The interval at which Prometheus should scrape the metrics. Default: 1m |
 | nameOverride | string | `""` |  |
 | nodeSelector | object | `{}` | Node selector to control where the Varnish pods should be scheduled |
 | podAntiAffinity | string | `"hard"` |  |
