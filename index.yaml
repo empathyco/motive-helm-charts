@@ -3,6 +3,16 @@ entries:
   motive-cache:
   - apiVersion: v2
     appVersion: 1.0.0
+    created: "2025-09-01T11:28:32.965919681Z"
+    description: A Helm chart for Kubernetes
+    digest: dedad74a6fa168f4ee6472ba0c7372d6d0e14bbfb618f2721198ecc1eb094b53
+    name: motive-cache
+    type: application
+    urls:
+    - https://github.com/empathyco/motive-helm-charts/releases/download/motive-cache-0.1.8/motive-cache-0.1.8.tgz
+    version: 0.1.8
+  - apiVersion: v2
+    appVersion: 1.0.0
     created: "2024-10-15T11:36:54.708125712Z"
     description: A Helm chart for Kubernetes
     digest: e63ee831af904ba56632a31efa1424d91123489cddaaf255d01081593d7d9499
@@ -143,6 +153,16 @@ entries:
     - https://github.com/empathyco/motive-helm-charts/releases/download/motive-cronjob-1.0.0/motive-cronjob-1.0.0.tgz
     version: 1.0.0
   motive-service:
+  - apiVersion: v2
+    appVersion: 1.0.0
+    created: "2025-09-01T11:28:33.213335891Z"
+    description: A Helm chart for Kubernetes
+    digest: a7339c645cb80c4563cd02353137a1435310954bd872b2e69211282c8c463797
+    name: motive-service
+    type: application
+    urls:
+    - https://github.com/empathyco/motive-helm-charts/releases/download/motive-service-2.2.3/motive-service-2.2.3.tgz
+    version: 2.2.3
   - apiVersion: v2
     appVersion: 1.0.0
     created: "2024-10-03T07:33:52.414304285Z"
@@ -486,6 +506,16 @@ entries:
   multi-service:
   - apiVersion: v2
     appVersion: 0.1.1
+    created: "2025-09-01T11:28:33.414537792Z"
+    description: A Helm chart for Kubernetes
+    digest: 567b02b781ff27ba7eb3dd4dd201ead61e0b1942928569f6b65e23e9f78df1c5
+    name: multi-service
+    type: application
+    urls:
+    - https://github.com/empathyco/motive-helm-charts/releases/download/multi-service-0.6.4/multi-service-0.6.4.tgz
+    version: 0.6.4
+  - apiVersion: v2
+    appVersion: 0.1.1
     created: "2023-08-22T07:39:28.368426422Z"
     description: A Helm chart for Kubernetes
     digest: b97d5e5624c38df33c950e4f324163ff75c86f9914e8af50743882acd963fa2c
@@ -734,4 +764,4 @@ entries:
     urls:
     - https://github.com/empathyco/motive-helm-charts/releases/download/multi-service-0.3.1/multi-service-0.3.1.tgz
     version: 0.3.1
-generated: "2024-10-15T11:36:54.708240377Z"
+generated: "2025-09-01T11:28:33.414988619Z"
