@@ -24,7 +24,7 @@ spec:
       rules:
         {{- if gt (.Values.replicas | int) 1 }}
         - alert: HighAvailability-{{ include "motive-cache.fullname" . }}
-          expr: sum(kube_pod_status_ready{namespace="{{ $.Release.Namespace }}", pod=~"{{ include "motive-cache.fullname" . }}-.+"}) < 2
+          expr: sum(kube_pod_status_ready{namespace="{{ $.Release.Namespace }}", pod=~"{{ include "motive-cache.fullname" . }}-.+", condition="true"}) < 2
           for: 10m
           labels:
             severity: warning
@@ -43,7 +43,7 @@ spec:
         {{- end }}
 
         - alert: ZeroPods-{{ include "motive-cache.fullname" . }}
-          expr: sum(kube_pod_status_ready{namespace="{{ $.Release.Namespace }}", pod=~"{{ include "motive-cache.fullname" . }}-.+"}) == 0
+          expr: sum(kube_pod_status_ready{namespace="{{ $.Release.Namespace }}", pod=~"{{ include "motive-cache.fullname" . }}-.+", condition="true"}) == 0
           for: 0m
           labels:
             severity: critical
