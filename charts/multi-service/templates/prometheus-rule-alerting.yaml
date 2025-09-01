@@ -15,7 +15,7 @@ spec:
       rules:
         {{- if gt (.Values.replicaCount | int) 1 }}
         - alert: HighAvailability-{{ include "multi-service.fullname" . }}
-          expr: sum(kube_pod_status_ready{namespace="{{ $.Release.Namespace }}", pod=~"{{ include "multi-service.fullname" . }}-.+"}) < 2
+          expr: sum(kube_pod_status_ready{namespace="{{ $.Release.Namespace }}", pod=~"{{ include "multi-service.fullname" . }}-.+", condition="true"}) < 2
           for: 10m
           labels:
             severity: warning
@@ -25,7 +25,7 @@ spec:
         {{- end }}
 
         - alert: ZeroPods-{{ include "multi-service.fullname" . }}
-          expr: sum(kube_pod_status_ready{namespace="{{ $.Release.Namespace }}", pod=~"{{ include "multi-service.fullname" . }}-.+"}) == 0
+          expr: sum(kube_pod_status_ready{namespace="{{ $.Release.Namespace }}", pod=~"{{ include "multi-service.fullname" . }}-.+", condition="true"}) == 0
           for: 0m
           labels:
             severity: critical
