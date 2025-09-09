@@ -541,6 +541,9 @@ metrics:
       slackChannelInfo: ""
       slackChannelWarning: ""
       slackChannelCritical: ""
+      zeroPods:
+        enabled: true
+        for: 0m
       kafka:
         enabled: false
         deadLetter:
