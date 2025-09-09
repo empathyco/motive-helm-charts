@@ -42,6 +42,7 @@ spec:
             description: 'Service reports having not enough pods to ensure High Availability'
         {{- end }}
 
+        {{- if gt (.Values.replicas | int) 0 }}
         - alert: ZeroPods-{{ include "motive-cache.fullname" . }}
           expr: sum(kube_pod_status_ready{namespace="{{ $.Release.Namespace }}", pod=~"{{ include "motive-cache.fullname" . }}-.+", condition="true"}) == 0
           for: 0m
@@ -59,6 +60,7 @@ spec:
           annotations:
             summary: 'Number of Pods == 0'
             description: 'Service reports no pods running'
+          {{- end }}
 
         - alert: MemoryUsageMoreThan80Percent-{{ include "motive-cache.fullname" . }}
           expr: 100 * (varnish_sma_g_bytes{namespace="{{ $.Release.Namespace }}", pod=~"{{ include "motive-cache.fullname" . }}-.+"} / varnish_sma_g_space{namespace="{{ $.Release.Namespace }}", pod=~"{{ include "motive-cache.fullname" . }}-.+"}) > 80

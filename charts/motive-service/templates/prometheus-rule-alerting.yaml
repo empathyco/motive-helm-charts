@@ -42,9 +42,10 @@ spec:
             description: 'Service reports having not enough pods to ensure High Availability'
         {{- end }}
 
+        {{- if and (gt (.Values.service.replicaCount | int) 0) (.Values.metrics.prometheusRule.defaultAlerts.zeroPods.enabled) }}
         - alert: ZeroPods-{{ include "motive-service.fullname" . }}
           expr: sum(kube_pod_status_ready{namespace="{{ $.Release.Namespace }}", pod=~"{{ include "motive-service.fullname" . }}-.+", condition="true"}) == 0
-          for: 0m
+          for: {{ .Values.metrics.prometheusRule.defaultAlerts.zeroPods.for }}
           labels:
             severity: critical
             {{- with $.Values.metrics.prometheusRule.defaultAlerts.team }}
@@ -59,6 +60,7 @@ spec:
           annotations:
             summary: 'Number of Pods == 0'
             description: 'Service reports no pods running'
+        {{- end }}
     # default alerts - END
 
     # Kafka default alerts - START
