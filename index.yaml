@@ -3,6 +3,16 @@ entries:
   motive-cache:
   - apiVersion: v2
     appVersion: 1.0.0
+    created: "2025-09-09T15:15:59.008143954Z"
+    description: A Helm chart for Kubernetes
+    digest: c560c6c85715a867afa17ad4d7bde2f8ed670ab71f87ab18b2b0fe924b1a5c1a
+    name: motive-cache
+    type: application
+    urls:
+    - https://github.com/empathyco/motive-helm-charts/releases/download/motive-cache-0.1.9/motive-cache-0.1.9.tgz
+    version: 0.1.9
+  - apiVersion: v2
+    appVersion: 1.0.0
     created: "2025-09-01T11:28:32.965919681Z"
     description: A Helm chart for Kubernetes
     digest: dedad74a6fa168f4ee6472ba0c7372d6d0e14bbfb618f2721198ecc1eb094b53
@@ -153,6 +163,16 @@ entries:
     - https://github.com/empathyco/motive-helm-charts/releases/download/motive-cronjob-1.0.0/motive-cronjob-1.0.0.tgz
     version: 1.0.0
   motive-service:
+  - apiVersion: v2
+    appVersion: 1.0.0
+    created: "2025-09-09T15:15:59.173604499Z"
+    description: A Helm chart for Kubernetes
+    digest: 319ec36bb763a10eb2ffec19dacd52c7ac58856932222c37f2efcd1673d31482
+    name: motive-service
+    type: application
+    urls:
+    - https://github.com/empathyco/motive-helm-charts/releases/download/motive-service-2.2.4/motive-service-2.2.4.tgz
+    version: 2.2.4
   - apiVersion: v2
     appVersion: 1.0.0
     created: "2025-09-01T11:28:33.213335891Z"
@@ -764,4 +784,4 @@ entries:
     urls:
     - https://github.com/empathyco/motive-helm-charts/releases/download/multi-service-0.3.1/multi-service-0.3.1.tgz
     version: 0.3.1
-generated: "2025-09-01T11:28:33.414988619Z"
+generated: "2025-09-09T15:15:59.173928296Z"
