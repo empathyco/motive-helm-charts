@@ -30,30 +30,6 @@ spec:
     }}
     - name: {{ include "motive-service.fullname" . }}-default-alerting
       rules:
-        {{- if or
-          (and .Values.service.autoscaling.enabled (gt (.Values.service.autoscaling.minReplicas | int) 1))
-          (and .Values.service.keda.enabled (gt (.Values.service.keda.minReplicas | int) 1))
-          (and (not .Values.service.autoscaling.enabled) (not .Values.service.keda.enabled) (gt (.Values.service.replicaCount | int) 1))
-        }}
-        - alert: HighAvailability-{{ include "motive-service.fullname" . }}
-          expr: sum(kube_pod_status_ready{namespace="{{ $.Release.Namespace }}", pod=~"{{ include "motive-service.fullname" . }}-.+", condition="true"}) < 2
-          for: 10m
-          labels:
-            severity: warning
-            {{- with $.Values.metrics.prometheusRule.defaultAlerts.team }}
-            team: {{ . | quote }}
-            {{- end }}
-            {{- with (include "motive-service.slackChannelWarning" $) }}
-            slack_channel: {{ . | quote }}
-            {{- end }}
-            {{- with $.Values.metrics.prometheusRule.defaultAlerts.extraLabels }}
-            {{- toYaml . | nindent 12 }}
-            {{- end }}
-          annotations:
-            summary: 'Number of Pods < 2'
-            description: 'Service reports having not enough pods to ensure High Availability'
-        {{- end }}
-
         {{- if and
           (or
             (and .Values.service.autoscaling.enabled (gt (.Values.service.autoscaling.minReplicas | int) 0))
