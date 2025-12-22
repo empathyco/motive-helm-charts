@@ -20,7 +20,7 @@ metadata:
 spec:
   {{- $alerting := .alerting | default (dict) }}
   alerting:
-    name: {{ $alerting.name | default "ErrorBudgetBurn" }}
+    name: {{ include "motive-service.fullname" . }} - {{ $alerting.name | default "ErrorBudgetBurn" }}
     absent: {{ $alerting.absent | default true }}
     burnrates: {{ $alerting.burnrates | default true }}
     disabled: {{ $alerting.disabled | default false }}
