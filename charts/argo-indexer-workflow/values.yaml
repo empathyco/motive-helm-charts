@@ -1,0 +1,61 @@
+# -- --------------
+# CronWorkflow
+# -- --------------
+
+cronWorkflow:
+  name: ""
+  namespace: ""
+  schedule: "*/10 * * * *"
+  timezone: "UTC"
+  concurrencyPolicy: "Forbid"
+  startingDeadlineSeconds: 60
+  successfulJobsHistoryLimit: 5
+  failedJobsHistoryLimit: 3
+
+# -- --------------
+# WorkflowTemplate
+# -- --------------
+
+workflowTemplate:
+  name: ""
+  namespace: ""
+  serviceAccountName: argo-workflow
+  parallelism: 10
+  activeDeadlineSeconds: 7800
+
+# -- --------------
+# Request Handler
+# -- --------------
+
+requestHandler:
+  image:
+    repository: ""
+    tag: ""
+    pullPolicy: IfNotPresent
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 200m
+      memory: 256Mi
+  env: []
+
+# -- --------------
+# Batch Processor
+# -- --------------
+
+batchProcessor:
+  image:
+    repository: ""
+    tag: ""
+    pullPolicy: IfNotPresent
+  activeDeadlineSeconds: 7200
+  resources:
+    requests:
+      cpu: 250m
+      memory: 512Mi
+    limits:
+      cpu: 500m
+      memory: 1Gi
+  env: []

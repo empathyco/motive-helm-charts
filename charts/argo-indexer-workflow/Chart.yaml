@@ -1,0 +1,9 @@
+apiVersion: v2
+name: argo-indexer-workflow
+description: Argo CronWorkflow and WorkflowTemplate for indexer services with a request-handler / batch-processor fan-out pattern
+type: application
+version: 0.1.0
+appVersion: "0.1.0"
+maintainers:
+  - email: index@empathy.co
+    name: Empathy
