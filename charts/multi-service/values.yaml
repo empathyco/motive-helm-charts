@@ -395,48 +395,28 @@ argoIndexerWorkflow:
   cronWorkflow:
     name: ""
     namespace: ""
-    schedule: "*/10 * * * *"
-    timezone: "UTC"
-    concurrencyPolicy: "Forbid"
-    startingDeadlineSeconds: 60
-    successfulJobsHistoryLimit: 5
-    failedJobsHistoryLimit: 3
+    spec: {}
+      # schedule: "*/10 * * * *"
+      # timezone: "UTC"
+      # concurrencyPolicy: "Forbid"
+      # startingDeadlineSeconds: 60
+      # successfulJobsHistoryLimit: 5
+      # failedJobsHistoryLimit: 3
+      # workflowSpec:
+      #   workflowTemplateRef:
+      #     name: "my-workflow-template"
 
   workflowTemplate:
     name: ""
     namespace: ""
-    serviceAccountName: argo-workflow
-    parallelism: 10
-    activeDeadlineSeconds: 7800
-
-  requestHandler:
-    image:
-      repository: ""
-      tag: ""
-      pullPolicy: IfNotPresent
-    resources:
-      requests:
-        cpu: 100m
-        memory: 128Mi
-      limits:
-        cpu: 200m
-        memory: 256Mi
-    env: []
-
-  batchProcessor:
-    image:
-      repository: ""
-      tag: ""
-      pullPolicy: IfNotPresent
-    activeDeadlineSeconds: 7200
-    resources:
-      requests:
-        cpu: 250m
-        memory: 512Mi
-      limits:
-        cpu: 500m
-        memory: 1Gi
-    env: []
+    spec: {}
+      # serviceAccountName: argo-workflow
+      # entrypoint: process-requests
+      # templates:
+      #   - name: process-requests
+      #     container:
+      #       image: "my-repository/my-image:latest"
+      #       command: ["node", "dist/main.js"]
 
 # -- TBD
 # @default -- `[]`
