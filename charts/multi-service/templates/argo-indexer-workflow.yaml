@@ -1,0 +1,79 @@
+{{- $api := "argoproj.io/v1alpha1" -}}
+{{- if and .Values.argoIndexerWorkflow.enabled (.Capabilities.APIVersions.Has $api) -}}
+apiVersion: argoproj.io/v1alpha1
+kind: WorkflowTemplate
+metadata:
+  name: {{ required "argoIndexerWorkflow.workflowTemplate.name is required" .Values.argoIndexerWorkflow.workflowTemplate.name }}
+  namespace: {{ default .Release.Namespace .Values.argoIndexerWorkflow.workflowTemplate.namespace }}
+spec:
+  serviceAccountName: {{ default "argo-workflow" .Values.argoIndexerWorkflow.workflowTemplate.serviceAccountName }}
+  entrypoint: process-requests
+  parallelism: {{ .Values.argoIndexerWorkflow.workflowTemplate.parallelism }}
+  activeDeadlineSeconds: {{ .Values.argoIndexerWorkflow.workflowTemplate.activeDeadlineSeconds }}
+  templates:
+    - name: process-requests
+      steps:
+        - - name: fetch-pending
+            template: request-handler
+        - - name: process-batch
+            template: batch-processor
+            arguments:
+              parameters:
+                - name: request
+                  value: "{{`{{item}}`}}"
+            withParam: "{{`{{steps.fetch-pending.outputs.parameters.requests}}`}}"
+
+    - name: request-handler
+      container:
+        image: "{{ .Values.argoIndexerWorkflow.requestHandler.image.repository }}:{{ .Values.argoIndexerWorkflow.requestHandler.image.tag }}"
+        imagePullPolicy: {{ .Values.argoIndexerWorkflow.requestHandler.image.pullPolicy }}
+        command: ["node", "dist/main.js"]
+        {{- if .Values.argoIndexerWorkflow.requestHandler.env }}
+        env:
+          {{- toYaml .Values.argoIndexerWorkflow.requestHandler.env | nindent 10 }}
+        {{- end }}
+        resources:
+          {{- toYaml .Values.argoIndexerWorkflow.requestHandler.resources | nindent 10 }}
+      outputs:
+        parameters:
+          - name: requests
+            valueFrom:
+              path: /tmp/requests.json
+
+    - name: batch-processor
+      inputs:
+        parameters:
+          - name: request
+      activeDeadlineSeconds: {{ .Values.argoIndexerWorkflow.batchProcessor.activeDeadlineSeconds }}
+      container:
+        image: "{{ .Values.argoIndexerWorkflow.batchProcessor.image.repository }}:{{ .Values.argoIndexerWorkflow.batchProcessor.image.tag }}"
+        imagePullPolicy: {{ .Values.argoIndexerWorkflow.batchProcessor.image.pullPolicy }}
+        command: ["node", "dist/main.js"]
+        env:
+          - name: REQUEST_JSON
+            value: "{{`{{inputs.parameters.request}}`}}"
+          - name: ARGO_WORKFLOW_NAME
+            value: "{{`{{workflow.name}}`}}"
+          {{- if .Values.argoIndexerWorkflow.batchProcessor.env }}
+          {{- toYaml .Values.argoIndexerWorkflow.batchProcessor.env | nindent 10 }}
+          {{- end }}
+        resources:
+          {{- toYaml .Values.argoIndexerWorkflow.batchProcessor.resources | nindent 10 }}
+---
+apiVersion: argoproj.io/v1alpha1
+kind: CronWorkflow
+metadata:
+  name: {{ required "argoIndexerWorkflow.cronWorkflow.name is required" .Values.argoIndexerWorkflow.cronWorkflow.name }}
+  namespace: {{ default .Release.Namespace .Values.argoIndexerWorkflow.cronWorkflow.namespace }}
+spec:
+  schedule: {{ .Values.argoIndexerWorkflow.cronWorkflow.schedule | quote }}
+  timezone: {{ .Values.argoIndexerWorkflow.cronWorkflow.timezone | quote }}
+  concurrencyPolicy: {{ .Values.argoIndexerWorkflow.cronWorkflow.concurrencyPolicy | quote }}
+  startingDeadlineSeconds: {{ .Values.argoIndexerWorkflow.cronWorkflow.startingDeadlineSeconds }}
+  successfulJobsHistoryLimit: {{ .Values.argoIndexerWorkflow.cronWorkflow.successfulJobsHistoryLimit }}
+  failedJobsHistoryLimit: {{ .Values.argoIndexerWorkflow.cronWorkflow.failedJobsHistoryLimit }}
+  workflowSpec:
+    workflowTemplateRef:
+      name: {{ required "argoIndexerWorkflow.workflowTemplate.name is required" .Values.argoIndexerWorkflow.workflowTemplate.name }}
+{{- end -}}
+
