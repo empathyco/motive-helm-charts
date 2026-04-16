@@ -48,11 +48,6 @@ jobs:
         run: |
           echo "${{ steps.updated_files.outputs.all }}" | tr "," "\n" | awk -F\/ '/^charts/ && /\// && !/^\./ {print $2}' | sort | uniq > changed_charts
           while read chart; do
-            if [[ ! -f charts/${chart}/Chart.yaml ]]; then
-              echo "Chart ${chart} has been deleted in this branch, skipping semantic version check."
-              continue
-            fi
-
             # Get Chart version in the current PR branch
             version=$(awk -F\: '/^version:/ {print $(NF)}' charts/${chart}/Chart.yaml|tr -d " ")
 
