@@ -135,14 +135,7 @@ autoscaling:
     enabled: false
     pollingInterval: 30
     cooldownPeriod: 300
-    fallback: {}
     triggers: []
-
-# -- Pod Disruption Budget (only rendered when effective min replicas > 1)
-pdb:
-  enabled: true
-  minAvailable: 1
-  maxUnavailable: ""
 
 # -- Ingress: master switch for all Ingress resources (`internal` / `public` only apply when this is true)
 ingress:
@@ -179,28 +172,26 @@ httpRoutes:
     enabled: false
     annotations: {}
     # -- Gateways this route attaches to (required when enabled)
-    parentRefs: []
-    #  - name: internal-gateway
-    #    namespace: envoy-gateway-system
-    #    sectionName: http
+    parentRef:
+      name: internal-envoy-gateway
+    # -- Hostnames this route attaches to
     hostnames: []
-    # -- Full `rules` list; when empty, a single PathPrefix rule on `defaultPath` → this chart's Service (first service port)
+    # -- Full `rules` list; when empty, a single PathPrefix rule on `defaultPath` → this chart's http service port
     rules: []
     # -- Path for the generated default rule (when `rules` is empty)
     defaultPath: /
   public:
     enabled: false
     annotations: {}
-    parentRefs: []
-    #  - name: public-gateway
-    #    namespace: envoy-gateway-system
+    parentRef:
+      name: public-envoy-gateway
     hostnames: []
     rules: []
     defaultPath: /
 
 # -- Service account for the workload pod
 serviceAccount:
-  create: true
+  create: false
   automount: true
   name: ""
   annotations: {}
@@ -265,6 +256,12 @@ nodeSelector: {}
 
 # -- Tolerations
 tolerations: []
+
+# -- Pod Disruption Budget
+pdb:
+  enabled: false
+  minAvailable: 1
+  maxUnavailable: ""
 
 # -- Pod-level security context (secure defaults)
 podSecurityContext:

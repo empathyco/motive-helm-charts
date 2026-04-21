@@ -11,7 +11,7 @@ metadata:
   {{- end }}
 spec:
   {{- with .Values.ingress.internal.className }}
-  ingressClassName: {{ . }}
+  ingressClassName: {{ . | default "internal" }}
   {{- end }}
   {{- with .Values.ingress.internal.tls }}
   tls:
