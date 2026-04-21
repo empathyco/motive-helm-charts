@@ -424,7 +424,6 @@ argoIndexerWorkflow:
 httpRoute:
   # -- Enable HTTPRoute
   enabled: false
-  name: ""
   namespace: ""
   labels: {}
   annotations: {}
