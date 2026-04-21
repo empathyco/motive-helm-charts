@@ -418,6 +418,41 @@ argoIndexerWorkflow:
       #       image: "my-repository/my-image:latest"
       #       command: ["node", "dist/main.js"]
 
+# ----------
+# HTTP Route
+# ----------
+httpRoute:
+  # -- Enable HTTPRoute
+  enabled: false
+  name: ""
+  namespace: ""
+  labels: {}
+  annotations: {}
+  spec: {}
+    # hostnames:
+    #   - api.staging.empathy.co
+    # parentRefs:
+    #   - group: gateway.networking.k8s.io
+    #     kind: Gateway
+    #     name: public-envoy-gateway
+    #     namespace: kube-system
+    # rules:
+    #   - matches:
+    #       - path:
+    #           type: PathPrefix
+    #           value: /search/v1/query
+    #     filters:
+    #       - type: URLRewrite
+    #         urlRewrite:
+    #           path:
+    #             type: ReplacePrefixMatch
+    #             replacePrefixMatch: /query
+    #     backendRefs:
+    #       - group: ""
+    #         kind: Service
+    #         name: search-service
+    #         port: 8080
+
 # -- TBD
 # @default -- `[]`
 slo: []
