@@ -1,0 +1,28 @@
+{{- if .Values.rbac.create }}
+{{- range .Values.rbac.roles }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: {{ include "empathy-service.fullname" $ }}-role-{{ .name | required "rbac.roles[].name is required" }}
+  labels:
+    {{- include "empathy-service.labels" $ | nindent 4 }}
+rules:
+  {{- tpl (toYaml .rules) $ | nindent 2 }}
+{{- end }}
+{{- range .Values.rbac.bindings }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ include "empathy-service.fullname" $ }}-rolebinding-{{ .name | required "rbac.bindings[].name is required" }}
+  labels:
+    {{- include "empathy-service.labels" $ | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: {{ .roleRef.kind | default "Role" }}
+  name: {{ tpl .roleRef.name $ }}
+subjects:
+  {{- tpl (toYaml .subjects) $ | nindent 2 }}
+{{- end }}
+{{- end }}

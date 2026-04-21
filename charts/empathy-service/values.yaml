@@ -1,0 +1,286 @@
+# -- Override the chart name (`metadata.name` prefix)
+nameOverride: ""
+
+# -- Override the fully qualified release name
+fullnameOverride: ""
+
+# -- Number of replicas (ignored when HPA or KEDA autoscaling is enabled)
+replicaCount: 1
+
+# -- Minimum time a pod must be ready before counted available
+minReadySeconds: 0
+
+# -- How many old ReplicaSets to keep for rollbacks
+revisionHistoryLimit: 3
+
+# -- Pod termination grace period
+terminationGracePeriodSeconds: 60
+
+# -- Image for the main workload container
+# @default -- See below
+image:
+  registry: ""
+  repository: nginxinc/nginx-unprivileged
+  # -- When empty, defaults to `Chart.AppVersion` (pin a real tag for production images)
+  tag: "1.27-alpine"
+  digest: ""
+  pullPolicy: IfNotPresent
+
+# -- Image pull secrets
+imagePullSecrets: []
+
+# -- Resource requests/limits for the main container
+resources:
+  requests:
+    cpu: 50m
+    memory: 128Mi
+  limits:
+    memory: 128Mi
+
+# -- Probes for the main container
+probes:
+  enabled: true
+  livenessProbe:
+    enabled: true
+    path: /health
+    port: 8080
+  readinessProbe:
+    enabled: true
+    path: /health
+    port: 8080
+  startupProbe:
+    enabled: true
+    path: /health
+    port: 8080
+
+# -- Kubernetes Service (ClusterIP / NodePort / LoadBalancer)
+service:
+  type: ClusterIP
+  port: 8080
+  metricsPort: 8081
+
+# -- Prometheus Operator integration
+metrics:
+  # -- When true, ServiceMonitor targets a port named `metrics` or `metrics.portName`
+  serviceMonitor:
+    enabled: true
+    path: /metrics
+    port: 8080
+    labels:
+      release: prometheus
+
+  podMonitor:
+    enabled: false
+    path: /metrics
+    port: 8080
+    labels:
+      release: prometheus
+
+# -- Optional command override for the main container
+command: []
+
+# -- Optional args for the main container
+args: []
+
+# -- Environment variables for the main container
+env: []
+
+# -- Additional env (alias pattern; merged with `env` in templates)
+extraEnv: []
+
+# -- envFrom entries (e.g. `configMapRef` / `secretRef` for secrets created by External Secrets)
+envFrom: []
+
+# -- Extra init containers
+extraInitContainers: []
+
+# -- Sidecar / extra containers in the pod
+extraContainers: []
+
+# -- Extra volumes on the pod
+extraVolumes: []
+
+# -- Extra volume mounts on the main container
+extraVolumeMounts: []
+
+# -- Deployment strategy
+strategy:
+  type: RollingUpdate
+  rollingUpdate:
+    maxSurge: 25%
+    maxUnavailable: 25%
+
+# -- Autoscaling: HPA when `autoscaling.enabled` is true, or KEDA when `autoscaling.keda.enabled` is true (mutually exclusive)
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 80
+  targetMemoryUtilizationPercentage: ""
+  scaleUp:
+    stabilizationWindowSeconds: 60
+    selectPolicy: Max
+    policies:
+      - type: Pods
+        value: 1
+        periodSeconds: 60
+  scaleDown:
+    stabilizationWindowSeconds: 300
+    selectPolicy: Min
+    policies:
+      - type: Pods
+        value: 1
+        periodSeconds: 300
+  keda:
+    enabled: false
+    pollingInterval: 30
+    cooldownPeriod: 300
+    fallback: {}
+    triggers: []
+
+# -- Pod Disruption Budget (only rendered when effective min replicas > 1)
+pdb:
+  enabled: true
+  minAvailable: 1
+  maxUnavailable: ""
+
+# -- Ingress: master switch for all Ingress resources (`internal` / `public` only apply when this is true)
+ingress:
+  enabled: true
+  internal:
+    enabled: false
+    className: internal
+    labels: {}
+    annotations: {}
+    hosts: []
+    #  - host: app.internal.example.com
+    #    paths:
+    #      - path: /
+    #        pathType: Prefix
+    #        servicePortName: http
+    tls: []
+  public:
+    enabled: false
+    className: public-nlb
+    labels: {}
+    annotations: {}
+    hosts: []
+    #  - host: app.example.com
+    #    paths:
+    #      - path: /
+    #        pathType: Prefix
+    #        servicePortName: http
+    tls: []
+
+# -- Gateway API HTTPRoute: master switch for all HTTPRoute resources (`internal` / `public` only apply when this is true)
+httpRoutes:
+  enabled: true
+  internal:
+    enabled: false
+    annotations: {}
+    # -- Gateways this route attaches to (required when enabled)
+    parentRefs: []
+    #  - name: internal-gateway
+    #    namespace: envoy-gateway-system
+    #    sectionName: http
+    hostnames: []
+    # -- Full `rules` list; when empty, a single PathPrefix rule on `defaultPath` → this chart's Service (first service port)
+    rules: []
+    # -- Path for the generated default rule (when `rules` is empty)
+    defaultPath: /
+  public:
+    enabled: false
+    annotations: {}
+    parentRefs: []
+    #  - name: public-gateway
+    #    namespace: envoy-gateway-system
+    hostnames: []
+    rules: []
+    defaultPath: /
+
+# -- Service account for the workload pod
+serviceAccount:
+  create: true
+  automount: true
+  name: ""
+  annotations: {}
+
+# -- Optional ConfigMap from inline data (non-sensitive)
+config:
+  enabled: false
+  mountAsEnvFrom: true
+  data: {}
+
+# -- RBAC: namespace-scoped Roles and RoleBindings
+rbac:
+  create: false
+  roles: []
+  #  - name: example
+  #    rules:
+  #      - apiGroups: [""]
+  #        resources: ["secrets"]
+  #        verbs: ["get", "list", "watch"]
+  bindings: []
+  #  - name: example-binding
+  #    roleRef:
+  #      kind: Role
+  #      name: '{{ include "empathy-service.fullname" $ }}-role-example'
+  #    subjects:
+  #      - kind: ServiceAccount
+  #        name: '{{ include "empathy-service.serviceAccountName" $ }}'
+
+# -- Network policy (opt-in; no allow-all policy is created when disabled)
+networkPolicy:
+  enabled: false
+  ingressRules: []
+  egressRules: []
+
+# -- External Secrets Operator resources (rendered only if CRDs are installed)
+# Each store/item uses `spec` as the Kubernetes object body (excluding apiVersion/kind).
+externalSecrets:
+  secretStores: []
+  #  - name: example
+  #    kind: SecretStore
+  #    labels: {}
+  #    annotations: {}
+  #    spec:
+  #      provider: {}
+  items: []
+  #  - name: example
+  #    labels: {}
+  #    annotations: {}
+  #    spec:
+  #      secretStoreRef: { name: example, kind: SecretStore }
+  #      target: { name: my-secret, creationPolicy: Owner }
+  #      data: []
+
+# -- Pod affinity / anti-affinity (full `spec.template.spec.affinity` object)
+affinity: {}
+
+# -- Topology spread constraints (full `spec.template.spec.topologySpreadConstraints` list)
+topologySpreadConstraints: []
+
+# -- Node selector for pods
+nodeSelector: {}
+
+# -- Tolerations
+tolerations: []
+
+# -- Pod-level security context (secure defaults)
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 101
+  fsGroup: 101
+  seccompProfile:
+    type: RuntimeDefault
+
+# -- Main container security context (secure defaults)
+containerSecurityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  capabilities:
+    drop:
+      - ALL
+
+# -- Extra Kubernetes manifests (YAML objects or strings passed through `tpl`)
+extraObjects: []

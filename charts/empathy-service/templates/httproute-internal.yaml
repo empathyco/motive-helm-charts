@@ -1,0 +1,37 @@
+{{- if and .Values.httpRoutes.enabled .Values.httpRoutes.internal.enabled }}
+{{- if empty .Values.httpRoutes.internal.parentRefs }}
+{{- fail "empathy-service: httpRoutes.internal.parentRefs must be set when httpRoutes.enabled and httpRoutes.internal.enabled are true" }}
+{{- end }}
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: {{ include "empathy-service.fullname" . }}-internal
+  labels:
+    {{- include "empathy-service.labels" . | nindent 4 }}
+  {{- with .Values.httpRoutes.internal.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  parentRefs:
+    {{- toYaml .Values.httpRoutes.internal.parentRefs | nindent 4 }}
+  {{- with .Values.httpRoutes.internal.hostnames }}
+  hostnames:
+    {{- range . }}
+    - {{ . | quote }}
+    {{- end }}
+  {{- end }}
+  {{- if .Values.httpRoutes.internal.rules }}
+  rules:
+    {{- toYaml .Values.httpRoutes.internal.rules | nindent 4 }}
+  {{- else }}
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: {{ .Values.httpRoutes.internal.defaultPath | default "/" | quote }}
+      backendRefs:
+        - name: {{ include "empathy-service.fullname" . }}
+          port: {{ .Values.service.port }}
+  {{- end }}
+{{- end }}

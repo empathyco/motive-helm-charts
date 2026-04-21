@@ -1,0 +1,37 @@
+{{- if and .Values.httpRoutes.enabled .Values.httpRoutes.public.enabled }}
+{{- if empty .Values.httpRoutes.public.parentRefs }}
+{{- fail "empathy-service: httpRoutes.public.parentRefs must be set when httpRoutes.enabled and httpRoutes.public.enabled are true" }}
+{{- end }}
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: {{ include "empathy-service.fullname" . }}-public
+  labels:
+    {{- include "empathy-service.labels" . | nindent 4 }}
+  {{- with .Values.httpRoutes.public.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  parentRefs:
+    {{- toYaml .Values.httpRoutes.public.parentRefs | nindent 4 }}
+  {{- with .Values.httpRoutes.public.hostnames }}
+  hostnames:
+    {{- range . }}
+    - {{ . | quote }}
+    {{- end }}
+  {{- end }}
+  {{- if .Values.httpRoutes.public.rules }}
+  rules:
+    {{- toYaml .Values.httpRoutes.public.rules | nindent 4 }}
+  {{- else }}
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: {{ .Values.httpRoutes.public.defaultPath | default "/" | quote }}
+      backendRefs:
+        - name: {{ include "empathy-service.fullname" . }}
+          port: {{ .Values.service.port }}
+  {{- end }}
+{{- end }}
