@@ -1,7 +1,0 @@
-# CI: metricsPort equals app port — single http listener, no `metrics` port.
-service:
-  metricsPort: 8080
-
-metrics:
-  serviceMonitor:
-    port: http

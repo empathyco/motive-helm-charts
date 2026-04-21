@@ -28,10 +28,6 @@ helm install myapp ./charts/empathy-service \
 - **No allow-all `NetworkPolicy`** when disabled (cluster default applies).
 - **Secrets** are not rendered as Helm-managed `Secret` objects; use External Secrets (`externalSecrets.items`) and reference the resulting secrets via top-level `envFrom` (`secretRef`), per-item `mountAsEnvFrom: true` (auto `secretRef`), or volumes.
 
-## Helm test
-
-When `tests.enabled` is `true` (default), `helm test` runs a pod that curls the in-cluster `Service` URL.
-
 ## Parameters
 
 | Key | Type | Default | Description |
