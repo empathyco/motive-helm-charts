@@ -3,7 +3,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: WorkflowTemplate
 metadata:
-  name: {{ required "argoIndexerWorkflow.workflowTemplate.name is required" .Values.argoIndexerWorkflow.workflowTemplate.name }}
+  name: {{ include "multi-service.fullname" . }}
   namespace: {{ default .Release.Namespace .Values.argoIndexerWorkflow.workflowTemplate.namespace }}
 spec:
   {{- toYaml (required "argoIndexerWorkflow.workflowTemplate.spec is required" .Values.argoIndexerWorkflow.workflowTemplate.spec) | nindent 2 }}
