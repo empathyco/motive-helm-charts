@@ -47,7 +47,7 @@ When `tests.enabled` is `true` (default), `helm test` runs a pod that curls the 
 | image.pullPolicy | string | `IfNotPresent` | Image pull policy. |
 | service.type | string | `ClusterIP` | Kubernetes Service type. |
 | service.port | int | `8080` | Primary app port (named `http` on the container and Service). |
-| service.metricsPort | int | `8081` | Optional metrics port (named `metrics`). Set to `0` or `""` to omit; set equal to `service.port` to serve metrics on the same port (no separate `metrics` port). |
+| service.metricsPort | int/string | `""` | Optional metrics port (named `metrics`). `""` or `0` for no separate port; set equal to `service.port` to serve metrics on the app port only. |
 | ingress.enabled | bool | `true` | Master switch: when `false`, no `Ingress` resources are created. |
 | ingress.internal.enabled | bool | `false` | Create an internal `Ingress` (requires `ingress.enabled`, `ingressClassName` default: `internal`). |
 | ingress.public.enabled | bool | `false` | Create a public `Ingress` (requires `ingress.enabled`, `ingressClassName` default: `public-nlb`). |
@@ -57,10 +57,10 @@ When `tests.enabled` is `true` (default), `helm test` runs a pod that curls the 
 | autoscaling.enabled | bool | `false` | Create an `HorizontalPodAutoscaler` (mutually exclusive with `autoscaling.keda.enabled`). |
 | autoscaling.keda.enabled | bool | `false` | Create a KEDA `ScaledObject` (mutually exclusive with `autoscaling.enabled`). |
 | pdb.enabled | bool | `true` | Create a `PodDisruptionBudget` when effective min replicas > 1. |
-| metrics.serviceMonitor.enabled | bool | `false` | Create a `ServiceMonitor`. |
-| metrics.serviceMonitor.port | string | `""` | Service port **name** to scrape (`http` or `metrics`). When empty, defaults to `metrics` if a distinct metrics port exists, otherwise `http`. |
+| metrics.serviceMonitor.enabled | bool | `true` | Create a `ServiceMonitor`. |
+| metrics.serviceMonitor.port | string | _(omit)_ | Service port **name** to scrape (`http` or `metrics`). When omitted or empty, defaults to `metrics` if a distinct metrics port exists, otherwise `http`. |
 | metrics.podMonitor.enabled | bool | `false` | Create a `PodMonitor`. |
-| metrics.podMonitor.port | string | `""` | Pod port **name** to scrape; same semantics as `metrics.serviceMonitor.port`. |
+| metrics.podMonitor.port | string | _(omit)_ | Pod port **name** to scrape; same semantics as `metrics.serviceMonitor.port`. |
 | metrics.prometheusRule.enabled | bool | `false` | Create a `PrometheusRule` when extra rules are provided. |
 | externalSecrets.secretStores | list | `[]` | `SecretStore` / `ClusterSecretStore` definitions (`spec` is passed through). |
 | externalSecrets.items | list | `[]` | `ExternalSecret` definitions (`spec` is passed through). |
