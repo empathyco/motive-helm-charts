@@ -11,7 +11,7 @@ metadata:
     {{- end }}
 spec:
   endpoints:
-    - port: {{.Values.metrics.serviceMonitor.port | default (include "empathy-service.metricsPortName" .) | quote }}
+    - port: {{ .Values.metrics.serviceMonitor.port | default (include "empathy-service.metricsPortName" .) | quote }}
       path: {{ .Values.metrics.serviceMonitor.path | default "/metrics" }}
       interval: {{ .Values.metrics.serviceMonitor.scrapeInterval | default "30s" }}
       scrapeTimeout: {{ .Values.metrics.serviceMonitor.scrapeTimeout | default "10s" }}

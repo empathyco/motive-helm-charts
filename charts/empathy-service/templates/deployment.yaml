@@ -85,12 +85,11 @@ spec:
             {{- end }}
           {{- end }}
           ports:
-            - name: http
-              containerPort: {{ .Values.service.port }}
-              protocol: TCP
-            - name: metrics
-              containerPort: {{ .Values.service.metricsPort }}
-              protocol: TCP
+            {{- range (include "empathy-service.ports" . | fromYamlArray) }}
+            - name: {{ .name }}
+              containerPort: {{ .containerPort }}
+              protocol: {{ .protocol }}
+            {{- end }}
           {{- if .Values.probes.enabled}}
           {{- if .Values.probes.livenessProbe.enabled }}
           livenessProbe:

@@ -46,8 +46,8 @@ When `tests.enabled` is `true` (default), `helm test` runs a pod that curls the 
 | image.digest | string | `""` | Image digest (mutually exclusive with tag in rendered image ref). |
 | image.pullPolicy | string | `IfNotPresent` | Image pull policy. |
 | service.type | string | `ClusterIP` | Kubernetes Service type. |
-| service.ports | list | `[{name:http,port:8080,...}]` | Service ports (names must match `containerPorts` when using string `targetPort`). |
-| containerPorts | list | `[{name:http,containerPort:8080,...}]` | Ports on the main container. |
+| service.port | int | `8080` | Primary app port (named `http` on the container and Service). |
+| service.metricsPort | int | `8081` | Optional metrics port (named `metrics`). Set to `0` or `""` to omit; set equal to `service.port` to serve metrics on the same port (no separate `metrics` port). |
 | ingress.enabled | bool | `true` | Master switch: when `false`, no `Ingress` resources are created. |
 | ingress.internal.enabled | bool | `false` | Create an internal `Ingress` (requires `ingress.enabled`, `ingressClassName` default: `internal`). |
 | ingress.public.enabled | bool | `false` | Create a public `Ingress` (requires `ingress.enabled`, `ingressClassName` default: `public-nlb`). |
@@ -57,8 +57,10 @@ When `tests.enabled` is `true` (default), `helm test` runs a pod that curls the 
 | autoscaling.enabled | bool | `false` | Create an `HorizontalPodAutoscaler` (mutually exclusive with `autoscaling.keda.enabled`). |
 | autoscaling.keda.enabled | bool | `false` | Create a KEDA `ScaledObject` (mutually exclusive with `autoscaling.enabled`). |
 | pdb.enabled | bool | `true` | Create a `PodDisruptionBudget` when effective min replicas > 1. |
-| metrics.serviceMonitor.enabled | bool | `false` | Create a `ServiceMonitor` (requires a matching port name on the Service, default `metrics` or `metrics.portName`). |
+| metrics.serviceMonitor.enabled | bool | `false` | Create a `ServiceMonitor`. |
+| metrics.serviceMonitor.port | string | `""` | Service port **name** to scrape (`http` or `metrics`). When empty, defaults to `metrics` if a distinct metrics port exists, otherwise `http`. |
 | metrics.podMonitor.enabled | bool | `false` | Create a `PodMonitor`. |
+| metrics.podMonitor.port | string | `""` | Pod port **name** to scrape; same semantics as `metrics.serviceMonitor.port`. |
 | metrics.prometheusRule.enabled | bool | `false` | Create a `PrometheusRule` when extra rules are provided. |
 | externalSecrets.secretStores | list | `[]` | `SecretStore` / `ClusterSecretStore` definitions (`spec` is passed through). |
 | externalSecrets.items | list | `[]` | `ExternalSecret` definitions (`spec` is passed through). |
@@ -68,7 +70,7 @@ See [values.yaml](values.yaml) for the complete list and inline comments.
 
 ## Upgrading from `motive-service`
 
-This chart uses **flattened** values (not `service.replicaCount`, `service.image`, etc.). Migrate by moving keys to the top level. **Ingress** and **HTTPRoute** each expose `enabled` (master) plus `internal` / `public` toggles. When `httpRoutes.*.rules` is empty, a default rule sends traffic to this release’s `Service` on `service.ports[0].port`.
+This chart uses **flattened** values (not `service.replicaCount`, `service.image`, etc.). Migrate by moving keys to the top level. **Ingress** and **HTTPRoute** each expose `enabled` (master) plus `internal` / `public` toggles. When `httpRoutes.*.rules` is empty, a default rule sends traffic to this release’s `Service` on `service.port` (the `http` port).
 
 ## License
 

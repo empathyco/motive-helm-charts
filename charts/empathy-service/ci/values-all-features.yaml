@@ -1,0 +1,11 @@
+# CI: broad feature coverage (helm lint / template).
+replicaCount: 2
+
+service:
+  port: 8080
+  metricsPort: 8081
+
+# ServiceMonitor endpoint `port` must be a Service port *name*
+metrics:
+  serviceMonitor:
+    port: metrics

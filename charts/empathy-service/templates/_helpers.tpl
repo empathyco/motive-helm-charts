@@ -81,3 +81,30 @@ Return the proper image name
 {{- printf ":%s" $tag -}}
 {{- end }}
 {{- end }}
+
+{{/*
+Ports for the main container and Service: `http` plus optional `metrics` when
+`service.metricsPort` is set, positive, and distinct from `service.port`.
+Each item: name, containerPort, servicePort, protocol.
+*/}}
+{{- define "empathy-service.ports" -}}
+{{- $httpPort := int .Values.service.port -}}
+{{- $metricsPort := int (.Values.service.metricsPort | default 0) -}}
+{{- $metricsEnabled := and (gt $metricsPort 0) (ne $metricsPort $httpPort) -}}
+{{- $ports := list (dict "name" "http" "containerPort" $httpPort "servicePort" $httpPort "protocol" "TCP") -}}
+{{- if $metricsEnabled -}}
+{{- $ports = append $ports (dict "name" "metrics" "containerPort" $metricsPort "servicePort" $metricsPort "protocol" "TCP") -}}
+{{- end -}}
+{{- toYaml $ports -}}
+{{- end }}
+
+{{/*
+Kubernetes port name used by ServiceMonitor/PodMonitor when scraping metrics.
+Returns `metrics` only when a distinct metrics port is rendered; otherwise `http`
+(same port as app, or metrics disabled).
+*/}}
+{{- define "empathy-service.metricsPortName" -}}
+{{- $httpPort := int .Values.service.port -}}
+{{- $metricsPort := int (.Values.service.metricsPort | default 0) -}}
+{{- if and (gt $metricsPort 0) (ne $metricsPort $httpPort) -}}metrics{{- else -}}http{{- end -}}
+{{- end }}

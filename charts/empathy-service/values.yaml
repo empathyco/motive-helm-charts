@@ -56,23 +56,25 @@ probes:
 # -- Kubernetes Service (ClusterIP / NodePort / LoadBalancer)
 service:
   type: ClusterIP
+  # -- Primary application port (named `http` on the container and Service)
   port: 8080
+  # -- Optional Prometheus/metrics listener port (named `metrics`). Set to `0` or `""` to omit; set equal to `port` to scrape metrics on the same port as the app (no separate `metrics` port).
   metricsPort: 8081
 
 # -- Prometheus Operator integration
 metrics:
-  # -- When true, ServiceMonitor targets a port named `metrics` or `metrics.portName`
+  # -- When true, ServiceMonitor scrapes this release's Service. Set `serviceMonitor.port` to a Service port *name* (`http` or `metrics`); when empty, defaults to `metrics` if a distinct metrics port exists, otherwise `http`.
   serviceMonitor:
     enabled: true
     path: /metrics
-    port: 8080
+    port: ""
     labels:
       release: prometheus
 
   podMonitor:
     enabled: false
     path: /metrics
-    port: 8080
+    port: ""
     labels:
       release: prometheus
 

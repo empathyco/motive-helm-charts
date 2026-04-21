@@ -1,0 +1,7 @@
+# CI: no distinct metrics port; scrape uses the http port name.
+service:
+  metricsPort: 0
+
+metrics:
+  serviceMonitor:
+    port: http
