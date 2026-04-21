@@ -108,3 +108,32 @@ Returns `metrics` only when a distinct metrics port is rendered; otherwise `http
 {{- $metricsPort := int (.Values.service.metricsPort | default 0) -}}
 {{- if and (gt $metricsPort 0) (ne $metricsPort $httpPort) -}}metrics{{- else -}}http{{- end -}}
 {{- end }}
+
+{{/*
+Target Kubernetes Secret name for an externalSecrets.items[] entry (must match ExternalSecret spec.target.name).
+*/}}
+{{- define "empathy-service.externalSecretTargetName" -}}
+{{- $root := .root -}}
+{{- $item := .item -}}
+{{- if and $item.target $item.target.name -}}
+{{- $item.target.name -}}
+{{- else -}}
+{{- printf "%s-%s" (include "empathy-service.fullname" $root) ($item.name | toString) -}}
+{{- end -}}
+{{- end }}
+
+{{/*
+YAML for Deployment envFrom: one `- secretRef:` per externalSecrets.items[] with mountAsEnvFrom.
+Empty when externalSecrets are disabled or no item opts in. Root context is the chart root.
+*/}}
+{{- define "empathy-service.externalSecretEnvFromYaml" -}}
+{{- $ext := .Values.externalSecrets | default dict }}
+{{- if ($ext.enabled | default true) }}
+{{- range ($ext.items | default list) }}
+{{- if .mountAsEnvFrom }}
+- secretRef:
+    name: {{ include "empathy-service.externalSecretTargetName" (dict "root" $ "item" .) }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- end }}

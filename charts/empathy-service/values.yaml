@@ -29,6 +29,13 @@ image:
 # -- Image pull secrets
 imagePullSecrets: []
 
+# -- Deployment strategy
+strategy:
+  type: RollingUpdate
+  rollingUpdate:
+    maxSurge: 25%
+    maxUnavailable: 25%
+
 # -- Resource requests/limits for the main container
 resources:
   requests:
@@ -36,79 +43,6 @@ resources:
     memory: 128Mi
   limits:
     memory: 128Mi
-
-# -- Probes for the main container
-probes:
-  enabled: true
-  livenessProbe:
-    enabled: true
-    path: /health
-    port: 8080
-  readinessProbe:
-    enabled: true
-    path: /health
-    port: 8080
-  startupProbe:
-    enabled: true
-    path: /health
-    port: 8080
-
-# -- Kubernetes Service (ClusterIP / NodePort / LoadBalancer)
-service:
-  type: ClusterIP
-  # -- Primary application port (named `http` on the container and Service)
-  port: 8080
-  # -- Optional Prometheus/metrics listener port (named `metrics`). `""` or `0` for no separate port; set equal to `port` for metrics on the app port only.
-  metricsPort: ""
-
-# -- Prometheus Operator integration
-metrics:
-  # -- When true, ServiceMonitor scrapes this release's Service. Optionally set `serviceMonitor.port` to a Service port *name* (`http` or `metrics`); when omitted or empty, defaults to `metrics` if a distinct metrics port exists, otherwise `http`.
-  serviceMonitor:
-    enabled: true
-    path: /metrics
-    labels:
-      release: prometheus
-
-  podMonitor:
-    enabled: false
-    path: /metrics
-    labels:
-      release: prometheus
-
-# -- Optional command override for the main container
-command: []
-
-# -- Optional args for the main container
-args: []
-
-# -- Environment variables for the main container
-env: []
-
-# -- Additional env (alias pattern; merged with `env` in templates)
-extraEnv: []
-
-# -- envFrom entries (e.g. `configMapRef` / `secretRef` for secrets created by External Secrets)
-envFrom: []
-
-# -- Extra init containers
-extraInitContainers: []
-
-# -- Sidecar / extra containers in the pod
-extraContainers: []
-
-# -- Extra volumes on the pod
-extraVolumes: []
-
-# -- Extra volume mounts on the main container
-extraVolumeMounts: []
-
-# -- Deployment strategy
-strategy:
-  type: RollingUpdate
-  rollingUpdate:
-    maxSurge: 25%
-    maxUnavailable: 25%
 
 # -- Autoscaling: HPA when `autoscaling.enabled` is true, or KEDA when `autoscaling.keda.enabled` is true (mutually exclusive)
 autoscaling:
@@ -136,6 +70,14 @@ autoscaling:
     pollingInterval: 30
     cooldownPeriod: 300
     triggers: []
+
+# -- Kubernetes Service (ClusterIP / NodePort / LoadBalancer)
+service:
+  type: ClusterIP
+  # -- Primary application port (named `http` on the container and Service)
+  port: 8080
+  # -- Optional Prometheus/metrics listener port (named `metrics`). `""` or `0` for no separate port; set equal to `port` for metrics on the app port only.
+  metricsPort: ""
 
 # -- Ingress: master switch for all Ingress resources (`internal` / `public` only apply when this is true)
 ingress:
@@ -189,12 +131,63 @@ httpRoutes:
     rules: []
     defaultPath: /
 
-# -- Service account for the workload pod
-serviceAccount:
-  create: false
-  automount: true
-  name: ""
-  annotations: {}
+# -- Probes for the main container
+probes:
+  enabled: true
+  livenessProbe:
+    enabled: true
+    path: /health
+    port: 8080
+  readinessProbe:
+    enabled: true
+    path: /health
+    port: 8080
+  startupProbe:
+    enabled: true
+    path: /health
+    port: 8080
+
+# -- Prometheus Operator integration
+metrics:
+  # -- When true, ServiceMonitor scrapes this release's Service. Optionally set `serviceMonitor.port` to a Service port *name* (`http` or `metrics`); when omitted or empty, defaults to `metrics` if a distinct metrics port exists, otherwise `http`.
+  serviceMonitor:
+    enabled: true
+    path: /metrics
+    labels:
+      release: prometheus
+
+  podMonitor:
+    enabled: false
+    path: /metrics
+    labels:
+      release: prometheus
+
+# -- Optional command override for the main container
+command: []
+
+# -- Optional args for the main container
+args: []
+
+# -- Environment variables for the main container
+env: []
+
+# -- Additional env (alias pattern; merged with `env` in templates)
+extraEnv: []
+
+# -- envFrom entries (e.g. `configMapRef` / `secretRef` for secrets created by External Secrets)
+envFrom: []
+
+# -- Extra init containers
+extraInitContainers: []
+
+# -- Sidecar / extra containers in the pod
+extraContainers: []
+
+# -- Extra volumes on the pod
+extraVolumes: []
+
+# -- Extra volume mounts on the main container
+extraVolumeMounts: []
 
 # -- Optional ConfigMap from inline data (non-sensitive)
 config:
@@ -202,48 +195,40 @@ config:
   mountAsEnvFrom: true
   data: {}
 
-# -- RBAC: namespace-scoped Roles and RoleBindings
-rbac:
-  create: false
-  roles: []
-  #  - name: example
-  #    rules:
-  #      - apiGroups: [""]
-  #        resources: ["secrets"]
-  #        verbs: ["get", "list", "watch"]
-  bindings: []
-  #  - name: example-binding
-  #    roleRef:
-  #      kind: Role
-  #      name: '{{ include "empathy-service.fullname" $ }}-role-example'
-  #    subjects:
-  #      - kind: ServiceAccount
-  #        name: '{{ include "empathy-service.serviceAccountName" $ }}'
-
-# -- Network policy (opt-in; no allow-all policy is created when disabled)
-networkPolicy:
-  enabled: false
-  ingressRules: []
-  egressRules: []
-
-# -- External Secrets Operator resources (rendered only if CRDs are installed)
-# Each store/item uses `spec` as the Kubernetes object body (excluding apiVersion/kind).
+# -- External Secrets resources (rendered only if CRDs are installed)
+# Per-item template defaults: refreshInterval `1h`, secretStoreRef.kind `ClusterSecretStore`, target.creationPolicy `Owner`.
 externalSecrets:
-  secretStores: []
-  #  - name: example
-  #    kind: SecretStore
-  #    labels: {}
-  #    annotations: {}
-  #    spec:
-  #      provider: {}
+  # -- Master switch (also gated on ESO CRDs being present in the cluster)
+  enabled: true
+  # -- List of ExternalSecret objects. Only `name` and `secretStoreRef.name` are required.
   items: []
-  #  - name: example
-  #    labels: {}
-  #    annotations: {}
-  #    spec:
-  #      secretStoreRef: { name: example, kind: SecretStore }
-  #      target: { name: my-secret, creationPolicy: Owner }
-  #      data: []
+  #  - name: secrets                      # required; used as resource suffix
+  #    refreshInterval: 1h                    # optional, default: 1h
+  #    secretStoreRef:
+  #      name: my-cluster-store               # required
+  #      kind: ClusterSecretStore             # optional, default: ClusterSecretStore
+  #    target:
+  #      name: ""                             # optional; defaults to "<fullname>-<name>"
+  #      creationPolicy: Owner                # optional, default: Owner
+  #    # Mount the resulting Secret into the Deployment's envFrom automatically
+  #    mountAsEnvFrom: false
+  #    # Pull the whole remote secret; each property becomes a key
+  #    dataFrom:
+  #      - extract:
+  #          key: /path/to/remote/secret
+  #    # And/or map properties one by one
+  #    data:
+  #      - secretKey: DB_PASSWORD
+  #        remoteRef:
+  #          key: /path/to/remote/secret
+  #          property: db_password
+
+# -- Service account for the workload pod
+serviceAccount:
+  create: false
+  automount: true
+  name: ""
+  annotations: {}
 
 # -- Pod affinity / anti-affinity (full `spec.template.spec.affinity` object)
 affinity: {}
@@ -278,6 +263,12 @@ containerSecurityContext:
   capabilities:
     drop:
       - ALL
+
+# -- Network policy (opt-in; no allow-all policy is created when disabled)
+networkPolicy:
+  enabled: false
+  ingressRules: []
+  egressRules: []
 
 # -- Extra Kubernetes manifests (YAML objects or strings passed through `tpl`)
 extraObjects: []

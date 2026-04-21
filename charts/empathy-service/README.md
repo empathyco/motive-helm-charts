@@ -26,7 +26,7 @@ helm install myapp ./charts/empathy-service \
 - **Secure defaults** for `podSecurityContext` / `containerSecurityContext` (override as needed for your image).
 - **No canary / blue-green** (standard `Deployment` rolling updates only).
 - **No allow-all `NetworkPolicy`** when disabled (cluster default applies).
-- **Secrets** are not rendered as Helm-managed `Secret` objects; use External Secrets (`externalSecrets.*`) and reference the resulting secrets via `envFrom` (`secretRef`) or volumes.
+- **Secrets** are not rendered as Helm-managed `Secret` objects; use External Secrets (`externalSecrets.items`) and reference the resulting secrets via top-level `envFrom` (`secretRef`), per-item `mountAsEnvFrom: true` (auto `secretRef`), or volumes.
 
 ## Helm test
 
@@ -62,11 +62,33 @@ When `tests.enabled` is `true` (default), `helm test` runs a pod that curls the 
 | metrics.podMonitor.enabled | bool | `false` | Create a `PodMonitor`. |
 | metrics.podMonitor.port | string | _(omit)_ | Pod port **name** to scrape; same semantics as `metrics.serviceMonitor.port`. |
 | metrics.prometheusRule.enabled | bool | `false` | Create a `PrometheusRule` when extra rules are provided. |
-| externalSecrets.secretStores | list | `[]` | `SecretStore` / `ClusterSecretStore` definitions (`spec` is passed through). |
-| externalSecrets.items | list | `[]` | `ExternalSecret` definitions (`spec` is passed through). |
+| externalSecrets.enabled | bool | `true` | When `true`, render `ExternalSecret` resources if the cluster advertises ESO CRDs (`external-secrets.io/v1` or `v1beta1`). |
+| externalSecrets.items | list | `[]` | One `ExternalSecret` per list entry. Required: `name`, `secretStoreRef.name`. Optional: `labels`, `annotations`, `refreshInterval` (default `1h`), `secretStoreRef.kind` (default `ClusterSecretStore`), `target.name` (default `<fullname>-<name>`), `target.creationPolicy` (default `Owner`), `data`, `dataFrom` (can combine both), `mountAsEnvFrom` (append `secretRef` to the pod). |
 | extraObjects | list | `[]` | Extra manifests (YAML string or object, passed through `tpl`). |
 
 See [values.yaml](values.yaml) for the complete list and inline comments.
+
+### External Secrets example
+
+Mixed `dataFrom` (whole remote secret as keys) and `data` (single property), with automatic `envFrom` wiring:
+
+```yaml
+externalSecrets:
+  enabled: true
+  items:
+    - name: app-secrets
+      mountAsEnvFrom: true
+      secretStoreRef:
+        name: my-cluster-store
+      dataFrom:
+        - extract:
+            key: myapp/prod
+      data:
+        - secretKey: EXTRA
+          remoteRef:
+            key: myapp/prod
+            property: extra_key
+```
 
 ## Upgrading from `motive-service`
 
