@@ -3,7 +3,7 @@
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
 metadata:
-  name: {{ required "httpRoute.name is required" .Values.httpRoute.name }}
+  name: {{ include "multi-service.fullname" . }}
   namespace: {{ default .Release.Namespace .Values.httpRoute.namespace }}
   {{- with .Values.httpRoute.labels }}
   labels:
