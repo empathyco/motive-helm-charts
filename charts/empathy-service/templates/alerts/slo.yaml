@@ -10,6 +10,7 @@ metadata:
   name: {{ include "empathy-service.fullname" $ }}-slo-{{ $name }}
   namespace: {{ $slo.namespace | default $.Release.Namespace }}
   labels:
+    {{- include "empathy-service.labels" $ | nindent 4 }}
     prometheus: k8s
     role: alert-rules
     release: {{ $slo.release | default "prometheus" }}
