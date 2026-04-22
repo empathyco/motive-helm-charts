@@ -24,9 +24,10 @@ spec:
   template:
     metadata:
       {{- $envData := include "empathy-service.envMergedYaml" . | fromYaml -}}
+      {{- $envList := .Values.envList | default list -}}
       {{- $podAnn := dict }}
-      {{- if gt (len $envData) 0 }}
-      {{- $_ := set $podAnn "checksum/env" (toYaml $envData | sha256sum) }}
+      {{- if or (gt (len $envData) 0) (gt (len $envList) 0) }}
+      {{- $_ := set $podAnn "checksum/env" (toYaml (dict "map" $envData "list" $envList) | sha256sum) }}
       {{- end }}
       {{- if gt (len $podAnn) 0 }}
       annotations:
@@ -57,13 +58,17 @@ spec:
           {{- end }}
           image: {{ include "empathy-service.image" . }}
           imagePullPolicy: {{ .Values.image.pullPolicy }}
+          {{- with .Values.envList }}
+          env:
+            {{- tpl (toYaml .) $ | nindent 12 }}
+          {{- end }}
           {{- $extSecretEnvFrom := include "empathy-service.externalSecretEnvFromYaml" . | trim }}
           {{- $hasEnvConfigMap := gt (len $envData) 0 }}
           {{- $hasEnvFrom := or .Values.envFrom $hasEnvConfigMap $extSecretEnvFrom }}
           {{- if $hasEnvFrom }}
           envFrom:
             {{- with .Values.envFrom }}
-            {{- toYaml . | nindent 12 }}
+            {{- tpl (toYaml .) $ | nindent 12 }}
             {{- end }}
             {{- if $hasEnvConfigMap }}
             - configMapRef:

@@ -143,13 +143,7 @@ Merged env/extraEnv as a flat map (string keys -> values). `extraEnv` keys overr
 Output is YAML suitable for `fromYaml` in templates.
 */}}
 {{- define "empathy-service.envMergedYaml" -}}
-{{- $root := . -}}
 {{- $out := dict -}}
-{{- range $k, $v := ($root.Values.env | default dict) -}}
-{{- $_ := set $out $k $v -}}
-{{- end -}}
-{{- range $k, $v := ($root.Values.extraEnv | default dict) -}}
-{{- $_ := set $out $k $v -}}
-{{- end -}}
+{{- $_ := mergeOverwrite $out (.Values.env | default dict) (.Values.extraEnv | default dict) -}}
 {{- $out | toYaml -}}
 {{- end }}
