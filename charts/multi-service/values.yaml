@@ -385,6 +385,73 @@ cronjob:
     args: []
       # - date; echo Hello from the Kubernetes cluster
 
+# --------------
+# Argo Indexer
+# --------------
+argoIndexerWorkflow:
+  # -- Enable Argo WorkflowTemplate + CronWorkflow
+  enabled: false
+
+  cronWorkflow:
+    name: ""
+    namespace: ""
+    spec: {}
+      # schedule: "*/10 * * * *"
+      # timezone: "UTC"
+      # concurrencyPolicy: "Forbid"
+      # startingDeadlineSeconds: 60
+      # successfulJobsHistoryLimit: 5
+      # failedJobsHistoryLimit: 3
+      # workflowSpec:
+      #   workflowTemplateRef:
+      #     name: "my-workflow-template"
+
+  workflowTemplate:
+    name: ""
+    namespace: ""
+    spec: {}
+      # serviceAccountName: argo-workflow
+      # entrypoint: process-requests
+      # templates:
+      #   - name: process-requests
+      #     container:
+      #       image: "my-repository/my-image:latest"
+      #       command: ["node", "dist/main.js"]
+
+# ----------
+# HTTP Route
+# ----------
+httpRoute:
+  # -- Enable HTTPRoute
+  enabled: false
+  namespace: ""
+  labels: {}
+  annotations: {}
+  spec: {}
+    # hostnames:
+    #   - api.staging.empathy.co
+    # parentRefs:
+    #   - group: gateway.networking.k8s.io
+    #     kind: Gateway
+    #     name: public-envoy-gateway
+    #     namespace: kube-system
+    # rules:
+    #   - matches:
+    #       - path:
+    #           type: PathPrefix
+    #           value: /search/v1/query
+    #     filters:
+    #       - type: URLRewrite
+    #         urlRewrite:
+    #           path:
+    #             type: ReplacePrefixMatch
+    #             replacePrefixMatch: /query
+    #     backendRefs:
+    #       - group: ""
+    #         kind: Service
+    #         name: search-service
+    #         port: 8080
+
 # -- TBD
 # @default -- `[]`
 slo: []

@@ -1,0 +1,11 @@
+{{- $api := "argoproj.io/v1alpha1" -}}
+{{- if and .Values.argoIndexerWorkflow.enabled (.Capabilities.APIVersions.Has $api) -}}
+apiVersion: argoproj.io/v1alpha1
+kind: CronWorkflow
+metadata:
+  name: {{ include "multi-service.fullname" . }}
+  namespace: {{ default .Release.Namespace .Values.argoIndexerWorkflow.cronWorkflow.namespace }}
+spec:
+  {{- toYaml (required "argoIndexerWorkflow.cronWorkflow.spec is required" .Values.argoIndexerWorkflow.cronWorkflow.spec) | nindent 2 }}
+{{- end -}}
+
