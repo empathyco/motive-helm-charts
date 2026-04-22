@@ -1,0 +1,16 @@
+{{- $cmList := .Values.configMapFromContent | default list }}
+{{- if gt (len $cmList) 0 }}
+{{- range $cm := $cmList }}
+{{- with $ }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  labels:
+    {{- include "empathy-service.labels" . | nindent 4 }}
+  name: '{{ include "empathy-service.fullname" . }}-content-{{ $cm.nameSuffix }}'
+data:
+  {{ $cm.fileName }}: {{- toYaml $cm.content | indent 2 }}
+{{- end }}
+{{- end }}
+{{- end }}

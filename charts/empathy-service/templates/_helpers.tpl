@@ -147,3 +147,48 @@ Output is YAML suitable for `fromYaml` in templates.
 {{- $_ := mergeOverwrite $out (.Values.env | default dict) (.Values.extraEnv | default dict) -}}
 {{- $out | toYaml -}}
 {{- end }}
+
+{{/*
+YAML list for main container volumeMounts from configMapFromContent[] with autoMount (default true).
+Empty when no items opt in. Root context is the chart root.
+*/}}
+{{- define "empathy-service.contentVolumeMountsYaml" -}}
+{{- range (.Values.configMapFromContent | default list) }}
+{{- $autoMount := true -}}
+{{- if hasKey . "autoMount" -}}
+{{- $autoMount = .autoMount -}}
+{{- end -}}
+{{- if $autoMount }}
+- name: content-{{ .nameSuffix }}
+  mountPath: {{ .mountPath }}
+  {{- $implicitSub := hasSuffix (printf "/%s" .fileName) .mountPath }}
+  {{- $sub := default (ternary .fileName "" $implicitSub) .subPath }}
+  {{- if $sub }}
+  subPath: {{ $sub }}
+  {{- end }}
+  readOnly: {{- if hasKey . "readOnly" }} {{ .readOnly }}{{- else }} true{{- end }}
+{{- end }}
+{{- end }}
+{{- end }}
+
+{{/*
+YAML list for pod volumes from configMapFromContent[] with autoMount (default true).
+Empty when no items opt in. Root context is the chart root.
+*/}}
+{{- define "empathy-service.contentVolumesYaml" -}}
+{{- $root := . }}
+{{- range (.Values.configMapFromContent | default list) }}
+{{- $autoMount := true -}}
+{{- if hasKey . "autoMount" -}}
+{{- $autoMount = .autoMount -}}
+{{- end -}}
+{{- if $autoMount }}
+- name: content-{{ .nameSuffix }}
+  configMap:
+    name: {{ include "empathy-service.fullname" $root }}-content-{{ .nameSuffix }}
+    {{- with .defaultMode }}
+    defaultMode: {{ . }}
+    {{- end }}
+{{- end }}
+{{- end }}
+{{- end }}

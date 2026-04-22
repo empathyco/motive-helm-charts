@@ -195,12 +195,6 @@ envFrom: []
 #      name: "{{ .Release.Name }}-legacy"
 #    prefix: LEGACY_
 
-# -- Extra volumes on the pod
-extraVolumes: []
-
-# -- Extra volume mounts on the main container
-extraVolumeMounts: []
-
 # -- External Secrets resources (rendered only if CRDs are installed)
 # Per-item template defaults: refreshInterval `1h`, secretStoreRef.kind `ClusterSecretStore`, target.creationPolicy `Owner`.
 externalSecrets:
@@ -291,5 +285,26 @@ extraInitContainers: []
 # -- Extra containers in the pod
 extraContainers: []
 
+# -- Extra volumes on the pod
+extraVolumes: []
+
+# -- Extra volume mounts on the main container
+extraVolumeMounts: []
+
 # -- Extra Kubernetes manifests (YAML objects or strings passed through `tpl`)
 extraObjects: []
+
+# -- File-content ConfigMaps. Each item becomes a `<fullname>-content-<nameSuffix>` ConfigMap
+# with a single data key (`fileName`). When `autoMount` is true (default) a volume and
+# volumeMount are added to the main container automatically.
+configMapFromContent: []
+#  - nameSuffix: nginx              # required; resource suffix and volume name
+#    fileName: nginx.conf           # required; ConfigMap data key + default subPath
+#    content: |                     # required; raw file content (multi-line ok)
+#      server { listen 8080; }
+#    # Mount wiring (set autoMount: false to opt out and manage via extraVolumes/extraVolumeMounts)
+#    autoMount: true
+#    mountPath: /etc/nginx/nginx.conf  # required when autoMount is true
+#    subPath: ""                       # optional; defaults to fileName when mountPath ends with it
+#    readOnly: true
+#    defaultMode: 0444
