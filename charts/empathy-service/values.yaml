@@ -72,7 +72,7 @@ service:
 
 # -- Ingress: master switch for all Ingress resources (`internal` / `public` only apply when this is true)
 ingress:
-  enabled: true
+  enabled: false
   internal:
     enabled: false
     className: internal
