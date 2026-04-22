@@ -10,7 +10,7 @@ Do not edit README.md by hand.
 
 ![Version: 0.1.0](https://img.shields.io/badge/Version-0.1.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.1.0](https://img.shields.io/badge/AppVersion-0.1.0-informational?style=flat-square)
 
-Generic Helm chart for deploying a single HTTP-style workload (`Deployment` + `Service`) with optional classic `Ingress`, optional [Gateway API](https://gateway-api.sigs.k8s.io/) `HTTPRoute` (internal/public), autoscaling (HPA or KEDA), observability (Prometheus Operator), External Secrets, RBAC, and NetworkPolicy.
+Generic Helm chart for deploying a single HTTP-style workload (`Deployment` + `Service`) with optional classic `Ingress`, optional [Gateway API](https://gateway-api.sigs.k8s.io/) `HTTPRoute` (internal/public), autoscaling (KEDA), observability (Prometheus Operator), External Secrets, RBAC, and NetworkPolicy.
 
 ## Prerequisites
 
@@ -46,21 +46,13 @@ Kubernetes: `>=1.25.0-0`
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
 | affinity | object | `{}` | Pod affinity / anti-affinity (full `spec.template.spec.affinity` object) |
-| autoscaling.enabled | bool | `false` | When true, create a `HorizontalPodAutoscaler` (mutually exclusive with `autoscaling.keda.enabled`) |
+| autoscaling.enabled | bool | `false` | When true, create a KEDA `ScaledObject` for this workload |
 | autoscaling.keda.cooldownPeriod | int | `300` | Cooldown before scaling to zero or after last trigger (seconds) |
-| autoscaling.keda.enabled | bool | `false` | When true, create a KEDA `ScaledObject` (mutually exclusive with `autoscaling.enabled`) |
+| autoscaling.keda.fallback | object | `{}` | Optional fallback when metrics are unavailable (see KEDA docs); empty object omits `fallback` from the ScaledObject |
 | autoscaling.keda.pollingInterval | int | `30` | How often KEDA polls metric sources (seconds) |
-| autoscaling.keda.triggers | list | `[]` | KEDA trigger definitions (see KEDA docs); empty disables metric-based scaling until you add triggers |
-| autoscaling.maxReplicas | int | `10` | Maximum replicas when HPA is enabled |
-| autoscaling.minReplicas | int | `1` | Minimum replicas when HPA is enabled |
-| autoscaling.scaleDown.policies | list | `[{"periodSeconds":300,"type":"Pods","value":1}]` | Scale-down policies (HPA `behavior.scaleDown.policies`) |
-| autoscaling.scaleDown.selectPolicy | string | `"Min"` | Which policy wins when multiple scale-down policies apply |
-| autoscaling.scaleDown.stabilizationWindowSeconds | int | `300` | Scale-down stabilization window (seconds) |
-| autoscaling.scaleUp.policies | list | `[{"periodSeconds":60,"type":"Pods","value":1}]` | Scale-up policies (HPA `behavior.scaleUp.policies`); first entry is the default single-pod-per-minute ramp |
-| autoscaling.scaleUp.selectPolicy | string | `"Max"` | Which policy wins when multiple scale-up policies apply (`Max`, `Min`, `Disabled`) |
-| autoscaling.scaleUp.stabilizationWindowSeconds | int | `60` | Scale-up stabilization window (seconds) before HPA applies the new replica count |
-| autoscaling.targetCPUUtilizationPercentage | int | `80` | Target average CPU utilization (percentage) for HPA |
-| autoscaling.targetMemoryUtilizationPercentage | string | `""` | Target average memory utilization (percentage) for HPA; empty string disables memory-based scaling |
+| autoscaling.keda.triggers | list | `[{"metadata":{"value":"80"},"metricType":"Utilization","type":"cpu"}]` | KEDA trigger definitions (see KEDA docs); default scales on CPU average utilization |
+| autoscaling.maxReplicas | int | `10` | Maximum replicas when autoscaling is enabled |
+| autoscaling.minReplicas | int | `1` | Minimum replicas when autoscaling is enabled |
 | configMapFromContent | list | `[]` | File-content ConfigMaps: each item becomes a `<fullname>-content-<nameSuffix>` ConfigMap with one data key (`fileName`). With `autoMount: true` (default), the chart adds a volume and volumeMount on the main container. |
 | containerSecurityContext.allowPrivilegeEscalation | bool | `false` | Disallow privilege escalation |
 | containerSecurityContext.capabilities.drop | list | `["ALL"]` | Linux capabilities to drop (default drops all) |
@@ -175,7 +167,7 @@ Kubernetes: `>=1.25.0-0`
 | probes.startupProbe.port | string | `"http"` | Port for startup checks; same as other probes in most single-port services. |
 | probes.startupProbe.successThreshold | int | `1` | Successes to mark startup complete (typically 1). |
 | probes.startupProbe.timeoutSeconds | int | `5` | Per-attempt timeout for the startup HTTP GET. |
-| replicaCount | int | `1` | Number of replicas (ignored when HPA or KEDA autoscaling is enabled) |
+| replicaCount | int | `1` | Number of replicas (ignored when KEDA autoscaling is enabled) |
 | resources.limits.memory | string | `"128Mi"` | Memory limit (chart does not set a CPU limit by default) |
 | resources.requests.cpu | string | `"50m"` | CPU request |
 | resources.requests.memory | string | `"128Mi"` | Memory request |

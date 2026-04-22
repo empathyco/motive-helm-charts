@@ -5,7 +5,7 @@ metadata:
   labels:
     {{- include "empathy-service.labels" . | nindent 4 }}
 spec:
-  {{- if not (or .Values.autoscaling.enabled .Values.autoscaling.keda.enabled) }}
+  {{- if not .Values.autoscaling.enabled }}
   replicas: {{ .Values.replicaCount }}
   {{- end }}
   minReadySeconds: {{ .Values.minReadySeconds }}

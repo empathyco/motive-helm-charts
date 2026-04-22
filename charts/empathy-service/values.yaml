@@ -4,7 +4,7 @@ nameOverride: ""
 # -- Override the fully qualified release name
 fullnameOverride: ""
 
-# -- Number of replicas (ignored when HPA or KEDA autoscaling is enabled)
+# -- Number of replicas (ignored when KEDA autoscaling is enabled)
 replicaCount: 1
 
 # Main workload container image (registry, repository, tag, digest, pull policy).
@@ -44,47 +44,27 @@ resources:
     # -- Memory limit (chart does not set a CPU limit by default)
     memory: 128Mi
 
-# Autoscaling: enable **either** HPA (`autoscaling.enabled`) **or** KEDA (`autoscaling.keda.enabled`), not both.
+# Autoscaling via KEDA `ScaledObject` (CPU utilization trigger by default).
 autoscaling:
-  # -- When true, create a `HorizontalPodAutoscaler` (mutually exclusive with `autoscaling.keda.enabled`)
+  # -- When true, create a KEDA `ScaledObject` for this workload
   enabled: false
-  # -- Minimum replicas when HPA is enabled
+  # -- Minimum replicas when autoscaling is enabled
   minReplicas: 1
-  # -- Maximum replicas when HPA is enabled
+  # -- Maximum replicas when autoscaling is enabled
   maxReplicas: 10
-  # -- Target average CPU utilization (percentage) for HPA
-  targetCPUUtilizationPercentage: 80
-  # -- Target average memory utilization (percentage) for HPA; empty string disables memory-based scaling
-  targetMemoryUtilizationPercentage: ""
-  scaleUp:
-    # -- Scale-up stabilization window (seconds) before HPA applies the new replica count
-    stabilizationWindowSeconds: 60
-    # -- Which policy wins when multiple scale-up policies apply (`Max`, `Min`, `Disabled`)
-    selectPolicy: Max
-    # -- Scale-up policies (HPA `behavior.scaleUp.policies`); first entry is the default single-pod-per-minute ramp
-    policies:
-      - type: Pods
-        value: 1
-        periodSeconds: 60
-  scaleDown:
-    # -- Scale-down stabilization window (seconds)
-    stabilizationWindowSeconds: 300
-    # -- Which policy wins when multiple scale-down policies apply
-    selectPolicy: Min
-    # -- Scale-down policies (HPA `behavior.scaleDown.policies`)
-    policies:
-      - type: Pods
-        value: 1
-        periodSeconds: 300
   keda:
-    # -- When true, create a KEDA `ScaledObject` (mutually exclusive with `autoscaling.enabled`)
-    enabled: false
     # -- How often KEDA polls metric sources (seconds)
     pollingInterval: 30
     # -- Cooldown before scaling to zero or after last trigger (seconds)
     cooldownPeriod: 300
-    # -- KEDA trigger definitions (see KEDA docs); empty disables metric-based scaling until you add triggers
-    triggers: []
+    # -- Optional fallback when metrics are unavailable (see KEDA docs); empty object omits `fallback` from the ScaledObject
+    fallback: {}
+    # -- KEDA trigger definitions (see KEDA docs); default scales on CPU average utilization
+    triggers:
+      - type: cpu
+        metricType: Utilization
+        metadata:
+          value: "80"
 
 # Kubernetes `Service` for the workload.
 service:
