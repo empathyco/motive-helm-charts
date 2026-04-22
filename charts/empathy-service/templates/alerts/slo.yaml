@@ -1,0 +1,73 @@
+{{- if and .Values.slos.enabled (.Capabilities.APIVersions.Has "pyrra.dev/v1alpha1") -}}
+{{- range $i, $slo := .Values.slos.items }}
+{{- $name := $slo.name | required (printf "slos.items[%d].name is required" $i) }}
+{{- $type := $slo.type | required (printf "slos.items[%d].type is required (ratio|latency|latencyNative|bool)" $i) }}
+{{- $alerting := $slo.alerting | default (dict) }}
+---
+apiVersion: pyrra.dev/v1alpha1
+kind: ServiceLevelObjective
+metadata:
+  name: {{ include "empathy-service.fullname" $ }}-slo-{{ $name }}
+  namespace: {{ $slo.namespace | default $.Release.Namespace }}
+  labels:
+    prometheus: k8s
+    role: alert-rules
+    release: {{ $slo.release | default "prometheus" }}
+    pyrra.dev/team: {{ $slo.team | default "empathy" }}
+    {{- with $slo.slackChannel }}
+    pyrra.dev/slack_channel: {{ . }}
+    {{- end }}
+    {{- with $slo.extraLabels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  alerting:
+    name: {{ include "empathy-service.fullname" $ }} - {{ $alerting.name | default "ErrorBudgetBurn" }}
+    absent: {{ $alerting.absent | default true }}
+    burnrates: {{ $alerting.burnrates | default true }}
+    disabled: {{ $alerting.disabled | default false }}
+  description: "{{ $slo.description | default "" }}"
+  indicator:
+    {{- if eq $type "ratio" }}
+    ratio:
+      errors:
+        metric: {{ $slo.errorMetric | required (printf "slos.items[%s].errorMetric is required for type=ratio" $name) }}
+      total:
+        metric: {{ $slo.totalMetric | required (printf "slos.items[%s].totalMetric is required for type=ratio" $name) }}
+      {{- with $slo.groupBy }}
+      grouping:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+    {{- else if eq $type "latency" }}
+    latency:
+      success:
+        metric: {{ $slo.successMetric | required (printf "slos.items[%s].successMetric is required for type=latency" $name) }}
+      total:
+        metric: {{ $slo.totalMetric | required (printf "slos.items[%s].totalMetric is required for type=latency" $name) }}
+      {{- with $slo.groupBy }}
+      grouping:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+    {{- else if eq $type "latencyNative" }}
+    latencyNative:
+      latency: {{ $slo.latency | required (printf "slos.items[%s].latency is required for type=latencyNative" $name) }}
+      total:
+        metric: {{ $slo.nativeMetric | required (printf "slos.items[%s].nativeMetric is required for type=latencyNative" $name) }}
+      {{- with $slo.groupBy }}
+      grouping:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+    {{- else if eq $type "bool" }}
+    bool_gauge:
+      metric: {{ $slo.metric | required (printf "slos.items[%s].metric is required for type=bool" $name) }}
+      {{- with $slo.groupBy }}
+      grouping:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+    {{- else }}
+    {{- fail (printf "slos.items[%s].type %q is invalid (ratio|latency|latencyNative|bool)" $name $type) }}
+    {{- end }}
+  target: "{{ $slo.target | default 99 }}"
+  window: "{{ $slo.window | default "4w" }}"
+{{- end }}
+{{- end }}

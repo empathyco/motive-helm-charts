@@ -11,6 +11,7 @@ Generic Helm chart for deploying a single HTTP-style workload (`Deployment` + `S
 - Optional: [External Secrets Operator](https://external-secrets.io/) CRDs
 - Optional: [KEDA](https://keda.sh/)
 - Optional: [Gateway API](https://gateway-api.sigs.k8s.io/) CRDs (`gateway.networking.k8s.io`, e.g. v1) for `HTTPRoute` resources
+- Optional: [Pyrra](https://github.com/pyrra-dev/pyrra) (`pyrra.dev/v1alpha1`) for `ServiceLevelObjective` SLO resources
 
 ## Quick start
 
@@ -58,6 +59,8 @@ helm install myapp ./charts/empathy-service \
 | metrics.podMonitor.enabled | bool | `false` | Create a `PodMonitor`. |
 | metrics.podMonitor.port | string | _(omit)_ | Pod port **name** to scrape; same semantics as `metrics.serviceMonitor.port`. |
 | metrics.prometheusRule.enabled | bool | `false` | Create a `PrometheusRule` when extra rules are provided. |
+| slos.enabled | bool | `false` | When `true` and the cluster advertises `pyrra.dev/v1alpha1`, create Pyrra `ServiceLevelObjective` resources from `slos.items`. |
+| slos.items | list | `[]` | SLO entries; each requires `name` and `type` (`ratio` \| `latency` \| `latencyNative` \| `bool`). Add per-type metrics: `errorMetric`+`totalMetric` (ratio), `successMetric`+`totalMetric` (latency), `latency`+`nativeMetric` (latencyNative), or `metric` (bool). See [values.yaml](values.yaml) comments. |
 | externalSecrets.enabled | bool | `true` | When `true`, render `ExternalSecret` resources if the cluster advertises ESO CRDs (`external-secrets.io/v1` or `v1beta1`). |
 | externalSecrets.items | list | `[]` | One `ExternalSecret` per list entry. Required: `name`, `secretStoreRef.name`. Optional: `labels`, `annotations`, `refreshInterval` (default `1h`), `secretStoreRef.kind` (default `ClusterSecretStore`), `target.name` (default `<fullname>-<name>`), `target.creationPolicy` (default `Owner`), `data`, `dataFrom` (can combine both), `mountAsEnvFrom` (append `secretRef` to the pod). |
 | extraObjects | list | `[]` | Extra manifests (YAML string or object, passed through `tpl`). |
@@ -84,6 +87,39 @@ externalSecrets:
           remoteRef:
             key: myapp/prod
             property: extra_key
+```
+
+### SLOs example (Pyrra)
+
+Set `slos.enabled: true` and define one object per SLO. The chart only renders SLOs when the Pyrra CRD is available (`pyrra.dev/v1alpha1`); for `helm template` against a cluster without that CRD, pass e.g. `--api-versions pyrra.dev/v1alpha1` to see the generated manifests.
+
+```yaml
+slos:
+  enabled: true
+  items:
+    - name: availability
+      type: ratio
+      description: "5xx error budget"
+      target: 99.5
+      window: 4w
+      team: my-team
+      errorMetric: 'http_requests_total{status=~"5.."}'
+      totalMetric: "http_requests_total"
+
+    - name: latency-p99
+      type: latency
+      target: 99
+      successMetric: 'http_request_duration_seconds_bucket{le="0.25"}'
+      totalMetric: "http_request_duration_seconds_count"
+
+    - name: latency-native
+      type: latencyNative
+      latency: 200ms
+      nativeMetric: "http_request_duration_seconds"
+
+    - name: probe
+      type: bool
+      metric: "probe_success"
 ```
 
 ## Upgrading from `motive-service`

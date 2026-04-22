@@ -153,6 +153,43 @@ metrics:
     labels:
       release: prometheus
 
+# -- Pyrra SLOs (rendered only when `slos.enabled` is true and Pyrra CRDs are present; `pyrra.dev/v1alpha1`)
+slos:
+  enabled: false
+  items: []
+  #  - name: availability
+  #    type: ratio                # ratio | latency | latencyNative | bool
+  #    description: "5xx rate on the public API"
+  #    target: 99.5                # optional, default 99
+  #    window: 4w                  # optional, default 4w
+  #    team: empathy               # optional, default "empathy"
+  #    slackChannel: team-alerts   # optional
+  #    extraLabels: {}             # optional, merged into metadata.labels
+  #    groupBy: []                 # optional, indicator.*.grouping
+  #    alerting:
+  #      name: ErrorBudgetBurn
+  #      absent: true
+  #      burnrates: true
+  #      disabled: false
+  #    # ratio-specific:
+  #    errorMetric: 'http_requests_total{status=~"5.."}'
+  #    totalMetric: 'http_requests_total'
+  #
+  #  - name: latency-p99
+  #    type: latency
+  #    target: 99
+  #    successMetric: 'http_request_duration_seconds_bucket{le="0.25"}'
+  #    totalMetric:   'http_request_duration_seconds_count'
+  #
+  #  - name: latency-native-p99
+  #    type: latencyNative
+  #    latency: 200ms
+  #    nativeMetric: 'http_request_duration_seconds'
+  #
+  #  - name: probe-up
+  #    type: bool
+  #    metric: 'probe_success'
+
 # -- Chart-level default env (base layer). Map of KEY: VALUE.
 # Intended for values shared across many services via a base/umbrella chart.
 # Merged into the <fullname>-env ConfigMap and attached through `envFrom`.
