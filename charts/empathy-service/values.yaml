@@ -7,20 +7,11 @@ fullnameOverride: ""
 # -- Number of replicas (ignored when HPA or KEDA autoscaling is enabled)
 replicaCount: 1
 
-# -- Minimum time a pod must be ready before counted available
-minReadySeconds: 0
-
-# -- How many old ReplicaSets to keep for rollbacks
-revisionHistoryLimit: 3
-
-# -- Pod termination grace period
-terminationGracePeriodSeconds: 60
-
 # -- Image for the main workload container
 # @default -- See below
 image:
-  registry: ""
-  repository: nginxinc/nginx-unprivileged
+  registry: "500449725748.dkr.ecr.eu-west-1.amazonaws.com"
+  repository: docker-hub/nginxinc/nginx-unprivileged
   # -- When empty, defaults to `Chart.AppVersion` (pin a real tag for production images)
   tag: "1.27-alpine"
   digest: ""
@@ -162,12 +153,6 @@ metrics:
     labels:
       release: prometheus
 
-# -- Optional command override for the main container
-command: []
-
-# -- Optional args for the main container
-args: []
-
 # -- Environment variables for the main container
 env: []
 
@@ -176,12 +161,6 @@ extraEnv: []
 
 # -- envFrom entries (e.g. `configMapRef` / `secretRef` for secrets created by External Secrets)
 envFrom: []
-
-# -- Extra init containers
-extraInitContainers: []
-
-# -- Sidecar / extra containers in the pod
-extraContainers: []
 
 # -- Extra volumes on the pod
 extraVolumes: []
@@ -269,6 +248,21 @@ networkPolicy:
   enabled: false
   ingressRules: []
   egressRules: []
+
+# -- Minimum time a pod must be ready before counted available
+minReadySeconds: 0
+
+# -- How many old ReplicaSets to keep for rollbacks
+revisionHistoryLimit: 3
+
+# -- Pod termination grace period
+terminationGracePeriodSeconds: 60
+
+# -- Extra init containers
+extraInitContainers: []
+
+# -- Extra containers in the pod
+extraContainers: []
 
 # -- Extra Kubernetes manifests (YAML objects or strings passed through `tpl`)
 extraObjects: []
