@@ -102,7 +102,7 @@ ingress:
 httpRoutes:
   enabled: true
   internal:
-    enabled: false
+    enabled: true
     annotations: {}
     # -- Gateways this route attaches to (required when enabled)
     parentRef:
