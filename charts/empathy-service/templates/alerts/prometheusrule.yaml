@@ -1,0 +1,62 @@
+{{- if and .Values.metrics.prometheusRule.enabled (.Capabilities.APIVersions.Has "monitoring.coreos.com/v1") -}}
+{{- range $i, $item := .Values.metrics.prometheusRule.items }}
+{{- $name := $item.name | required (printf "metrics.prometheusRule.items[%d].name is required" $i) }}
+{{- $groups := $item.groups | required (printf "metrics.prometheusRule.items[%s].groups is required" $name) }}
+{{- if eq (len $groups) 0 }}{{- fail (printf "metrics.prometheusRule.items[%s].groups must not be empty" $name) }}{{- end }}
+---
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: {{ include "empathy-service.fullname" $ }}-rule-{{ $name }}
+  namespace: {{ $item.namespace | default $.Release.Namespace }}
+  labels:
+    {{- include "empathy-service.labels" $ | nindent 4 }}
+    release: {{ $item.release | default "prometheus" }}
+spec:
+  groups:
+  {{- range $gi, $g := $groups }}
+  {{- $gname := $g.name | required (printf "metrics.prometheusRule.items[%s].groups[%d].name is required" $name $gi) }}
+  {{- $rules := $g.rules | required (printf "metrics.prometheusRule.items[%s].groups[%s].rules is required" $name $gname) }}
+  {{- if eq (len $rules) 0 }}{{- fail (printf "metrics.prometheusRule.items[%s].groups[%s].rules must not be empty" $name $gname) }}{{- end }}
+    - name: {{ $gname | quote }}
+      {{- with $g.interval }}
+      interval: {{ . }}
+      {{- end }}
+      {{- with $g.partial_response_strategy }}
+      partial_response_strategy: {{ . }}
+      {{- end }}
+      rules:
+      {{- range $ri, $r := $rules }}
+        {{- $isAlert := hasKey $r "alert" }}
+        {{- $isRecord := hasKey $r "record" }}
+        {{- if and $isAlert $isRecord }}{{- fail (printf "metrics.prometheusRule.items[%s].groups[%s].rules[%d]: rule cannot have both alert and record" $name $gname $ri) }}{{- end }}
+        {{- if not (or $isAlert $isRecord) }}{{- fail (printf "metrics.prometheusRule.items[%s].groups[%s].rules[%d]: rule must have exactly one of alert or record" $name $gname $ri) }}{{- end }}
+        {{- if $isAlert }}
+        - alert: {{ $r.alert | required (printf "metrics.prometheusRule.items[%s].groups[%s].rules[%d].alert is required" $name $gname $ri) | quote }}
+          expr: {{ $r.expr | required (printf "metrics.prometheusRule.items[%s].groups[%s].rules[%d].expr is required" $name $gname $ri) | quote }}
+          {{- with $r.for }}
+          for: {{ . }}
+          {{- end }}
+          labels:
+            severity: {{ $r.severity | required (printf "metrics.prometheusRule.items[%s].groups[%s].rules[%d].severity is required for alert rules" $name $gname $ri) | quote }}
+            {{- with $r.labels }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+          annotations:
+            {{- $ann := $r.annotations | required (printf "metrics.prometheusRule.items[%s].groups[%s].rules[%d].annotations is required for alert rules" $name $gname $ri) }}
+            summary: {{ index $ann "summary" | required (printf "metrics.prometheusRule.items[%s].groups[%s].rules[%d].annotations.summary is required" $name $gname $ri) | quote }}
+            {{- with omit $ann "summary" }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+        {{- else }}
+        - record: {{ $r.record | required (printf "metrics.prometheusRule.items[%s].groups[%s].rules[%d].record is required" $name $gname $ri) | quote }}
+          expr: {{ $r.expr | required (printf "metrics.prometheusRule.items[%s].groups[%s].rules[%d].expr is required" $name $gname $ri) | quote }}
+          {{- with $r.labels }}
+          labels:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+        {{- end }}
+      {{- end }}
+  {{- end }}
+{{- end }}
+{{- end }}

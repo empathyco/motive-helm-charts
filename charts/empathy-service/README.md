@@ -58,7 +58,8 @@ helm install myapp ./charts/empathy-service \
 | metrics.serviceMonitor.port | string | _(omit)_ | Service port **name** to scrape (`http` or `metrics`). When omitted or empty, defaults to `metrics` if a distinct metrics port exists, otherwise `http`. |
 | metrics.podMonitor.enabled | bool | `false` | Create a `PodMonitor`. |
 | metrics.podMonitor.port | string | _(omit)_ | Pod port **name** to scrape; same semantics as `metrics.serviceMonitor.port`. |
-| metrics.prometheusRule.enabled | bool | `false` | Create a `PrometheusRule` when extra rules are provided. |
+| metrics.prometheusRule.enabled | bool | `false` | When `true` and the cluster advertises `monitoring.coreos.com/v1`, create `PrometheusRule` resources from `metrics.prometheusRule.items`. |
+| metrics.prometheusRule.items | list | `[]` | One `PrometheusRule` per entry. Required: `name`, `groups` (each group: `name`, `rules`). Each rule must have exactly one of `alert` or `record`, plus `expr`. Alert rules also require `severity` and `annotations.summary`. For `helm template` without that API in cluster discovery, pass e.g. `--api-versions monitoring.coreos.com/v1`. See [values.yaml](values.yaml) comments. |
 | slos.enabled | bool | `false` | When `true` and the cluster advertises `pyrra.dev/v1alpha1`, create Pyrra `ServiceLevelObjective` resources from `slos.items`. |
 | slos.items | list | `[]` | SLO entries; each requires `name` and `type` (`ratio` \| `latency` \| `latencyNative` \| `bool`). Add per-type metrics: `errorMetric`+`totalMetric` (ratio), `successMetric`+`totalMetric` (latency), `latency`+`nativeMetric` (latencyNative), or `metric` (bool). See [values.yaml](values.yaml) comments. |
 | externalSecrets.enabled | bool | `true` | When `true`, render `ExternalSecret` resources if the cluster advertises ESO CRDs (`external-secrets.io/v1` or `v1beta1`). |
@@ -120,6 +121,45 @@ slos:
     - name: probe
       type: bool
       metric: "probe_success"
+```
+
+### PrometheusRule example
+
+Set `metrics.prometheusRule.enabled: true` and add one list item per `PrometheusRule`. The chart only renders rules when the Prometheus Operator CRD is available (`monitoring.coreos.com/v1`); for `helm template` without that API, pass e.g. `--api-versions monitoring.coreos.com/v1`.
+
+```yaml
+metrics:
+  prometheusRule:
+    enabled: true
+    items:
+      - name: http-errors
+        release: prometheus
+        extraLabels: {}
+        extraAnnotations: {}
+        groups:
+          - name: myapp.rules
+            interval: 30s
+            rules:
+              - alert: HighErrorRate
+                expr: |
+                  sum(rate(http_requests_total{status=~"5.."}[5m]))
+                  /
+                  sum(rate(http_requests_total[5m])) > 0.05
+                for: 5m
+                severity: warning
+                labels:
+                  component: api
+                annotations:
+                  summary: "High 5xx rate"
+                  description: "Elevated server errors"
+                  runbook_url: "https://wiki.example.com/runbooks/high-5xx"
+              - record: job:http_errors:rate5m
+                expr: sum by (job) (rate(http_requests_total{status=~"5.."}[5m]))
+          - name: myapp.recording
+            partial_response_strategy: warn
+            rules:
+              - record: job:requests:count
+                expr: sum by (job) (http_requests_total)
 ```
 
 ## Upgrading from `motive-service`

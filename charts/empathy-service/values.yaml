@@ -238,6 +238,31 @@ metrics:
     labels:
       release: prometheus
 
+  # -- PrometheusRule resources (rendered only when `prometheusRule.enabled` is true and Prometheus Operator CRDs are present; `monitoring.coreos.com/v1`). One `PrometheusRule` per `items[]` entry.
+  prometheusRule:
+    enabled: false
+    items: []
+    #  - name: http-errors          # required; suffix for resource name
+    #    namespace: ""              # optional; defaults to .Release.Namespace
+    #    release: prometheus        # optional; metadata label for Prometheus Operator rule selector
+    #    groups:                    # required, >=1
+    #      - name: myapp.rules      # required
+    #        interval: 30s          # optional
+    #        partial_response_strategy: warn   # optional (Thanos Ruler)
+    #        rules:                 # required, >=1
+    #          - alert: HighErrorRate          # required if not `record`
+    #            expr: 'sum(rate(http_requests_total{status=~"5.."}[5m])) / sum(rate(http_requests_total[5m])) > 0.05'   # required
+    #            for: 5m                        # optional
+    #            severity: warning              # required for alerts -> labels.severity
+    #            labels: {}                     # optional; merged on top of {severity}
+    #            annotations:                   # required for alerts; `summary` required
+    #              summary: "High 5xx rate"
+    #              description: "..."
+    #              runbook_url: "..."
+    #          - record: job:http_errors:rate5m # required if not `alert`
+    #            expr: 'sum by (job) (rate(http_requests_total{status=~"5.."}[5m]))' # required
+    #            labels: {}                     # optional
+
 # -- Pyrra SLOs (rendered only when `slos.enabled` is true and Pyrra CRDs are present; `pyrra.dev/v1alpha1`)
 slos:
   enabled: false
