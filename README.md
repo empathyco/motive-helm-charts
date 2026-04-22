@@ -28,6 +28,7 @@ We are open to contributors, you can contribute to Empathy Helm Charts through c
 
 Following the list complete list of supported Helm Charts:
 
+* empathy-service
 * motive-cache
 * motive-cronjob
 * motive-service
