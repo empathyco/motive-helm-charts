@@ -145,7 +145,7 @@ httpRoutes:
     enabled: true
     # -- Free-form metadata for your Gateway controller (policy attachments, owner tags).
     annotations: {}
-    # -- Which Gateway object (and namespace) this route binds to; must match what your platform operators expose.
+    # Which Gateway object (and namespace) this route binds to; must match what your platform operators expose.
     parentRef:
       # -- API group of the parent (almost always the core Gateway API group).
       group: gateway.networking.k8s.io
@@ -166,7 +166,7 @@ httpRoutes:
     enabled: false
     # -- Annotations for the public HTTPRoute object.
     annotations: {}
-    # -- Public Gateway binding; update name/namespace to your external Gateway deployment.
+    # Public Gateway binding; update name/namespace to your external Gateway deployment.
     parentRef:
       # -- Gateway API group for the public parent reference.
       group: gateway.networking.k8s.io
