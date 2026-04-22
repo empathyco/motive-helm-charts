@@ -179,8 +179,15 @@ Kubernetes: `>=1.25.0-0`
 | serviceAccount.automount | bool | `true` | Automount API credentials into the pod |
 | serviceAccount.create | bool | `false` | When true, create a dedicated `ServiceAccount` |
 | serviceAccount.name | string | `""` | Service account name to use (when `create: false`, must exist); when empty, the chart derives a name from the release |
-| slos.enabled | bool | `false` | When true and `pyrra.dev/v1alpha1` is available, create SLO objects from `items` |
-| slos.items | list | `[]` | SLO entries (`name`, `type`, and type-specific metric fields). See commented examples in this file. |
+| slos.availability.enabled | bool | `true` | When true, create an availability SLO for each enabled HTTPRoute variant. |
+| slos.availability.target | float | `99.5` | SLO target percentage (e.g. 99.5 means 99.5% of requests must be non-5xx over the window). |
+| slos.availability.window | string | `"4w"` | Rolling evaluation window (Pyrra `spec.window`). |
+| slos.latency.enabled | bool | `true` | When true, create a latency SLO for each enabled HTTPRoute variant. |
+| slos.latency.target | int | `99` | SLO target percentage. |
+| slos.latency.threshold | string | `"500"` | Upper bound in milliseconds. MUST match an existing `le` bucket on Envoy's histogram (e.g. 250, 500, 1000). |
+| slos.latency.window | string | `"4w"` | Rolling evaluation window (Pyrra `spec.window`). |
+| slos.slackChannel | string | `"situation_room"` | Shared Slack channel label (`pyrra.dev/slack_channel`); set to "" to omit the label. |
+| slos.team | string | `""` | Optional shared team label (`pyrra.dev/team`); empty omits the label. |
 | strategy.rollingUpdate.maxSurge | string | `"25%"` | Max extra pods (or percentage) during a rolling update |
 | strategy.rollingUpdate.maxUnavailable | string | `"25%"` | Max unavailable pods (or percentage) during a rolling update |
 | strategy.type | string | `"RollingUpdate"` | `RollingUpdate` or `Recreate` |
@@ -210,37 +217,37 @@ externalSecrets:
             property: extra_key
 ```
 
-### SLOs example (Pyrra)
+### Default HTTPRoute SLOs (Pyrra)
 
-Set `slos.enabled: true` and define one object per SLO. The chart only renders SLOs when the Pyrra CRD is available (`pyrra.dev/v1alpha1`); for `helm template` against a cluster without that CRD, pass e.g. `--api-versions pyrra.dev/v1alpha1` to see the generated manifests.
+When `httpRoutes.enabled` is true and the Pyrra CRD is available (`pyrra.dev/v1alpha1`), the chart can create **one availability SLO** and/or **one latency SLO** per enabled HTTPRoute variant (`internal` and/or `public`), controlled independently by `slos.availability.enabled` and `slos.latency.enabled`. Shared labels: optional `slos.team` (`pyrra.dev/team`) and `slos.slackChannel` (`pyrra.dev/slack_channel`).
+
+**Availability** (ratio): Envoy upstream metrics scoped to `envoy_cluster_name=~"httproute/<namespace>/<release-fullname>-<variant>/rule/[0-9]+"`:
+
+- Total: `envoy_cluster_upstream_rq_total{...}`
+- 5xx errors: `envoy_cluster_upstream_rq_xx{..., envoy_response_code_class="5"}`
+
+**Latency** (histogram): same cluster filter; `le` must match an existing bucket on your Envoy histogram (milliseconds):
+
+- Success: `envoy_cluster_upstream_rq_time_bucket{..., le="<threshold>"}`
+- Total: `envoy_cluster_upstream_rq_time_count{...}`
+
+For `helm template` without Pyrra advertised, pass e.g. `--api-versions pyrra.dev/v1alpha1` to see the manifests.
+
+**Breaking change:** `slos.enabled` / `slos.target` / `slos.window` moved under `slos.availability.*`. The old `slos.items[]` API remains removed.
 
 ```yaml
 slos:
-  enabled: true
-  items:
-    - name: availability
-      type: ratio
-      description: "5xx error budget"
-      target: 99.5
-      window: 4w
-      team: my-team
-      errorMetric: 'http_requests_total{status=~"5.."}'
-      totalMetric: "http_requests_total"
-
-    - name: latency-p99
-      type: latency
-      target: 99
-      successMetric: 'http_request_duration_seconds_bucket{le="0.25"}'
-      totalMetric: "http_request_duration_seconds_count"
-
-    - name: latency-native
-      type: latencyNative
-      latency: 200ms
-      nativeMetric: "http_request_duration_seconds"
-
-    - name: probe
-      type: bool
-      metric: "probe_success"
+  team: ""
+  slackChannel: situation_room
+  availability:
+    enabled: true
+    target: 99.5
+    window: 4w
+  latency:
+    enabled: true
+    target: 99
+    window: 4w
+    threshold: "500"   # must match an Envoy histogram `le` bucket (ms)
 ```
 
 ### PrometheusRule example

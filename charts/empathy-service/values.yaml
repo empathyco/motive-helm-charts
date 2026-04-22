@@ -363,44 +363,33 @@ metrics:
     #            expr: 'sum by (job) (rate(http_requests_total{status=~"5.."}[5m]))' # required
     #            labels: {}                     # optional
 
-# Pyrra `ServiceLevelObjective` resources (only rendered when Pyrra CRDs exist).
+# Default SLOs (Pyrra `ServiceLevelObjective`) per enabled HTTPRoute variant.
+# Each kind is gated by its own `enabled` flag, `httpRoutes.enabled`, and `pyrra.dev/v1alpha1`.
 slos:
-  # -- When true and `pyrra.dev/v1alpha1` is available, create SLO objects from `items`
-  enabled: false
-  # -- SLO entries (`name`, `type`, and type-specific metric fields). See commented examples in this file.
-  items: []
-  #  - name: availability
-  #    type: ratio                # ratio | latency | latencyNative | bool
-  #    description: "5xx rate on the public API"
-  #    target: 99.5                # optional, default 99
-  #    window: 4w                  # optional, default 4w
-  #    team: empathy               # optional, default "empathy"
-  #    slackChannel: team-alerts   # optional
-  #    extraLabels: {}             # optional, merged into metadata.labels
-  #    groupBy: []                 # optional, indicator.*.grouping
-  #    alerting:
-  #      name: ErrorBudgetBurn
-  #      absent: true
-  #      burnrates: true
-  #      disabled: false
-  #    # ratio-specific:
-  #    errorMetric: 'http_requests_total{status=~"5.."}'
-  #    totalMetric: 'http_requests_total'
-  #
-  #  - name: latency-p99
-  #    type: latency
-  #    target: 99
-  #    successMetric: 'http_request_duration_seconds_bucket{le="0.25"}'
-  #    totalMetric:   'http_request_duration_seconds_count'
-  #
-  #  - name: latency-native-p99
-  #    type: latencyNative
-  #    latency: 200ms
-  #    nativeMetric: 'http_request_duration_seconds'
-  #
-  #  - name: probe-up
-  #    type: bool
-  #    metric: 'probe_success'
+  # -- Optional shared team label (`pyrra.dev/team`); empty omits the label.
+  team: ""
+  # -- Shared Slack channel label (`pyrra.dev/slack_channel`); set to "" to omit the label.
+  slackChannel: situation_room
+
+  # Availability SLO: 5xx ratio over all requests.
+  availability:
+    # -- When true, create an availability SLO for each enabled HTTPRoute variant.
+    enabled: true
+    # -- SLO target percentage (e.g. 99.5 means 99.5% of requests must be non-5xx over the window).
+    target: 99.5
+    # -- Rolling evaluation window (Pyrra `spec.window`).
+    window: 4w
+
+  # Latency SLO: fraction of requests served under `threshold` milliseconds.
+  latency:
+    # -- When true, create a latency SLO for each enabled HTTPRoute variant.
+    enabled: true
+    # -- SLO target percentage.
+    target: 99
+    # -- Rolling evaluation window (Pyrra `spec.window`).
+    window: 4w
+    # -- Upper bound in milliseconds. MUST match an existing `le` bucket on Envoy's histogram (e.g. 250, 500, 1000).
+    threshold: "500"
 
 # Workload `ServiceAccount`.
 serviceAccount:
