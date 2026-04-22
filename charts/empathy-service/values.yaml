@@ -122,74 +122,6 @@ httpRoutes:
     rules: []
     defaultPath: /
 
-# -- Probes for the main container
-probes:
-  enabled: true
-  livenessProbe:
-    enabled: true
-    path: /health
-    port: 8080
-  readinessProbe:
-    enabled: true
-    path: /health
-    port: 8080
-  startupProbe:
-    enabled: true
-    path: /health
-    port: 8080
-
-# -- Prometheus Operator integration
-metrics:
-  # -- When true, ServiceMonitor scrapes this release's Service. Optionally set `serviceMonitor.port` to a Service port *name* (`http` or `metrics`); when omitted or empty, defaults to `metrics` if a distinct metrics port exists, otherwise `http`.
-  serviceMonitor:
-    enabled: true
-    path: /metrics
-    labels:
-      release: prometheus
-
-  podMonitor:
-    enabled: false
-    path: /metrics
-    labels:
-      release: prometheus
-
-# -- Pyrra SLOs (rendered only when `slos.enabled` is true and Pyrra CRDs are present; `pyrra.dev/v1alpha1`)
-slos:
-  enabled: false
-  items: []
-  #  - name: availability
-  #    type: ratio                # ratio | latency | latencyNative | bool
-  #    description: "5xx rate on the public API"
-  #    target: 99.5                # optional, default 99
-  #    window: 4w                  # optional, default 4w
-  #    team: empathy               # optional, default "empathy"
-  #    slackChannel: team-alerts   # optional
-  #    extraLabels: {}             # optional, merged into metadata.labels
-  #    groupBy: []                 # optional, indicator.*.grouping
-  #    alerting:
-  #      name: ErrorBudgetBurn
-  #      absent: true
-  #      burnrates: true
-  #      disabled: false
-  #    # ratio-specific:
-  #    errorMetric: 'http_requests_total{status=~"5.."}'
-  #    totalMetric: 'http_requests_total'
-  #
-  #  - name: latency-p99
-  #    type: latency
-  #    target: 99
-  #    successMetric: 'http_request_duration_seconds_bucket{le="0.25"}'
-  #    totalMetric:   'http_request_duration_seconds_count'
-  #
-  #  - name: latency-native-p99
-  #    type: latencyNative
-  #    latency: 200ms
-  #    nativeMetric: 'http_request_duration_seconds'
-  #
-  #  - name: probe-up
-  #    type: bool
-  #    metric: 'probe_success'
-
 # -- Chart-level default env (base layer). Map of KEY: VALUE.
 # Intended for values shared across many services via a base/umbrella chart.
 # Merged into the <fullname>-env ConfigMap and attached through `envFrom`.
@@ -259,6 +191,89 @@ externalSecrets:
   #        remoteRef:
   #          key: /path/to/remote/secret
   #          property: db_password
+
+# -- File-content ConfigMaps. Each item becomes a `<fullname>-content-<nameSuffix>` ConfigMap
+# with a single data key (`fileName`). When `autoMount` is true (default) a volume and
+# volumeMount are added to the main container automatically.
+configMapFromContent: []
+#  - nameSuffix: nginx              # required; resource suffix and volume name
+#    fileName: nginx.conf           # required; ConfigMap data key + default subPath
+#    content: |                     # required; raw file content (multi-line ok)
+#      server { listen 8080; }
+#    # Mount wiring (set autoMount: false to opt out and manage via extraVolumes/extraVolumeMounts)
+#    autoMount: true
+#    mountPath: /etc/nginx/nginx.conf  # required when autoMount is true
+#    subPath: ""                       # optional; defaults to fileName when mountPath ends with it
+#    readOnly: true
+#    defaultMode: 0444
+
+# -- Probes for the main container
+probes:
+  enabled: true
+  livenessProbe:
+    enabled: true
+    path: /health
+    port: 8080
+  readinessProbe:
+    enabled: true
+    path: /health
+    port: 8080
+  startupProbe:
+    enabled: true
+    path: /health
+    port: 8080
+
+# -- Prometheus Operator integration
+metrics:
+  # -- When true, ServiceMonitor scrapes this release's Service. Optionally set `serviceMonitor.port` to a Service port *name* (`http` or `metrics`); when omitted or empty, defaults to `metrics` if a distinct metrics port exists, otherwise `http`.
+  serviceMonitor:
+    enabled: true
+    path: /metrics
+    labels:
+      release: prometheus
+
+  podMonitor:
+    enabled: false
+    path: /metrics
+    labels:
+      release: prometheus
+
+# -- Pyrra SLOs (rendered only when `slos.enabled` is true and Pyrra CRDs are present; `pyrra.dev/v1alpha1`)
+slos:
+  enabled: false
+  items: []
+  #  - name: availability
+  #    type: ratio                # ratio | latency | latencyNative | bool
+  #    description: "5xx rate on the public API"
+  #    target: 99.5                # optional, default 99
+  #    window: 4w                  # optional, default 4w
+  #    team: empathy               # optional, default "empathy"
+  #    slackChannel: team-alerts   # optional
+  #    extraLabels: {}             # optional, merged into metadata.labels
+  #    groupBy: []                 # optional, indicator.*.grouping
+  #    alerting:
+  #      name: ErrorBudgetBurn
+  #      absent: true
+  #      burnrates: true
+  #      disabled: false
+  #    # ratio-specific:
+  #    errorMetric: 'http_requests_total{status=~"5.."}'
+  #    totalMetric: 'http_requests_total'
+  #
+  #  - name: latency-p99
+  #    type: latency
+  #    target: 99
+  #    successMetric: 'http_request_duration_seconds_bucket{le="0.25"}'
+  #    totalMetric:   'http_request_duration_seconds_count'
+  #
+  #  - name: latency-native-p99
+  #    type: latencyNative
+  #    latency: 200ms
+  #    nativeMetric: 'http_request_duration_seconds'
+  #
+  #  - name: probe-up
+  #    type: bool
+  #    metric: 'probe_success'
 
 # -- Service account for the workload pod
 serviceAccount:
@@ -330,18 +345,3 @@ extraVolumeMounts: []
 
 # -- Extra Kubernetes manifests (YAML objects or strings passed through `tpl`)
 extraObjects: []
-
-# -- File-content ConfigMaps. Each item becomes a `<fullname>-content-<nameSuffix>` ConfigMap
-# with a single data key (`fileName`). When `autoMount` is true (default) a volume and
-# volumeMount are added to the main container automatically.
-configMapFromContent: []
-#  - nameSuffix: nginx              # required; resource suffix and volume name
-#    fileName: nginx.conf           # required; ConfigMap data key + default subPath
-#    content: |                     # required; raw file content (multi-line ok)
-#      server { listen 8080; }
-#    # Mount wiring (set autoMount: false to opt out and manage via extraVolumes/extraVolumeMounts)
-#    autoMount: true
-#    mountPath: /etc/nginx/nginx.conf  # required when autoMount is true
-#    subPath: ""                       # optional; defaults to fileName when mountPath ends with it
-#    readOnly: true
-#    defaultMode: 0444
