@@ -4,6 +4,19 @@ nameOverride: ""
 # -- Override the fully qualified release name
 fullnameOverride: ""
 
+# Empathy cost-allocation labels, applied to every chart-managed resource and
+# to pod template labels. `businessUnit`, `environment`, and `team` are REQUIRED;
+# rendering fails if any is empty. `component` defaults to the release fullname.
+labels:
+  # -- Value for `empathy.co/business-unit` (required; fails rendering when empty)
+  businessUnit: ""
+  # -- Value for `empathy.co/component` (optional; defaults to the release fullname, e.g. `<release>-<chart>` or `fullnameOverride`). Override to group multiple releases under one logical component.
+  component: ""
+  # -- Value for `empathy.co/environment` (required; fails rendering when empty)
+  environment: ""
+  # -- Value for `empathy.co/team` (required; fails rendering when empty)
+  team: ""
+
 # -- Number of replicas (ignored when KEDA autoscaling is enabled)
 replicaCount: 1
 

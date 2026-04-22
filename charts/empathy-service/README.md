@@ -26,7 +26,10 @@ Generic Helm chart for deploying a single HTTP-style workload (`Deployment` + `S
 ```bash
 helm install myapp ./charts/empathy-service \
   --set image.repository=myorg/myapp \
-  --set image.tag=1.0.0
+  --set image.tag=1.0.0 \
+  --set labels.businessUnit=my-bu \
+  --set labels.environment=prod \
+  --set labels.team=my-team
 ```
 
 ## Key design choices
@@ -36,6 +39,19 @@ helm install myapp ./charts/empathy-service \
 - **No canary / blue-green** (standard `Deployment` rolling updates only).
 - **No allow-all `NetworkPolicy`** when disabled (cluster default applies).
 - **Secrets** are not rendered as Helm-managed `Secret` objects; use External Secrets (`externalSecrets.items`) and reference the resulting secrets via top-level `envFrom` (`secretRef`), per-item `mountAsEnvFrom: true` (auto `secretRef`), or volumes.
+
+## Cost allocation labels
+
+Every chart-managed resource and the pod template get four Empathy labels for cost attribution:
+
+| Label | Values key | Notes |
+|-------|------------|--------|
+| `empathy.co/business-unit` | `labels.businessUnit` | **Required**; `helm template` / `helm install` fails if empty |
+| `empathy.co/environment` | `labels.environment` | **Required** |
+| `empathy.co/team` | `labels.team` | **Required** |
+| `empathy.co/component` | `labels.component` | Optional; defaults to the release **fullname** (same as the workload name). Override to roll up multiple releases under one component |
+
+`labels.team` is separate from `slos.team` (Pyrra `pyrra.dev/team` for SLO routing); configure them independently.
 
 ## Requirements
 
@@ -107,6 +123,10 @@ Kubernetes: `>=1.25.0-0`
 | ingress.public.hosts | list | `[]` | Same structure as internal: list of hosts, each with `paths` pointing at this chart’s Service by port name unless you override `servicePortName`. |
 | ingress.public.labels | object | `{}` | Reserved for future use; same behavior as `ingress.internal.labels`. |
 | ingress.public.tls | list | `[]` | TLS for public hostnames. |
+| labels.businessUnit | string | `""` | Value for `empathy.co/business-unit` (required; fails rendering when empty) |
+| labels.component | string | `""` | Value for `empathy.co/component` (optional; defaults to the release fullname, e.g. `<release>-<chart>` or `fullnameOverride`). Override to group multiple releases under one logical component. |
+| labels.environment | string | `""` | Value for `empathy.co/environment` (required; fails rendering when empty) |
+| labels.team | string | `""` | Value for `empathy.co/team` (required; fails rendering when empty) |
 | metrics.podMonitor.enabled | bool | `false` | Create a `PodMonitor` scraping pod metrics endpoints |
 | metrics.podMonitor.honorLabels | bool | `false` | When true, set `honorLabels: true` on the scrape endpoint |
 | metrics.podMonitor.labels.release | string | `"prometheus"` | Value for the `release` label used by Prometheus Operator to select this PodMonitor |

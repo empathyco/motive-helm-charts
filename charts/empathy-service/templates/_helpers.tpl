@@ -39,6 +39,30 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
 
 {{/*
+Empathy cost-allocation labels (metadata + pod template). businessUnit, environment, team required.
+*/}}
+{{- define "empathy-service.costLabels" -}}
+{{- $cfg := .Values.labels | default dict -}}
+{{- $bu := $cfg.businessUnit | default "" -}}
+{{- $env := $cfg.environment | default "" -}}
+{{- $team := $cfg.team | default "" -}}
+{{- $component := $cfg.component | default (include "empathy-service.fullname" .) -}}
+{{- if not $bu -}}
+{{- fail "labels.businessUnit is required (sets empathy.co/business-unit)" -}}
+{{- end -}}
+{{- if not $env -}}
+{{- fail "labels.environment is required (sets empathy.co/environment)" -}}
+{{- end -}}
+{{- if not $team -}}
+{{- fail "labels.team is required (sets empathy.co/team)" -}}
+{{- end -}}
+empathy.co/business-unit: {{ $bu | quote }}
+empathy.co/component: {{ $component | quote }}
+empathy.co/environment: {{ $env | quote }}
+empathy.co/team: {{ $team | quote }}
+{{- end }}
+
+{{/*
 Common labels
 */}}
 {{- define "empathy-service.labels" -}}
@@ -48,6 +72,7 @@ helm.sh/chart: {{ include "empathy-service.chart" . }}
 app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{- end }}
 app.kubernetes.io/managed-by: {{ .Release.Service }}
+{{ include "empathy-service.costLabels" . }}
 {{- with .Values.commonLabels }}
 {{ toYaml . }}
 {{- end }}

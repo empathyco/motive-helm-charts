@@ -27,7 +27,10 @@ Generic Helm chart for deploying a single HTTP-style workload (`Deployment` + `S
 ```bash
 helm install myapp ./charts/empathy-service \
   --set image.repository=myorg/myapp \
-  --set image.tag=1.0.0
+  --set image.tag=1.0.0 \
+  --set labels.businessUnit=my-bu \
+  --set labels.environment=prod \
+  --set labels.team=my-team
 ```
 
 ## Key design choices
@@ -37,6 +40,19 @@ helm install myapp ./charts/empathy-service \
 - **No canary / blue-green** (standard `Deployment` rolling updates only).
 - **No allow-all `NetworkPolicy`** when disabled (cluster default applies).
 - **Secrets** are not rendered as Helm-managed `Secret` objects; use External Secrets (`externalSecrets.items`) and reference the resulting secrets via top-level `envFrom` (`secretRef`), per-item `mountAsEnvFrom: true` (auto `secretRef`), or volumes.
+
+## Cost allocation labels
+
+Every chart-managed resource and the pod template get four Empathy labels for cost attribution:
+
+| Label | Values key | Notes |
+|-------|------------|--------|
+| `empathy.co/business-unit` | `labels.businessUnit` | **Required**; `helm template` / `helm install` fails if empty |
+| `empathy.co/environment` | `labels.environment` | **Required** |
+| `empathy.co/team` | `labels.team` | **Required** |
+| `empathy.co/component` | `labels.component` | Optional; defaults to the release **fullname** (same as the workload name). Override to roll up multiple releases under one component |
+
+`labels.team` is separate from `slos.team` (Pyrra `pyrra.dev/team` for SLO routing); configure them independently.
 
 {{ template "chart.requirementsSection" . }}
 
