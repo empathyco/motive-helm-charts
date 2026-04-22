@@ -153,11 +153,12 @@ metrics:
     labels:
       release: prometheus
 
-# -- Environment variables for the main container
-env: []
+# -- Environment variables for the main container (merged into <fullname>-env ConfigMap)
+env: {}
+#   LOG_LEVEL: info
 
-# -- Additional env (alias pattern; merged with `env` in templates)
-extraEnv: []
+# -- Additional env (merged on top of `env`; same ConfigMap; keys here override `env`)
+extraEnv: {}
 
 # -- envFrom entries (e.g. `configMapRef` / `secretRef` for secrets created by External Secrets)
 envFrom: []
@@ -167,12 +168,6 @@ extraVolumes: []
 
 # -- Extra volume mounts on the main container
 extraVolumeMounts: []
-
-# -- Optional ConfigMap from inline data (non-sensitive)
-config:
-  enabled: false
-  mountAsEnvFrom: true
-  data: {}
 
 # -- External Secrets resources (rendered only if CRDs are installed)
 # Per-item template defaults: refreshInterval `1h`, secretStoreRef.kind `ClusterSecretStore`, target.creationPolicy `Owner`.

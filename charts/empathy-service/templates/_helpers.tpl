@@ -137,3 +137,19 @@ Empty when externalSecrets are disabled or no item opts in. Root context is the 
 {{- end }}
 {{- end }}
 {{- end }}
+
+{{/*
+Merged env/extraEnv as a flat map (string keys -> values). `extraEnv` keys override `env`.
+Output is YAML suitable for `fromYaml` in templates.
+*/}}
+{{- define "empathy-service.envMergedYaml" -}}
+{{- $root := . -}}
+{{- $out := dict -}}
+{{- range $k, $v := ($root.Values.env | default dict) -}}
+{{- $_ := set $out $k $v -}}
+{{- end -}}
+{{- range $k, $v := ($root.Values.extraEnv | default dict) -}}
+{{- $_ := set $out $k $v -}}
+{{- end -}}
+{{- $out | toYaml -}}
+{{- end }}
