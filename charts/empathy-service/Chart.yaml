@@ -1,9 +1,9 @@
 apiVersion: v2
 name: empathy-service
-description: Generic, opinionated Helm chart for deploying HTTP services on Kubernetes.
+description: Generic Helm chart for deploying Empathy services on Kubernetes.
 type: application
 version: 0.1.0
-appVersion: "1.27.0"
+appVersion: "0.1.0"
 kubeVersion: ">=1.25.0-0"
 icon: https://raw.githubusercontent.com/cncf/artwork/main/projects/kubernetes/icon/color/kubernetes-icon-color.png
 home: https://github.com/empathyco/motive-helm-charts
