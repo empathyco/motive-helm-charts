@@ -1,0 +1,41 @@
+{{- if and .Values.ingress.enabled .Values.ingress.internal.enabled -}}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "empathy-service.fullname" . }}-internal
+  labels:
+    {{- include "empathy-service.labels" . | nindent 4 }}
+  {{- with .Values.ingress.internal.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  {{- with .Values.ingress.internal.className }}
+  ingressClassName: {{ . | default "internal" }}
+  {{- end }}
+  {{- with .Values.ingress.internal.tls }}
+  tls:
+    {{- range . }}
+    - hosts:
+        {{- range .hosts }}
+        - {{ . | quote }}
+        {{- end }}
+      secretName: {{ .secretName }}
+    {{- end }}
+  {{- end }}
+  rules:
+    {{- range .Values.ingress.internal.hosts }}
+    - host: {{ .host | quote }}
+      http:
+        paths:
+          {{- range .paths }}
+          - path: {{ .path }}
+            pathType: {{ .pathType | default "Prefix" }}
+            backend:
+              service:
+                name: {{ include "empathy-service.fullname" $ }}
+                port:
+                  name: {{ .servicePortName | default "http" }}
+          {{- end }}
+    {{- end }}
+{{- end }}

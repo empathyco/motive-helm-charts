@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "empathy-service.fullname" . }}
+  labels:
+    {{- include "empathy-service.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    {{- range (include "empathy-service.ports" . | fromYamlArray) }}
+    - name: {{ .name }}
+      port: {{ .servicePort }}
+      targetPort: {{ .name }}
+      protocol: {{ .protocol }}
+    {{- end }}
+  selector:
+    {{- include "empathy-service.selectorLabels" . | nindent 4 }}

@@ -1,0 +1,44 @@
+{{- if and .Values.slos.enabled .Values.slos.latency.enabled .Values.httpRoutes.enabled (.Capabilities.APIVersions.Has "pyrra.dev/v1alpha1") -}}
+{{- $threshold := .Values.slos.latency.threshold | toString }}
+{{- if eq $threshold "" }}{{- fail "slos.latency.threshold is required when slos.enabled and slos.latency.enabled" }}{{- end }}
+{{- $ns := .Release.Namespace -}}
+{{- $fullname := include "empathy-service.fullname" . -}}
+{{- range $variant := list "internal" "public" }}
+{{- $cfg := index $.Values.httpRoutes $variant }}
+{{- if $cfg.enabled }}
+{{- $cluster := printf "httproute/%s/%s-%s/rule/[0-9]+" $ns $fullname $variant }}
+---
+apiVersion: pyrra.dev/v1alpha1
+kind: ServiceLevelObjective
+metadata:
+  name: {{ $fullname }}-{{ $variant }}-latency
+  namespace: {{ $ns }}
+  labels:
+    {{- include "empathy-service.labels" $ | nindent 4 }}
+    prometheus: k8s
+    role: alert-rules
+    release: prometheus
+    {{- with $.Values.slos.team }}
+    pyrra.dev/team: {{ . | quote }}
+    {{- end }}
+    {{- with $.Values.slos.slackChannel }}
+    pyrra.dev/slack_channel: {{ . | quote }}
+    {{- end }}
+spec:
+  alerting:
+    name: {{ $fullname }} - {{ $variant }} - latency - ErrorBudgetBurn
+    absent: true
+    burnrates: true
+    disabled: false
+  description: "Request latency <= {{ $threshold }}ms for HTTPRoute {{ $fullname }}-{{ $variant }}"
+  indicator:
+    latency:
+      success:
+        metric: {{ printf "envoy_cluster_upstream_rq_time_bucket{envoy_cluster_name=~%q, le=%q}" $cluster $threshold | quote }}
+      total:
+        metric: {{ printf "envoy_cluster_upstream_rq_time_count{envoy_cluster_name=~%q}" $cluster | quote }}
+  target: "{{ $.Values.slos.latency.target | default 99 }}"
+  window: "{{ $.Values.slos.latency.window | default "4w" }}"
+{{- end }}
+{{- end }}
+{{- end }}

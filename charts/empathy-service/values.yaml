@@ -1,0 +1,496 @@
+# -- Override the chart name (`metadata.name` prefix)
+nameOverride: ""
+
+# -- Override the fully qualified release name
+fullnameOverride: ""
+
+# Empathy cost-allocation labels, applied to every chart-managed resource and
+# to pod template labels. `businessUnit`, `environment`, and `team` are REQUIRED;
+# rendering fails if any is empty. `component` defaults to the release fullname.
+labels:
+  # -- Value for `empathy.co/business-unit` (required; fails rendering when empty)
+  businessUnit: ""
+  # -- Value for `empathy.co/component` (optional; defaults to the release fullname, e.g. `<release>-<chart>` or `fullnameOverride`). Override to group multiple releases under one logical component.
+  component: ""
+  # -- Value for `empathy.co/environment` (required; fails rendering when empty)
+  environment: ""
+  # -- Value for `empathy.co/team` (required; fails rendering when empty)
+  team: ""
+
+# -- Number of replicas (ignored when KEDA autoscaling is enabled)
+replicaCount: 1
+
+# Main workload container image (registry, repository, tag, digest, pull policy).
+image:
+  # -- Image registry / ECR host (set empty if the repository string is fully qualified elsewhere)
+  registry: "500449725748.dkr.ecr.eu-west-1.amazonaws.com"
+  # -- Image repository path (after registry)
+  repository: docker-hub/nginxinc/nginx-unprivileged
+  # -- Image tag; when empty, the chart defaults the rendered tag to `Chart.AppVersion` (pin a real tag for production)
+  tag: "1.27-alpine"
+  # -- Optional image digest (when set, typically omit `tag` or let the chart prefer digest)
+  digest: ""
+  # -- `imagePullPolicy` for the main container
+  pullPolicy: IfNotPresent
+
+# -- Image pull secrets (`kubernetes.io/dockerconfigjson` or similar)
+imagePullSecrets: []
+
+# Deployment rollout strategy (`strategy` on the Deployment).
+strategy:
+  # -- `RollingUpdate` or `Recreate`
+  type: RollingUpdate
+  rollingUpdate:
+    # -- Max extra pods (or percentage) during a rolling update
+    maxSurge: 25%
+    # -- Max unavailable pods (or percentage) during a rolling update
+    maxUnavailable: 25%
+
+# Resource requests and limits for the main container.
+resources:
+  requests:
+    # -- CPU request
+    cpu: 50m
+    # -- Memory request
+    memory: 128Mi
+  limits:
+    # -- Memory limit (chart does not set a CPU limit by default)
+    memory: 128Mi
+
+# Autoscaling via KEDA `ScaledObject` (CPU utilization trigger by default).
+autoscaling:
+  # -- When true, create a KEDA `ScaledObject` for this workload
+  enabled: false
+  # -- Minimum replicas when autoscaling is enabled
+  minReplicas: 1
+  # -- Maximum replicas when autoscaling is enabled
+  maxReplicas: 10
+  keda:
+    # -- How often KEDA polls metric sources (seconds)
+    pollingInterval: 30
+    # -- Cooldown before scaling to zero or after last trigger (seconds)
+    cooldownPeriod: 300
+    # -- Optional fallback when metrics are unavailable (see KEDA docs); empty object omits `fallback` from the ScaledObject
+    fallback: {}
+    # -- KEDA trigger definitions (see KEDA docs); default scales on CPU average utilization
+    triggers:
+      - type: cpu
+        metricType: Utilization
+        metadata:
+          value: "80"
+
+# Kubernetes `Service` for the workload.
+service:
+  # -- Service type (`ClusterIP`, `NodePort`, `LoadBalancer`)
+  type: ClusterIP
+  # -- Primary application port (named `http` on the container and Service)
+  port: 8080
+  # -- Optional Prometheus/metrics listener port (named `metrics`). `""` or `0` for no separate port; set equal to `port` for metrics on the app port only
+  metricsPort: ""
+
+# Classic Ingress (v1) for north–south HTTP; split into internal vs public so you can attach different classes, certs, and hostnames.
+ingress:
+  # -- Turn off every Ingress object from this chart when you only use Gateway API routes or do not expose HTTP at the edge here.
+  enabled: false
+  internal:
+    # -- Publish the app on your private / corporate ingress controller (often behind VPN or private DNS).
+    enabled: false
+    # -- Which IngressClass handles this object (e.g. internal ALB/NLB controller). Leave unset only if you truly want no `ingressClassName` in the manifest.
+    className: internal
+    # -- Reserved for future use: Ingress metadata today only includes standard chart labels, not this map.
+    labels: {}
+    # -- Attach controller-specific settings (cert-manager, external-dns, WAF annotations, body size, etc.).
+    annotations: {}
+    # -- Virtual hosts and URL paths that should reach this release. Omit `pathType` or `servicePortName` in each path if you are fine with prefix routing to the workload’s main HTTP port name (`http`).
+    hosts: []
+    #  - host: app.internal.example.com
+    #    paths:
+    #      - path: /
+    #        pathType: Prefix
+    #        servicePortName: http
+    # -- TLS certificates for those hostnames (standard Ingress `tls` entries with `hosts` + `secretName`).
+    tls: []
+  public:
+    # -- Expose the app on your internet-facing ingress class (separate hosts/TLS from internal).
+    enabled: false
+    # -- Public-facing IngressClass (e.g. internet-facing load balancer integration).
+    className: public-nlb
+    # -- Reserved for future use; same behavior as `ingress.internal.labels`.
+    labels: {}
+    # -- Public-edge annotations (DNS, certs, idle timeouts, proxy protocol, etc.).
+    annotations: {}
+    # -- Same structure as internal: list of hosts, each with `paths` pointing at this chart’s Service by port name unless you override `servicePortName`.
+    hosts: []
+    #  - host: app.example.com
+    #    paths:
+    #      - path: /
+    #        pathType: Prefix
+    #        servicePortName: http
+    # -- TLS for public hostnames.
+    tls: []
+
+# Gateway API v1 HTTPRoute: attach listeners on shared Gateways (Envoy, etc.) instead of classic Ingress.
+httpRoutes:
+  # -- Disable every generated HTTPRoute when you rely solely on Ingress or do not use Gateway API yet.
+  enabled: true
+  internal:
+    # -- Route private or cluster-adjacent hostnames through your internal Gateway implementation.
+    enabled: true
+    # -- Free-form metadata for your Gateway controller (policy attachments, owner tags).
+    annotations: {}
+    # Which Gateway object (and namespace) this route binds to; must match what your platform operators expose.
+    parentRef:
+      # -- API group of the parent (almost always the core Gateway API group).
+      group: gateway.networking.k8s.io
+      # -- Parent kind; Gateways are the usual attachment point for HTTPRoute.
+      kind: Gateway
+      # -- Gateway resource name in the cluster (change to match your env’s internal Gateway).
+      name: internal-envoy-gateway
+      # -- Namespace where that Gateway lives (many clusters keep shared Gateways in `kube-system` or a mesh namespace).
+      namespace: kube-system
+    # -- Optional explicit hostnames; if empty, the route still matches according to your Gateway’s listener configuration.
+    hostnames: []
+    # -- Advanced routing (matches, filters, weighted backends). Leave empty to let the chart synthesize a single prefix route to this release’s main Service on `service.port`.
+    rules: []
+    # -- URL path prefix used only for that synthesized rule when `rules` is empty (good default for a single service behind one path).
+    defaultPath: /
+  public:
+    # -- Internet-facing HTTPRoute through the public Gateway (separate parent ref and hostnames from internal).
+    enabled: false
+    # -- Annotations for the public HTTPRoute object.
+    annotations: {}
+    # Public Gateway binding; update name/namespace to your external Gateway deployment.
+    parentRef:
+      # -- Gateway API group for the public parent reference.
+      group: gateway.networking.k8s.io
+      # -- Parent kind for the public route.
+      kind: Gateway
+      # -- Public Gateway resource name.
+      name: public-envoy-gateway
+      # -- Namespace containing the public Gateway.
+      namespace: kube-system
+    # -- Public hostnames this route should answer (optional if your Gateway assigns hostnames another way).
+    hostnames: []
+    # -- Full rule list for public traffic; empty uses the same single-service shortcut as internal with `defaultPath`.
+    rules: []
+    # -- Path prefix for the generated default rule when you have not supplied custom `rules`.
+    defaultPath: /
+
+# -- Chart-level default env (base layer). Map of KEY: VALUE. Intended for values shared across many services via a base/umbrella chart. Merged into the `<fullname>-env` ConfigMap and loaded via `envFrom`.
+env: {}
+#   LOG_LEVEL: info
+#   AWS_REGION: eu-west-1
+
+# -- Per-deployment env overrides (top layer). Same shape as `env`; keys here override `env`. Intended for the final environment-specific values file (e.g. `values-prod.yaml`). Shares the same `<fullname>-env` ConfigMap.
+extraEnv: {}
+#   LOG_LEVEL: debug
+
+# -- Kubernetes-native `env` list for the main container (supports `valueFrom`). Rendered into `spec.containers[].env` via `tpl`, so values may reference Helm expressions. Entries here override keys coming from `envFrom`.
+envList: []
+#  - name: POD_NAME
+#    valueFrom:
+#      fieldRef:
+#        fieldPath: metadata.name
+#  - name: DB_PASSWORD
+#    valueFrom:
+#      secretKeyRef:
+#        name: "{{ .Release.Name }}-db"
+#        key: password
+
+# -- Extra `envFrom` entries (`configMapRef` / `secretRef`), each rendered through `tpl`. Optional `prefix` per source is supported.
+# Precedence (later wins within `envFrom`; `envList` always wins over all `envFrom`): (1) this list, (2) generated `<fullname>-env` from `env` + `extraEnv`, (3) External Secrets with `mountAsEnvFrom: true`, (4) `envList`.
+envFrom: []
+#  - configMapRef:
+#      name: "{{ .Release.Name }}-extra"
+#  - secretRef:
+#      name: "{{ .Release.Name }}-legacy"
+#    prefix: LEGACY_
+
+# External Secrets Operator: rendered only when ESO CRDs exist in the cluster.
+externalSecrets:
+  # -- Master switch (chart also skips rendering if ESO CRDs are not advertised)
+  enabled: true
+  # -- List of `ExternalSecret` specs; each item becomes one resource. Required per item: `name`, `secretStoreRef.name`. See commented examples below.
+  items: []
+  #  - name: secrets                      # required; used as resource suffix
+  #    refreshInterval: 1h                    # optional, default: 1h
+  #    secretStoreRef:
+  #      name: my-cluster-store               # required
+  #      kind: ClusterSecretStore             # optional, default: ClusterSecretStore
+  #    target:
+  #      name: ""                             # optional; defaults to "<fullname>-<name>"
+  #      creationPolicy: Owner                # optional, default: Owner
+  #    # Mount the resulting Secret into the Deployment's envFrom automatically
+  #    mountAsEnvFrom: false
+  #    # Pull the whole remote secret; each property becomes a key
+  #    dataFrom:
+  #      - extract:
+  #          key: /path/to/remote/secret
+  #    # And/or map properties one by one
+  #    data:
+  #      - secretKey: DB_PASSWORD
+  #        remoteRef:
+  #          key: /path/to/remote/secret
+  #          property: db_password
+
+# -- File-content ConfigMaps: each item becomes a `<fullname>-content-<nameSuffix>` ConfigMap with one data key (`fileName`). With `autoMount: true` (default), the chart adds a volume and volumeMount on the main container.
+configMapFromContent: []
+#  - nameSuffix: nginx              # required; resource suffix and volume name
+#    fileName: nginx.conf           # required; ConfigMap data key + default subPath
+#    content: |                     # required; raw file content (multi-line ok)
+#      server { listen 8080; }
+#    # Mount wiring (set autoMount: false to opt out and manage via extraVolumes/extraVolumeMounts)
+#    autoMount: true
+#    mountPath: /etc/nginx/nginx.conf  # required when autoMount is true
+#    subPath: ""                       # optional; defaults to fileName when mountPath ends with it
+#    readOnly: true
+#    defaultMode: 0444
+
+# HTTP health checks for the main container: tune paths and timings for how long your app needs before it can serve traffic and how aggressively to restart it.
+probes:
+  # -- Disable all three probes if your image has no HTTP listener or you manage health checks elsewhere (sidecar/service mesh).
+  enabled: true
+  livenessProbe:
+    # -- Let Kubernetes restart the pod when this check fails repeatedly (catches deadlocks and hung processes).
+    enabled: true
+    # -- URL path your app serves for a cheap 200 OK (must stay stable across releases).
+    path: /health
+    # -- Port name `http` aligns with this chart’s named container port; use a number only if you prefer matching `service.port` literally.
+    port: http
+    # -- Wait after container start before the first liveness check so slow JVM/Node boot does not trigger immediate kills.
+    initialDelaySeconds: 30
+    # -- How often kubelet re-runs the probe during steady state.
+    periodSeconds: 15
+    # -- Probe request timeout; keep below `periodSeconds` and above your worst-case handler latency.
+    timeoutSeconds: 5
+    # -- Consecutive successes needed to flip from failure to success (usually 1).
+    successThreshold: 1
+    # -- Consecutive failures before Kubernetes restarts the container.
+    failureThreshold: 3
+  readinessProbe:
+    # -- Remove the pod from Service endpoints while this fails so traffic does not hit a not-yet-ready instance.
+    enabled: true
+    # -- Readiness path can match liveness or be a lighter “dependencies up” endpoint.
+    path: /health
+    # -- Same port semantics as liveness: prefer the named `http` port for clarity with Services.
+    port: http
+    # -- Delay before readiness is evaluated so rolling updates do not send traffic mid-boot.
+    initialDelaySeconds: 30
+    # -- How often readiness is re-checked while the pod is running.
+    periodSeconds: 15
+    # -- Maximum time allowed for the readiness HTTP call.
+    timeoutSeconds: 5
+    # -- Successes required to mark ready after being unready.
+    successThreshold: 1
+    # -- Failures before the pod is marked NotReady (traffic stops without necessarily restarting the process).
+    failureThreshold: 3
+  startupProbe:
+    # -- Use during slow starts so liveness does not fire until startup succeeds; pair with conservative liveness `initialDelaySeconds` if needed.
+    enabled: true
+    # -- Endpoint that proves the application finished initialization (migrations, cache warmups, etc.).
+    path: /health
+    # -- Port for startup checks; same as other probes in most single-port services.
+    port: http
+    # -- No extra delay before the first startup probe (startup probe itself paces discovery).
+    initialDelaySeconds: 0
+    # -- Poll frequently during boot; increase if the probe is expensive.
+    periodSeconds: 10
+    # -- Per-attempt timeout for the startup HTTP GET.
+    timeoutSeconds: 5
+    # -- Successes to mark startup complete (typically 1).
+    successThreshold: 1
+    # -- Many failures are tolerated during boot; raise if very slow cold starts are normal in your environment.
+    failureThreshold: 30
+
+# Prometheus Operator integration (`ServiceMonitor`, `PodMonitor`, `PrometheusRule`).
+metrics:
+  serviceMonitor:
+    # -- Create a `ServiceMonitor` scraping this release's `Service`
+    enabled: true
+    # -- HTTP path scraped on the chosen Service port
+    path: /metrics
+    # -- Service port **name** to scrape (`http`, `metrics`, …); when empty, the chart defaults to `metrics` if a distinct metrics port exists, otherwise `http`
+    port: ""
+    # -- Prometheus scrape interval for this endpoint
+    scrapeInterval: 30s
+    # -- Prometheus scrape timeout
+    scrapeTimeout: 10s
+    # -- When true, set `honorLabels: true` on the scrape endpoint
+    honorLabels: false
+    # -- `relabelings` passed through to the `ServiceMonitor` endpoint spec
+    relabelings: []
+    # -- `metricRelabelings` passed through to the `ServiceMonitor` endpoint spec
+    metricRelabelings: []
+    # -- URL scheme for scraping (`http` or `https`)
+    scheme: http
+    labels:
+      # -- Value for the `release` label (Prometheus Operator often matches ServiceMonitors on `release: prometheus`)
+      release: prometheus
+
+  podMonitor:
+    # -- Create a `PodMonitor` scraping pod metrics endpoints
+    enabled: false
+    # -- HTTP path scraped on the pod
+    path: /metrics
+    # -- Pod port **name** to scrape; when empty, same defaulting logic as `metrics.serviceMonitor.port`
+    port: ""
+    # -- Prometheus scrape interval
+    scrapeInterval: 30s
+    # -- Prometheus scrape timeout
+    scrapeTimeout: 10s
+    # -- When true, set `honorLabels: true` on the scrape endpoint
+    honorLabels: false
+    # -- Endpoint `relabelings`
+    relabelings: []
+    # -- Endpoint `metricRelabelings`
+    metricRelabelings: []
+    # -- URL scheme for scraping
+    scheme: http
+    labels:
+      # -- Value for the `release` label used by Prometheus Operator to select this PodMonitor
+      release: prometheus
+
+  prometheusRule:
+    # -- When true and the cluster advertises `monitoring.coreos.com/v1`, create one `PrometheusRule` per `items[]` entry
+    enabled: false
+    # -- PrometheusRule definitions; each item needs at least `name` and `groups`. See commented example in this file and chart README.
+    items: []
+    #  - name: http-errors          # required; suffix for resource name
+    #    namespace: ""              # optional; defaults to .Release.Namespace
+    #    release: prometheus        # optional; metadata label for Prometheus Operator rule selector
+    #    groups:                    # required, >=1
+    #      - name: myapp.rules      # required
+    #        interval: 30s          # optional
+    #        partial_response_strategy: warn   # optional (Thanos Ruler)
+    #        rules:                 # required, >=1
+    #          - alert: HighErrorRate          # required if not `record`
+    #            expr: 'sum(rate(http_requests_total{status=~"5.."}[5m])) / sum(rate(http_requests_total[5m])) > 0.05'   # required
+    #            for: 5m                        # optional
+    #            severity: warning              # required for alerts -> labels.severity
+    #            labels: {}                     # optional; merged on top of {severity}
+    #            annotations:                   # required for alerts; `summary` required
+    #              summary: "High 5xx rate"
+    #              description: "..."
+    #              runbook_url: "..."
+    #          - record: job:http_errors:rate5m # required if not `alert`
+    #            expr: 'sum by (job) (rate(http_requests_total{status=~"5.."}[5m]))' # required
+    #            labels: {}                     # optional
+
+# Default SLOs (Pyrra `ServiceLevelObjective`) per enabled HTTPRoute variant.
+# Master switch: when false, no SLO manifests are created. When true, each kind is still gated by
+# `slos.availability.enabled` / `slos.latency.enabled`, plus `httpRoutes.enabled` and `pyrra.dev/v1alpha1`.
+slos:
+  # -- When false, disable all Pyrra SLO resources regardless of per-kind `enabled` flags.
+  enabled: true
+  # -- Optional shared team label (`pyrra.dev/team`); empty omits the label.
+  team: ""
+  # -- Shared Slack channel label (`pyrra.dev/slack_channel`); set to "" to omit the label.
+  slackChannel: situation_room
+
+  # Availability SLO: 5xx ratio over all requests.
+  availability:
+    # -- When true, create an availability SLO for each enabled HTTPRoute variant.
+    enabled: true
+    # -- SLO target percentage (e.g. 99.5 means 99.5% of requests must be non-5xx over the window).
+    target: 99.5
+    # -- Rolling evaluation window (Pyrra `spec.window`).
+    window: 4w
+
+  # Latency SLO: fraction of requests served under `threshold` milliseconds.
+  latency:
+    # -- When true, create a latency SLO for each enabled HTTPRoute variant.
+    enabled: true
+    # -- SLO target percentage.
+    target: 99
+    # -- Rolling evaluation window (Pyrra `spec.window`).
+    window: 4w
+    # -- Upper bound in milliseconds. MUST match an existing `le` bucket on Envoy's histogram (e.g. 250, 500, 1000).
+    threshold: "500"
+
+# Workload `ServiceAccount`.
+serviceAccount:
+  # -- When true, create a dedicated `ServiceAccount`
+  create: false
+  # -- Automount API credentials into the pod
+  automount: true
+  # -- Service account name to use (when `create: false`, must exist); when empty, the chart derives a name from the release
+  name: ""
+  # -- Annotations on the `ServiceAccount`
+  annotations: {}
+
+# -- Pod affinity / anti-affinity (full `spec.template.spec.affinity` object)
+affinity: {}
+
+# -- Topology spread constraints (full `spec.template.spec.topologySpreadConstraints` list)
+topologySpreadConstraints: []
+
+# -- Node selector for pods (`spec.template.spec.nodeSelector`)
+nodeSelector: {}
+
+# -- Pod tolerations
+tolerations: []
+
+# PodDisruptionBudget for the workload.
+pdb:
+  # -- When true, create a `PodDisruptionBudget` for this workload
+  enabled: false
+  # -- Minimum pods that must remain available during voluntary disruptions (integer or percentage string)
+  minAvailable: 1
+  # -- Maximum pods that may be unavailable (integer or percentage); empty string omits this field
+  maxUnavailable: ""
+
+# Pod-level `securityContext` (defaults are non-root friendly).
+podSecurityContext:
+  # -- Run the pod as a non-root user
+  runAsNonRoot: true
+  # -- Numeric user ID for the pod
+  runAsUser: 101
+  # -- Supplemental group for volumes
+  fsGroup: 101
+  seccompProfile:
+    # -- Seccomp profile type (`RuntimeDefault`, `Localhost`, or `Unconfined`)
+    type: RuntimeDefault
+
+# Main container `securityContext`.
+containerSecurityContext:
+  # -- Disallow privilege escalation
+  allowPrivilegeEscalation: false
+  # -- Mount the root filesystem read-only
+  readOnlyRootFilesystem: true
+  capabilities:
+    # -- Linux capabilities to drop (default drops all)
+    drop:
+      - ALL
+
+# Optional `NetworkPolicy` (no wide-open policy is created when disabled).
+networkPolicy:
+  # -- When true, create a `NetworkPolicy` using `ingressRules` / `egressRules`
+  enabled: false
+  # -- Ingress rule list passed into the chart template (`[]` means no extra ingress rules beyond template defaults)
+  ingressRules: []
+  # -- Egress rule list
+  egressRules: []
+
+# -- Minimum seconds a pod must be ready before it counts toward available replicas (`minReadySeconds` on the Deployment)
+minReadySeconds: 0
+
+# -- How many old ReplicaSets to retain for rollback (`revisionHistoryLimit`)
+revisionHistoryLimit: 3
+
+# -- Pod termination grace period in seconds
+terminationGracePeriodSeconds: 60
+
+# -- Extra init containers appended to the pod (`tpl` supported where the chart wires it)
+extraInitContainers: []
+
+# -- Extra sidecar containers in the pod
+extraContainers: []
+
+# -- Extra pod volumes
+extraVolumes: []
+
+# -- Extra volume mounts on the main container
+extraVolumeMounts: []
+
+# -- Additional arbitrary manifests (list of YAML maps or YAML strings); each item is passed through `tpl`
+extraObjects: []

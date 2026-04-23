@@ -1,0 +1,39 @@
+{{- if .Values.networkPolicy.enabled }}
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ include "empathy-service.fullname" . }}
+  labels:
+    {{- include "empathy-service.labels" . | nindent 4 }}
+spec:
+  podSelector:
+    matchLabels:
+      {{- include "empathy-service.selectorLabels" . | nindent 6 }}
+  {{- if or .Values.networkPolicy.ingressRules .Values.networkPolicy.egressRules }}
+  policyTypes:
+    {{- if .Values.networkPolicy.ingressRules }}
+    - Ingress
+    {{- end }}
+    {{- if .Values.networkPolicy.egressRules }}
+    - Egress
+    {{- end }}
+  {{- end }}
+  {{- if .Values.networkPolicy.ingressRules }}
+  ingress:
+    {{- range $rule := .Values.networkPolicy.ingressRules }}
+    - from:
+        {{- toYaml $rule.selectors | nindent 8 }}
+      ports:
+        {{- toYaml $rule.ports | nindent 8 }}
+    {{- end }}
+  {{- end }}
+  {{- if .Values.networkPolicy.egressRules }}
+  egress:
+    {{- range $rule := .Values.networkPolicy.egressRules }}
+    - to:
+        {{- toYaml $rule.selectors | nindent 8 }}
+      ports:
+        {{- toYaml $rule.ports | nindent 8 }}
+    {{- end }}
+  {{- end }}
+{{- end }}

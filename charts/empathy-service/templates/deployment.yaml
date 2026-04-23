@@ -1,0 +1,167 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "empathy-service.fullname" . }}
+  labels:
+    {{- include "empathy-service.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  minReadySeconds: {{ .Values.minReadySeconds }}
+  revisionHistoryLimit: {{ .Values.revisionHistoryLimit }}
+  selector:
+    matchLabels:
+      {{- include "empathy-service.selectorLabels" . | nindent 6 }}
+  {{- with .Values.strategy }}
+  strategy:
+    type: {{ .type }}
+    {{- if and (eq .type "RollingUpdate") .rollingUpdate }}
+    rollingUpdate:
+      {{- toYaml .rollingUpdate | nindent 6 }}
+    {{- end }}
+  {{- end }}
+  template:
+    metadata:
+      {{- $envData := include "empathy-service.envMergedYaml" . | fromYaml -}}
+      {{- $envList := .Values.envList | default list -}}
+      {{- $podAnn := dict }}
+      {{- if or (gt (len $envData) 0) (gt (len $envList) 0) }}
+      {{- $_ := set $podAnn "checksum/env" (toYaml (dict "map" $envData "list" $envList) | sha256sum) }}
+      {{- end }}
+      {{- if gt (len $podAnn) 0 }}
+      annotations:
+        {{- toYaml $podAnn | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "empathy-service.selectorLabels" . | nindent 8 }}
+        {{- include "empathy-service.costLabels" . | nindent 8 }}
+    spec:
+      terminationGracePeriodSeconds: {{ .Values.terminationGracePeriodSeconds }}
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "empathy-service.serviceAccountName" . }}
+      {{- with .Values.podSecurityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.extraInitContainers }}
+      initContainers:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: {{ include "empathy-service.fullname" . }}
+          {{- with .Values.containerSecurityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          image: {{ include "empathy-service.image" . }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          {{- with .Values.envList }}
+          env:
+            {{- tpl (toYaml .) $ | nindent 12 }}
+          {{- end }}
+          {{- $extSecretEnvFrom := include "empathy-service.externalSecretEnvFromYaml" . | trim }}
+          {{- $hasEnvConfigMap := gt (len $envData) 0 }}
+          {{- $hasEnvFrom := or .Values.envFrom $hasEnvConfigMap $extSecretEnvFrom }}
+          {{- if $hasEnvFrom }}
+          envFrom:
+            {{- with .Values.envFrom }}
+            {{- tpl (toYaml .) $ | nindent 12 }}
+            {{- end }}
+            {{- if $hasEnvConfigMap }}
+            - configMapRef:
+                name: {{ include "empathy-service.fullname" . }}-env
+            {{- end }}
+            {{- if $extSecretEnvFrom }}
+            {{- $extSecretEnvFrom | nindent 12 }}
+            {{- end }}
+          {{- end }}
+          ports:
+            {{- range (include "empathy-service.ports" . | fromYamlArray) }}
+            - name: {{ .name }}
+              containerPort: {{ .containerPort }}
+              protocol: {{ .protocol }}
+            {{- end }}
+          {{- if .Values.probes.enabled}}
+          {{- if .Values.probes.livenessProbe.enabled }}
+          livenessProbe:
+            httpGet:
+              path: {{ .Values.probes.livenessProbe.path | default "/health" }}
+              port: {{ .Values.probes.livenessProbe.port | default "http" }}
+            initialDelaySeconds: {{ .Values.probes.livenessProbe.initialDelaySeconds | default 30 }}
+            periodSeconds: {{ .Values.probes.livenessProbe.periodSeconds | default 15 }}
+            timeoutSeconds: {{ .Values.probes.livenessProbe.timeoutSeconds | default 5 }}
+            successThreshold: {{ .Values.probes.livenessProbe.successThreshold | default 1 }}
+            failureThreshold: {{ .Values.probes.livenessProbe.failureThreshold | default 3 }}
+          {{- end }}
+          {{- if .Values.probes.readinessProbe.enabled }}
+          readinessProbe:
+            httpGet:
+              path: {{ .Values.probes.readinessProbe.path | default "/health" }}
+              port: {{ .Values.probes.readinessProbe.port | default "http" }}
+            initialDelaySeconds: {{ .Values.probes.readinessProbe.initialDelaySeconds | default 30 }}
+            periodSeconds: {{ .Values.probes.readinessProbe.periodSeconds | default 15 }}
+            timeoutSeconds: {{ .Values.probes.readinessProbe.timeoutSeconds | default 5 }}
+            successThreshold: {{ .Values.probes.readinessProbe.successThreshold | default 1 }}
+            failureThreshold: {{ .Values.probes.readinessProbe.failureThreshold | default 3 }}
+          {{- end }}
+          {{- if .Values.probes.startupProbe.enabled }}
+          startupProbe:
+            httpGet:
+              path: {{ .Values.probes.startupProbe.path | default "/health" }}
+              port: {{ .Values.probes.startupProbe.port | default "http" }}
+            initialDelaySeconds: {{ .Values.probes.startupProbe.initialDelaySeconds | default 0 }}
+            periodSeconds: {{ .Values.probes.startupProbe.periodSeconds | default 10 }}
+            timeoutSeconds: {{ .Values.probes.startupProbe.timeoutSeconds | default 5 }}
+            successThreshold: {{ .Values.probes.startupProbe.successThreshold | default 1 }}
+            failureThreshold: {{ .Values.probes.startupProbe.failureThreshold | default 30 }}
+          {{- end }}
+          {{- end }}
+          {{- with .Values.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- $contentMounts := include "empathy-service.contentVolumeMountsYaml" . | trim }}
+          {{- $extraMounts := .Values.extraVolumeMounts | default list }}
+          {{- if or $contentMounts (gt (len $extraMounts) 0) }}
+          volumeMounts:
+            {{- if $contentMounts }}
+            {{- $contentMounts | nindent 12 }}
+            {{- end }}
+            {{- if gt (len $extraMounts) 0 }}
+            {{- toYaml $extraMounts | nindent 12 }}
+            {{- end }}
+          {{- end }}
+        {{- with .Values.extraContainers }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.topologySpreadConstraints }}
+      topologySpreadConstraints:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- $contentVols := include "empathy-service.contentVolumesYaml" . | trim }}
+      {{- $extraVols := .Values.extraVolumes | default list }}
+      {{- if or $contentVols (gt (len $extraVols) 0) }}
+      volumes:
+        {{- if $contentVols }}
+        {{- $contentVols | nindent 8 }}
+        {{- end }}
+        {{- if gt (len $extraVols) 0 }}
+        {{- toYaml $extraVols | nindent 8 }}
+        {{- end }}
+      {{- end }}

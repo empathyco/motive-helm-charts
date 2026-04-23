@@ -1,0 +1,42 @@
+{{- if and .Values.slos.enabled .Values.slos.availability.enabled .Values.httpRoutes.enabled (.Capabilities.APIVersions.Has "pyrra.dev/v1alpha1") -}}
+{{- $ns := .Release.Namespace -}}
+{{- $fullname := include "empathy-service.fullname" . -}}
+{{- range $variant := list "internal" "public" }}
+{{- $cfg := index $.Values.httpRoutes $variant }}
+{{- if $cfg.enabled }}
+{{- $cluster := printf "httproute/%s/%s-%s/rule/[0-9]+" $ns $fullname $variant }}
+---
+apiVersion: pyrra.dev/v1alpha1
+kind: ServiceLevelObjective
+metadata:
+  name: {{ $fullname }}-{{ $variant }}-availability
+  namespace: {{ $ns }}
+  labels:
+    {{- include "empathy-service.labels" $ | nindent 4 }}
+    prometheus: k8s
+    role: alert-rules
+    release: prometheus
+    {{- with $.Values.slos.team }}
+    pyrra.dev/team: {{ . | quote }}
+    {{- end }}
+    {{- with $.Values.slos.slackChannel }}
+    pyrra.dev/slack_channel: {{ . | quote }}
+    {{- end }}
+spec:
+  alerting:
+    name: {{ $fullname }} - {{ $variant }} - availability - ErrorBudgetBurn
+    absent: true
+    burnrates: true
+    disabled: false
+  description: "5xx availability for HTTPRoute {{ $fullname }}-{{ $variant }}"
+  indicator:
+    ratio:
+      errors:
+        metric: {{ printf "envoy_cluster_upstream_rq_xx{envoy_cluster_name=~%q, envoy_response_code_class=%q}" $cluster "5" | quote }}
+      total:
+        metric: {{ printf "envoy_cluster_upstream_rq_total{envoy_cluster_name=~%q}" $cluster | quote }}
+  target: "{{ $.Values.slos.availability.target | default 99.5 }}"
+  window: "{{ $.Values.slos.availability.window | default "4w" }}"
+{{- end }}
+{{- end }}
+{{- end }}
