@@ -1,5 +1,29 @@
 apiVersion: v1
 entries:
+  empathy-service:
+  - annotations:
+      artifacthub.io/category: platform
+      artifacthub.io/changes: |
+        - kind: added
+          description: Initial release of empathy-service generic chart.
+    apiVersion: v2
+    appVersion: 0.1.0
+    created: "2026-04-23T11:30:01.015874963Z"
+    description: Generic Helm chart for deploying Empathy services on Kubernetes.
+    digest: f73fca0c436daacb4012301ac779d145a61e51c15119e0d00e1aa81ade663e66
+    home: https://github.com/empathyco/motive-helm-charts
+    icon: https://raw.githubusercontent.com/cncf/artwork/main/projects/kubernetes/icon/color/kubernetes-icon-color.png
+    kubeVersion: '>=1.25.0-0'
+    maintainers:
+    - name: Empathy Platform
+      url: https://www.empathy.co/
+    name: empathy-service
+    sources:
+    - https://github.com/empathyco/motive-helm-charts/tree/main/charts/empathy-service
+    type: application
+    urls:
+    - https://github.com/empathyco/motive-helm-charts/releases/download/empathy-service-0.1.0/empathy-service-0.1.0.tgz
+    version: 0.1.0
   motive-cache:
   - apiVersion: v2
     appVersion: 1.0.0
@@ -894,4 +918,4 @@ entries:
     urls:
     - https://github.com/empathyco/motive-helm-charts/releases/download/multi-service-0.3.1/multi-service-0.3.1.tgz
     version: 0.3.1
-generated: "2026-04-21T11:06:46.85643957Z"
+generated: "2026-04-23T11:30:01.016079205Z"
