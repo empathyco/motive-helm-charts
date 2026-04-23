@@ -377,8 +377,11 @@ metrics:
     #            labels: {}                     # optional
 
 # Default SLOs (Pyrra `ServiceLevelObjective`) per enabled HTTPRoute variant.
-# Each kind is gated by its own `enabled` flag, `httpRoutes.enabled`, and `pyrra.dev/v1alpha1`.
+# Master switch: when false, no SLO manifests are created. When true, each kind is still gated by
+# `slos.availability.enabled` / `slos.latency.enabled`, plus `httpRoutes.enabled` and `pyrra.dev/v1alpha1`.
 slos:
+  # -- When false, disable all Pyrra SLO resources regardless of per-kind `enabled` flags.
+  enabled: true
   # -- Optional shared team label (`pyrra.dev/team`); empty omits the label.
   team: ""
   # -- Shared Slack channel label (`pyrra.dev/slack_channel`); set to "" to omit the label.

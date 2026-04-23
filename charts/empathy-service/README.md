@@ -202,6 +202,7 @@ Kubernetes: `>=1.25.0-0`
 | slos.availability.enabled | bool | `true` | When true, create an availability SLO for each enabled HTTPRoute variant. |
 | slos.availability.target | float | `99.5` | SLO target percentage (e.g. 99.5 means 99.5% of requests must be non-5xx over the window). |
 | slos.availability.window | string | `"4w"` | Rolling evaluation window (Pyrra `spec.window`). |
+| slos.enabled | bool | `true` | When false, disable all Pyrra SLO resources regardless of per-kind `enabled` flags. |
 | slos.latency.enabled | bool | `true` | When true, create a latency SLO for each enabled HTTPRoute variant. |
 | slos.latency.target | int | `99` | SLO target percentage. |
 | slos.latency.threshold | string | `"500"` | Upper bound in milliseconds. MUST match an existing `le` bucket on Envoy's histogram (e.g. 250, 500, 1000). |
@@ -239,7 +240,7 @@ externalSecrets:
 
 ### Default HTTPRoute SLOs (Pyrra)
 
-When `httpRoutes.enabled` is true and the Pyrra CRD is available (`pyrra.dev/v1alpha1`), the chart can create **one availability SLO** and/or **one latency SLO** per enabled HTTPRoute variant (`internal` and/or `public`), controlled independently by `slos.availability.enabled` and `slos.latency.enabled`. Shared labels: optional `slos.team` (`pyrra.dev/team`) and `slos.slackChannel` (`pyrra.dev/slack_channel`).
+When `slos.enabled` is true, `httpRoutes.enabled` is true, and the Pyrra CRD is available (`pyrra.dev/v1alpha1`), the chart can create **one availability SLO** and/or **one latency SLO** per enabled HTTPRoute variant (`internal` and/or `public`). Per-kind flags: `slos.availability.enabled` and `slos.latency.enabled` (both ignored when `slos.enabled` is false). Shared labels: optional `slos.team` (`pyrra.dev/team`) and `slos.slackChannel` (`pyrra.dev/slack_channel`).
 
 **Availability** (ratio): Envoy upstream metrics scoped to `envoy_cluster_name=~"httproute/<namespace>/<release-fullname>-<variant>/rule/[0-9]+"`:
 
@@ -253,10 +254,11 @@ When `httpRoutes.enabled` is true and the Pyrra CRD is available (`pyrra.dev/v1a
 
 For `helm template` without Pyrra advertised, pass e.g. `--api-versions pyrra.dev/v1alpha1` to see the manifests.
 
-**Breaking change:** `slos.enabled` / `slos.target` / `slos.window` moved under `slos.availability.*`. The old `slos.items[]` API remains removed.
+**Breaking change:** the legacy single `slos.target` / `slos.window` (pre-availability split) moved under `slos.availability.*`. The old `slos.items[]` API remains removed. The name `slos.enabled` now refers to the **global** SLO master switch; availability and latency each have their own `enabled` under `slos.availability` and `slos.latency`.
 
 ```yaml
 slos:
+  enabled: true
   team: ""
   slackChannel: situation_room
   availability:

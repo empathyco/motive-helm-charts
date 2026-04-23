@@ -1,6 +1,6 @@
-{{- if and .Values.slos.latency.enabled .Values.httpRoutes.enabled (.Capabilities.APIVersions.Has "pyrra.dev/v1alpha1") -}}
+{{- if and .Values.slos.enabled .Values.slos.latency.enabled .Values.httpRoutes.enabled (.Capabilities.APIVersions.Has "pyrra.dev/v1alpha1") -}}
 {{- $threshold := .Values.slos.latency.threshold | toString }}
-{{- if eq $threshold "" }}{{- fail "slos.latency.threshold is required when slos.latency.enabled" }}{{- end }}
+{{- if eq $threshold "" }}{{- fail "slos.latency.threshold is required when slos.enabled and slos.latency.enabled" }}{{- end }}
 {{- $ns := .Release.Namespace -}}
 {{- $fullname := include "empathy-service.fullname" . -}}
 {{- range $variant := list "internal" "public" }}

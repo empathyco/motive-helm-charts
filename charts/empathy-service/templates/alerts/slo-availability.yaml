@@ -1,4 +1,4 @@
-{{- if and .Values.slos.availability.enabled .Values.httpRoutes.enabled (.Capabilities.APIVersions.Has "pyrra.dev/v1alpha1") -}}
+{{- if and .Values.slos.enabled .Values.slos.availability.enabled .Values.httpRoutes.enabled (.Capabilities.APIVersions.Has "pyrra.dev/v1alpha1") -}}
 {{- $ns := .Release.Namespace -}}
 {{- $fullname := include "empathy-service.fullname" . -}}
 {{- range $variant := list "internal" "public" }}
