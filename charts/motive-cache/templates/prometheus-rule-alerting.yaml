@@ -47,7 +47,7 @@ spec:
           expr: sum(kube_pod_status_ready{namespace="{{ $.Release.Namespace }}", pod=~"{{ include "motive-cache.fullname" . }}-.+", condition="true"}) == 0
           for: 0m
           labels:
-            severity: critical
+            severity: warning
             {{- with $.Values.metrics.prometheusRule.defaultAlerts.team }}
             team: {{ . | quote }}
             {{- end }}
