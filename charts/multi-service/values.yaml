@@ -578,6 +578,22 @@ rollouts:
         # -- TBD
         trafficSplitName: ""
 
+      # Kubernetes Gateway API (Envoy Gateway) traffic routing via the
+      # argoproj-labs/gatewayAPI Argo Rollouts plugin. Mutually exclusive with
+      # nginx and smi. Requires the gatewayAPI plugin installed in the cluster
+      # (argo-rollouts addon) and an HTTPRoute containing both the stable and the
+      # canary service as weighted backendRefs in the same rule.
+      gatewayAPI:
+        # -- @default -- false
+        enabled: false
+        # -- Single HTTPRoute name. Used when httpRoutes is empty. If empty and
+        # httpRoute.enabled is true, the chart rendered route (<fullname>) is used.
+        httpRoute: ""
+        # -- List of HTTPRoute names.
+        httpRoutes: []
+        # -- Namespace of the HTTPRoutes. Defaults to the release namespace.
+        namespace: ""
+
   blueGreen:
     # -- Specify rollout blue-green enablement
     # @default -- `false`

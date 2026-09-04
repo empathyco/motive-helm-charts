@@ -478,6 +478,24 @@ ingress:
       #      - chart-example.local
 
 
+# HTTPRoute (Gateway API / Envoy Gateway)
+# -- --------------
+
+
+# HTTPRoute (Gateway API) exposure for the app. Use it as a replacement for the
+# Ingress objects when the cluster routes traffic through the Envoy Gateway.
+# When enabled, the matching ingress (public/internal) must be disabled.
+httpRoute:
+  # -- Enable HTTPRoute rendering for the hosts defined in ingress.public / ingress.internal.
+  # @default -- false
+  enabled: false
+  # -- Gateway (parentRef) the HTTPRoute attaches to.
+  gateway:
+    # -- Gateway name, e.g. public-envoy-gateway / internal-envoy-gateway.
+    name: ""
+    # -- Gateway namespace. Defaults to the release namespace (use kube-system for cluster gateways).
+    namespace: ""
+
 
 # -- --------------
 # Monitoring
@@ -750,6 +768,24 @@ rollouts:
         rootService: ""
         # -- TBD
         trafficSplitName: ""
+
+      # Kubernetes Gateway API (Envoy Gateway) traffic routing via the
+      # argoproj-labs/gatewayAPI Argo Rollouts plugin. Mutually exclusive with
+      # nginx and smi. Requires the gatewayAPI plugin installed in the cluster
+      # (argo-rollouts addon) and HTTPRoutes containing both the stable and the
+      # canary service as weighted backendRefs in the same rule.
+      gatewayAPI:
+        # -- @default -- false
+        enabled: false
+        # -- Single HTTPRoute name. Used when httpRoutes is empty and no route can be
+        # auto-derived from the ingress hosts.
+        httpRoute: ""
+        # -- List of HTTPRoute names. If empty, routes are auto-derived from the
+        # ingress.public / ingress.internal hosts rendered by http-route.yaml
+        # (<fullname>-public / <fullname>-internal).
+        httpRoutes: []
+        # -- Namespace of the HTTPRoutes. Defaults to the release namespace.
+        namespace: ""
 
   analysis:
     #-- Analysis during rollout

@@ -1,0 +1,106 @@
+{{- if and .Values.httpRoute.enabled (.Capabilities.APIVersions.Has "gateway.networking.k8s.io/v1") }}
+{{- $gwName := required "httpRoute.gateway.name is required when httpRoute.enabled is true" .Values.httpRoute.gateway.name }}
+{{- $gwNs := default .Release.Namespace .Values.httpRoute.gateway.namespace }}
+{{- $canary := and .Values.rollouts.enabled .Values.rollouts.canary.enabled }}
+{{- if and .Values.httpRoute.enabled .Values.ingress.public.enabled }}
+{{- fail "httpRoute.enabled is true but ingress.public.enabled is also true: disable the nginx ingress when using the HTTPRoute" }}
+{{- end }}
+{{- if and .Values.httpRoute.enabled .Values.ingress.internal.enabled }}
+{{- fail "httpRoute.enabled is true but ingress.internal.enabled is also true: disable the nginx ingress when using the HTTPRoute" }}
+{{- end }}
+{{- $renderPublic := and (not .Values.ingress.public.split) .Values.ingress.public.hosts }}
+{{- $renderInternal := and (not .Values.ingress.internal.split) .Values.ingress.internal.hosts }}
+{{- if not (or $renderPublic $renderInternal) }}
+{{- fail "httpRoute.enabled is true but no ingress.public/ingress.internal hosts are defined" }}
+{{- end }}
+{{- if $renderPublic }}
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: {{ include "motive-service.fullname" . }}-public
+  labels:
+    {{- include "motive-service.serviceLabels" . | nindent 4 }}
+spec:
+  parentRefs:
+    - name: {{ $gwName }}
+      {{- if ne $gwNs .Release.Namespace }}
+      namespace: {{ $gwNs }}
+      {{- end }}
+  hostnames:
+    {{- range .Values.ingress.public.hosts }}
+    - {{ .host | quote }}
+    {{- end }}
+  rules:
+    {{- $paths := list }}
+    {{- range .Values.ingress.public.hosts }}
+    {{- range .paths }}
+    {{- if not (has .path $paths) }}
+    {{- $paths = append $paths .path }}
+    {{- end }}
+    {{- end }}
+    {{- end }}
+    {{- range $paths }}
+    - matches:
+        - path:
+            type: PathPrefix
+            value: {{ . }}
+      backendRefs:
+        - name: {{ include "motive-service.fullname" $ }}
+          kind: Service
+          port: 8080
+          weight: 100
+        {{- if $canary }}
+        - name: {{ include "motive-service.fullname" $ }}-canary
+          kind: Service
+          port: 8080
+          weight: 0
+        {{- end }}
+    {{- end }}
+{{- end }}
+{{- if $renderInternal }}
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: {{ include "motive-service.fullname" . }}-internal
+  labels:
+    {{- include "motive-service.serviceLabels" . | nindent 4 }}
+spec:
+  parentRefs:
+    - name: {{ $gwName }}
+      {{- if ne $gwNs .Release.Namespace }}
+      namespace: {{ $gwNs }}
+      {{- end }}
+  hostnames:
+    {{- range .Values.ingress.internal.hosts }}
+    - {{ .host | quote }}
+    {{- end }}
+  rules:
+    {{- $paths := list }}
+    {{- range .Values.ingress.internal.hosts }}
+    {{- range .paths }}
+    {{- if not (has .path $paths) }}
+    {{- $paths = append $paths .path }}
+    {{- end }}
+    {{- end }}
+    {{- end }}
+    {{- range $paths }}
+    - matches:
+        - path:
+            type: PathPrefix
+            value: {{ . }}
+      backendRefs:
+        - name: {{ include "motive-service.fullname" $ }}
+          kind: Service
+          port: 8080
+          weight: 100
+        {{- if $canary }}
+        - name: {{ include "motive-service.fullname" $ }}-canary
+          kind: Service
+          port: 8080
+          weight: 0
+        {{- end }}
+    {{- end }}
+{{- end }}
+{{- end }}
