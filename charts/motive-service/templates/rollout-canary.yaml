@@ -143,7 +143,24 @@ spec:
       # Traffic routing specifies the ingress controller or service mesh configuration to achieve advanced traffic
       # splitting. If omitted, will achieve traffic split via a weighted replica counts between the canary and stable ReplicaSet.
       trafficRouting:
-        {{- if .Values.rollouts.canary.trafficRouting.nginx.enabled }}
+        {{- $tr := .Values.rollouts.canary.trafficRouting }}
+        {{- $enabledRouters := 0 }}
+        {{- if $tr.nginx.enabled }}
+        {{- $enabledRouters = add $enabledRouters 1 }}
+        {{- end }}
+        {{- if $tr.smi.enabled }}
+        {{- $enabledRouters = add $enabledRouters 1 }}
+        {{- end }}
+        {{- if $tr.gatewayAPI.enabled }}
+        {{- $enabledRouters = add $enabledRouters 1 }}
+        {{- end }}
+        {{- if gt $enabledRouters 1 }}
+        {{- fail "rollouts.canary.trafficRouting: only one of nginx, smi and gatewayAPI can be enabled" }}
+        {{- end }}
+        {{- if and $tr.gatewayAPI.enabled (or .Values.rollouts.analysis.promotionAnalysis.errorRequests.enabled .Values.rollouts.analysis.promotionAnalysis.latency.enabled) }}
+        {{- fail "rollouts.analysis.promotionAnalysis (nginx based) is not compatible with trafficRouting.gatewayAPI; use rollouts.canary.analysis instead" }}
+        {{- end }}
+        {{- if $tr.nginx.enabled }}
         # NGINX Ingress Controller routing configuration
         nginx:
           stableIngresses: # required
@@ -154,23 +171,60 @@ spec:
             - {{ include "motive-service.fullname" $ }}-internal
             {{- end }}
 
-          {{ with .Values.rollouts.canary.trafficRouting.nginx.annotationPrefix }}
+          {{ with $tr.nginx.annotationPrefix }}
           annotationPrefix: {{ . }} # optional
           {{- end }}
-          {{- with .Values.rollouts.canary.trafficRouting.nginx.additionalIngressAnnotations }}
+          {{- with $tr.nginx.additionalIngressAnnotations }}
           additionalIngressAnnotations: # optional
             {{- toYaml . | nindent 12 }}
           {{- end }}
         {{- end }}
 
-        {{- if .Values.rollouts.canary.trafficRouting.smi.enabled }}
+        {{- if $tr.smi.enabled }}
         # Service Mesh Interface routing configuration
         smi:
-          {{ with .Values.rollouts.canary.trafficRouting.smi.rootService }}
+          {{ with $tr.smi.rootService }}
           rootService: {{ . }} # optional
           {{- end }}
-          {{ with .Values.rollouts.canary.trafficRouting.smi.trafficSplitName }}
+          {{ with $tr.smi.trafficSplitName }}
           trafficSplitName: {{ . }} # optional
           {{- end }}
+        {{- end }}
+
+        {{- if $tr.gatewayAPI.enabled }}
+        # Kubernetes Gateway API (Envoy Gateway) routing via the argoproj-labs/gatewayAPI
+        # Argo Rollouts plugin. Each referenced HTTPRoute must contain both the stable
+        # and the canary service as weighted backendRefs in the same rule; the plugin
+        # rewrites the weights during the canary.
+        plugins:
+          "argoproj-labs/gatewayAPI":
+            {{- with $tr.gatewayAPI.httpRoutes }}
+            httpRoutes:
+              {{- range . }}
+              - {{ . }}
+              {{- end }}
+            {{- else }}
+            {{- $autoRoutes := list }}
+            {{- if and (not .Values.ingress.public.split) .Values.ingress.public.hosts }}
+            {{- $autoRoutes = append $autoRoutes (printf "%s-public" (include "motive-service.fullname" $)) }}
+            {{- end }}
+            {{- if and (not .Values.ingress.internal.split) .Values.ingress.internal.hosts }}
+            {{- $autoRoutes = append $autoRoutes (printf "%s-internal" (include "motive-service.fullname" $)) }}
+            {{- end }}
+            {{- if $autoRoutes }}
+            {{- if not .Values.httpRoute.enabled }}
+            {{- fail "rollouts.canary.trafficRouting.gatewayAPI: auto-derived HTTPRoutes require httpRoute.enabled: true" }}
+            {{- end }}
+            httpRoutes:
+              {{- range $autoRoutes }}
+              - {{ . }}
+              {{- end }}
+            {{- else }}
+            httpRoute: {{ required "rollouts.canary.trafficRouting.gatewayAPI.httpRoute (or httpRoutes) is required when gatewayAPI is enabled" $tr.gatewayAPI.httpRoute }}
+            {{- end }}
+            {{- end }}
+            {{- with $tr.gatewayAPI.namespace }}
+            namespace: {{ . }}
+            {{- end }}
         {{- end }}
 {{- end }}
