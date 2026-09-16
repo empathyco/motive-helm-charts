@@ -487,14 +487,23 @@ ingress:
 # When enabled, the matching ingress (public/internal) must be disabled.
 httpRoute:
   # -- Enable HTTPRoute rendering for the hosts defined in ingress.public / ingress.internal.
+  # Paths keep their ingress portName (http -> 8080, metrics -> 8081).
   # @default -- false
   enabled: false
-  # -- Gateway (parentRef) the HTTPRoute attaches to.
+  # -- Gateway (parentRef) the public HTTPRoute attaches to.
   gateway:
-    # -- Gateway name, e.g. public-envoy-gateway / internal-envoy-gateway.
+    # -- Gateway name, e.g. public-envoy-gateway / motive-public-envoy-gateway.
     name: ""
     # -- Gateway namespace. Defaults to the release namespace (use kube-system for cluster gateways).
     namespace: ""
+  internal:
+    # -- Gateway (parentRef) the internal HTTPRoute attaches to.
+    # Defaults to httpRoute.gateway when not set.
+    gateway:
+      # -- Gateway name, e.g. internal-envoy-gateway / motive-internal-envoy-gateway.
+      name: ""
+      # -- Gateway namespace. Defaults to httpRoute.gateway.namespace.
+      namespace: ""
 
 
 # -- --------------
