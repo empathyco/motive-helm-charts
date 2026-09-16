@@ -1,6 +1,8 @@
 {{- if and .Values.httpRoute.enabled (.Capabilities.APIVersions.Has "gateway.networking.k8s.io/v1") }}
 {{- $gwName := required "httpRoute.gateway.name is required when httpRoute.enabled is true" .Values.httpRoute.gateway.name }}
 {{- $gwNs := default .Release.Namespace .Values.httpRoute.gateway.namespace }}
+{{- $gwIntName := default $gwName .Values.httpRoute.internal.gateway.name }}
+{{- $gwIntNs := default $gwNs .Values.httpRoute.internal.gateway.namespace }}
 {{- $canary := and .Values.rollouts.enabled .Values.rollouts.canary.enabled }}
 {{- if and .Values.httpRoute.enabled .Values.ingress.public.enabled }}
 {{- fail "httpRoute.enabled is true but ingress.public.enabled is also true: disable the nginx ingress when using the HTTPRoute" }}
@@ -32,28 +34,36 @@ spec:
     - {{ .host | quote }}
     {{- end }}
   rules:
-    {{- $paths := list }}
+    {{- $entries := list }}
     {{- range .Values.ingress.public.hosts }}
     {{- range .paths }}
-    {{- if not (has .path $paths) }}
-    {{- $paths = append $paths .path }}
+    {{- $port := 8080 }}
+    {{- if eq (.portName | default "http") "metrics" }}
+    {{- $port = 8081 }}
+    {{- end }}
+    {{- $entry := printf "%s#%v" .path $port }}
+    {{- if not (has $entry $entries) }}
+    {{- $entries = append $entries $entry }}
     {{- end }}
     {{- end }}
     {{- end }}
-    {{- range $paths }}
+    {{- range $entries }}
+    {{- $split := splitList "#" . }}
+    {{- $path := first $split }}
+    {{- $port := last $split }}
     - matches:
         - path:
             type: PathPrefix
-            value: {{ . }}
+            value: {{ $path }}
       backendRefs:
         - name: {{ include "motive-service.fullname" $ }}
           kind: Service
-          port: 8080
+          port: {{ $port }}
           weight: 100
         {{- if $canary }}
         - name: {{ include "motive-service.fullname" $ }}-canary
           kind: Service
-          port: 8080
+          port: {{ $port }}
           weight: 0
         {{- end }}
     {{- end }}
@@ -68,37 +78,45 @@ metadata:
     {{- include "motive-service.serviceLabels" . | nindent 4 }}
 spec:
   parentRefs:
-    - name: {{ $gwName }}
-      {{- if ne $gwNs .Release.Namespace }}
-      namespace: {{ $gwNs }}
+    - name: {{ $gwIntName }}
+      {{- if ne $gwIntNs .Release.Namespace }}
+      namespace: {{ $gwIntNs }}
       {{- end }}
   hostnames:
     {{- range .Values.ingress.internal.hosts }}
     - {{ .host | quote }}
     {{- end }}
   rules:
-    {{- $paths := list }}
+    {{- $entries := list }}
     {{- range .Values.ingress.internal.hosts }}
     {{- range .paths }}
-    {{- if not (has .path $paths) }}
-    {{- $paths = append $paths .path }}
+    {{- $port := 8080 }}
+    {{- if eq (.portName | default "http") "metrics" }}
+    {{- $port = 8081 }}
+    {{- end }}
+    {{- $entry := printf "%s#%v" .path $port }}
+    {{- if not (has $entry $entries) }}
+    {{- $entries = append $entries $entry }}
     {{- end }}
     {{- end }}
     {{- end }}
-    {{- range $paths }}
+    {{- range $entries }}
+    {{- $split := splitList "#" . }}
+    {{- $path := first $split }}
+    {{- $port := last $split }}
     - matches:
         - path:
             type: PathPrefix
-            value: {{ . }}
+            value: {{ $path }}
       backendRefs:
         - name: {{ include "motive-service.fullname" $ }}
           kind: Service
-          port: 8080
+          port: {{ $port }}
           weight: 100
         {{- if $canary }}
         - name: {{ include "motive-service.fullname" $ }}-canary
           kind: Service
-          port: 8080
+          port: {{ $port }}
           weight: 0
         {{- end }}
     {{- end }}
