@@ -163,9 +163,9 @@ spec:
         # rewrites the weights during the canary.
         plugins:
           "argoproj-labs/gatewayAPI":
-            {{- with $tr.gatewayAPI.httpRoutes }}
+            {{- if $tr.gatewayAPI.httpRoutes }}
             httpRoutes:
-              {{- range . }}
+              {{- range $tr.gatewayAPI.httpRoutes }}
               - {{ . }}
               {{- end }}
             {{- else if $tr.gatewayAPI.httpRoute }}
