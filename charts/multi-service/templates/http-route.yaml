@@ -1,5 +1,4 @@
-{{- $api := "gateway.networking.k8s.io/v1" -}}
-{{- if and .Values.httpRoute.enabled (.Capabilities.APIVersions.Has $api) -}}
+{{- if .Values.httpRoute.enabled -}}
 # NOTE: with canary rollouts using trafficRouting.gatewayAPI, httpRoute.spec must
 # include both the stable and the canary services as weighted backendRefs in the
 # same rule so the argoproj-labs/gatewayAPI plugin can shift traffic.
