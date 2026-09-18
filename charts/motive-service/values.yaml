@@ -789,7 +789,8 @@ rollouts:
         # -- Single HTTPRoute name. Used when httpRoutes is empty and no route can be
         # auto-derived from the ingress hosts.
         httpRoute: ""
-        # -- List of HTTPRoute names. If empty, routes are auto-derived from the
+        # -- List of HTTPRoute names (or objects with `name` + optional
+        # `useHeaderRoutes`). If empty, routes are auto-derived from the
         # ingress.public / ingress.internal hosts rendered by http-route.yaml
         # (<fullname>-public / <fullname>-internal).
         httpRoutes: []

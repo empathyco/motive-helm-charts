@@ -199,10 +199,16 @@ spec:
         plugins:
           "argoproj-labs/gatewayAPI":
             {{- with $tr.gatewayAPI.httpRoutes }}
+            {{- $normalized := list }}
+            {{- range . }}
+            {{- if kindIs "string" . }}
+            {{- $normalized = append $normalized (dict "name" .) }}
+            {{- else }}
+            {{- $normalized = append $normalized . }}
+            {{- end }}
+            {{- end }}
             httpRoutes:
-              {{- range . }}
-              - {{ . }}
-              {{- end }}
+            {{- toYaml $normalized | nindent 14 }}
             {{- else }}
             {{- $autoRoutes := list }}
             {{- if and (not .Values.ingress.public.split) .Values.ingress.public.hosts }}
@@ -215,10 +221,12 @@ spec:
             {{- if not .Values.httpRoute.enabled }}
             {{- fail "rollouts.canary.trafficRouting.gatewayAPI: auto-derived HTTPRoutes require httpRoute.enabled: true" }}
             {{- end }}
+            {{- $normalized := list }}
+            {{- range $autoRoutes }}
+            {{- $normalized = append $normalized (dict "name" .) }}
+            {{- end }}
             httpRoutes:
-              {{- range $autoRoutes }}
-              - {{ . }}
-              {{- end }}
+            {{- toYaml $normalized | nindent 14 }}
             {{- else }}
             httpRoute: {{ required "rollouts.canary.trafficRouting.gatewayAPI.httpRoute (or httpRoutes) is required when gatewayAPI is enabled" $tr.gatewayAPI.httpRoute }}
             {{- end }}
