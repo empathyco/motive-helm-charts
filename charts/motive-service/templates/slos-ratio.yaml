@@ -1,4 +1,4 @@
-{{- if and .Values.metrics.enabled (.Capabilities.APIVersions.Has "pyrra.dev/v1alpha1") -}}
+{{- if and .Values.metrics.enabled .Values.httpRoute.enabled (.Capabilities.APIVersions.Has "pyrra.dev/v1alpha1") -}}
 {{- range .Values.slos.ratio }}
 ---
 apiVersion: pyrra.dev/v1alpha1
