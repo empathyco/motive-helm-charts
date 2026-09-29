@@ -610,7 +610,7 @@ metrics:
 # -- --------------
 
 slos:
-  # -- Latency SLOs
+  # -- Latency SLOs (only rendered when httpRoute.enabled is true)
   latency: []
     # - name: latency
     #   description: ""
@@ -628,7 +628,7 @@ slos:
     #     burnrates: true
     #     disabled: false
 
-  # -- Ration SLOs
+  # -- Ration SLOs (only rendered when httpRoute.enabled is true)
   ratio: []
     # - name: ratio
     #   description: ""
@@ -645,7 +645,7 @@ slos:
     #     burnrates: true
     #     disabled: false
 
-  # -- Bool SLOs
+  # -- Bool SLOs (only rendered when httpRoute.enabled is true)
   bool: []
     # - name: bool
     #   description: ""
